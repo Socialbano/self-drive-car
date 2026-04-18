@@ -110,7 +110,7 @@ export function InstagramReels() {
 
           <div className="mt-12 text-center">
             <a
-              href="https://instagram.com/skydeepgroup"
+              href="https://instagram.com/skydeep_car_rental"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#0B1F3A] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#0B1F3A]/90 hover:-translate-y-1 transition-all shadow-lg shadow-[#0B1F3A]/20"
