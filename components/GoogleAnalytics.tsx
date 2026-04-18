@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 // NOTE: Replace this placeholder with your actual GA4 Measurement ID
 const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
