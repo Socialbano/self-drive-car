@@ -47,8 +47,12 @@ export function InstagramReels() {
             </p>
           </div>
 
-          {/* Grid Layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Responsive Layout: Mobile Slider / Desktop Grid */}
+          <style dangerouslySetInnerHTML={{__html: `
+            .hide-scrollbar::-webkit-scrollbar { display: none; }
+            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+          `}} />
+          <div className="flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible scroll-smooth snap-x snap-mandatory gap-4 md:gap-6 pb-6 md:pb-0 -mx-6 md:mx-0 px-6 md:px-0 w-[calc(100%+3rem)] md:w-full hide-scrollbar">
             {reels.map((reel) => {
               const reelId = getReelId(reel.reel_url);
               if (!reelId) return null;
@@ -56,7 +60,7 @@ export function InstagramReels() {
               return (
                 <div
                   key={reel.id}
-                  className="group relative aspect-[9/16] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gray-100"
+                  className="group relative aspect-[9/16] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gray-100 min-w-[85%] md:min-w-0 flex-shrink-0 snap-center md:snap-align-none"
                 >
                   {/* Thumbnail OR Native Embed */}
                   {reel.thumbnail ? (
