@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { CarForm, DEFAULT_FORM_DATA } from '@/components/admin/CarForm';
 import type { CarFormData } from '@/components/admin/CarForm';
 import toast from 'react-hot-toast';
 
-export default function EditCarPage() {
+function EditCarPageContent() {
   const searchParams = useSearchParams();
   const id = searchParams?.get('id');
   const router = useRouter();
@@ -121,5 +121,17 @@ export default function EditCarPage() {
         saving={saving}
       />
     </div>
+  );
+}
+
+export default function EditCarPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-20">
+        <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <EditCarPageContent />
+    </Suspense>
   );
 }

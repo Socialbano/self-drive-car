@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 // NOTE: Replace this placeholder with your actual GA4 Measurement ID
 const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; 
 
-export function GoogleAnalytics() {
+function GoogleAnalyticsInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -41,6 +41,14 @@ export function GoogleAnalytics() {
         }}
       />
     </>
+  );
+}
+
+export function GoogleAnalytics() {
+  return (
+    <Suspense fallback={null}>
+      <GoogleAnalyticsInner />
+    </Suspense>
   );
 }
 
