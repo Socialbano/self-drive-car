@@ -71,7 +71,7 @@ export default function NewAgreementPage() {
     }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     // For checkboxes, e.target doesn't naturally have 'checked' on HTMLInputElement if loosely typed without casting,
     // so we handle it specifically below.
