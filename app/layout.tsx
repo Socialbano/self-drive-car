@@ -6,6 +6,7 @@ import { BUSINESS } from '@/lib/constants';
 import { Toaster } from 'react-hot-toast';
 import BookingPopup from '@/components/BookingPopup';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { PublicOnlyWrapper } from '@/components/layout/PublicOnlyWrapper';
 
 const poppins = Poppins({
   weight: ['400', '500', '600', '700'],
@@ -43,7 +44,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { MarqueeBar } from '@/components/layout/MarqueeBar';
 
 export default function RootLayout({
   children,
@@ -85,11 +85,10 @@ export default function RootLayout({
       </head>
       <body>
         <GoogleAnalytics />
-        <MarqueeBar />
+        <PublicOnlyWrapper />
         <main className="flex min-h-screen flex-col">
           {children}
         </main>
-        <BookingPopup />
         <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
       </body>
     </html>

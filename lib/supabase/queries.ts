@@ -255,7 +255,7 @@ export async function updateCarPricing(
 export async function bulkUpdatePricing(multiplier: number): Promise<{ success: boolean; updatedCount: number }> {
   const { data: cars, error: fetchErr } = await supabase
     .from('cars')
-    .select('id, price_12hr, price_24hr')
+    .select('id, price_12hr, price_24hr, price_per_week, price_weekend, price_outstation')
     .eq('is_active', true);
 
   if (fetchErr || !cars) {
@@ -269,6 +269,10 @@ export async function bulkUpdatePricing(multiplier: number): Promise<{ success: 
       price_12hr: Math.round((car.price_12hr || 0) * multiplier),
       price_24hr: Math.round((car.price_24hr || 0) * multiplier),
     };
+    // Only apply multiplier to optional fields if they have values
+    if (car.price_per_week)   updates.price_per_week   = Math.round(car.price_per_week   * multiplier);
+    if (car.price_weekend)    updates.price_weekend    = Math.round(car.price_weekend    * multiplier);
+    if (car.price_outstation) updates.price_outstation = Math.round(car.price_outstation * multiplier);
 
     const { error } = await supabase.from('cars').update(updates).eq('id', car.id);
     if (!error) updatedCount++;
@@ -296,7 +300,7 @@ export async function getAdminSettings(): Promise<Record<string, string>> {
 export async function updateAdminSetting(key: string, value: string): Promise<boolean> {
   const { error } = await supabase
     .from('admin_settings')
-    .upsert({ key, value, updated_at: new Date().toISOString() });
+    .upsert({ key, value }, { onConflict: 'key' });
 
   if (error) {
     console.error(`Error updating setting ${key}:`, error);

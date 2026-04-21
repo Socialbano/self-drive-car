@@ -22,13 +22,17 @@ export default function NewAgreementPage() {
     aadhaar_number: '',
     driving_license: '',
     car_id: '',
+    custom_vehicle_name: '',
+    custom_vehicle_type: 'SUV',
+    custom_price: 0,
+    is_manual_entry: false,
     start_date: '',
     end_date: '',
     price_per_day: 0,
-    security_deposit: 2000, // default deposit
+    security_deposit: 2000, 
     total_amount: 0,
     terms_accepted: false,
-    signature_data: '' // will be set on submit
+    signature_data: ''
   });
 
   useEffect(() => {
@@ -41,6 +45,7 @@ export default function NewAgreementPage() {
   };
 
   // Recalculate totals when dates or car changes
+  // Security Deposit is NOT included in Total Amount — it's a separate refundable amount
   useEffect(() => {
     if (formData.start_date && formData.end_date && formData.price_per_day >= 0) {
       const start = new Date(formData.start_date);
@@ -49,11 +54,12 @@ export default function NewAgreementPage() {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both days
       
       if (diffDays > 0) {
-        const total = (diffDays * formData.price_per_day) + Number(formData.security_deposit);
-        setFormData(prev => ({ ...prev, total_amount: total }));
+        const rentalAmount = diffDays * formData.price_per_day;
+        // Total = Rental Amount only. Security Deposit is separate (refundable).
+        setFormData(prev => ({ ...prev, total_amount: rentalAmount }));
       }
     }
-  }, [formData.start_date, formData.end_date, formData.price_per_day, formData.security_deposit]);
+  }, [formData.start_date, formData.end_date, formData.price_per_day]);
 
   const handleCarChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const carId = e.target.value;
@@ -150,14 +156,22 @@ export default function NewAgreementPage() {
       let signatureBase64 = '';
       if (canvasRef.current) {
          signatureBase64 = canvasRef.current.toDataURL('image/png');
-         // Quick check if canvas is blank (this is rudimentary but prevents completely empty submission if required)
-         // A blank canvas might still yield a long string, but usually predictable. We will save it regardless.
       }
 
-      const payload = {
+      // Prepare payload based on entry mode
+      const payload: any = {
         ...formData,
         signature_data: signatureBase64
       };
+
+      if (payload.is_manual_entry) {
+         payload.car_id = null; // NULL out car_id relation
+         payload.custom_price = payload.price_per_day; // Map calculated daily to custom price column
+      } else {
+         payload.custom_vehicle_name = null;
+         payload.custom_vehicle_type = null;
+         payload.custom_price = null;
+      }
 
       const res = await createAgreement(payload);
       if (res.success) {
@@ -239,17 +253,56 @@ export default function NewAgreementPage() {
             <span className="material-symbols-outlined text-[#E89B10]">car_rental</span>
             <h2 className="text-xl font-bold text-[#0B1F3A]">Booking Details</h2>
           </div>
+
+          {/* Toggle Manual / Saved */}
+          <div className="flex bg-gray-100 p-1 rounded-xl mb-6 w-fit border border-gray-200/60 shadow-inner">
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, is_manual_entry: false }))}
+              className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${!formData.is_manual_entry ? 'bg-white text-[#0B1F3A] shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Saved Vehicle
+            </button>
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, is_manual_entry: true, car_id: '' }))}
+              className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${formData.is_manual_entry ? 'bg-white text-[#0B1F3A] shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Manual Entry
+            </button>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-2">Select Vehicle *</label>
-              <select name="car_id" required value={formData.car_id} onChange={handleCarChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50">
-                <option value="" disabled>-- Choose a Car --</option>
-                {cars.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} - ₹{c.price_24hr}/day</option>
-                ))}
-              </select>
-            </div>
+            {!formData.is_manual_entry ? (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Select Vehicle *</label>
+                <select name="car_id" required value={formData.car_id} onChange={handleCarChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50">
+                  <option value="" disabled>-- Choose a Car --</option>
+                  {cars.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} - ₹{c.price_24hr}/day</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Custom Vehicle Name *</label>
+                  <input type="text" name="custom_vehicle_name" required value={formData.custom_vehicle_name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50" placeholder="e.g. Thar 4x4" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Vehicle Type *</label>
+                  <select name="custom_vehicle_type" required value={formData.custom_vehicle_type} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50">
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Daily Price Rate (₹) *</label>
+                  <input type="number" name="price_per_day" required value={formData.price_per_day} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50" placeholder="e.g. 2500" />
+                </div>
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Rental Start Date *</label>
@@ -260,19 +313,37 @@ export default function NewAgreementPage() {
               <input type="date" name="end_date" required min={formData.start_date} value={formData.end_date} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50" />
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-2xl md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-               <div>
-                  <label className="block text-sm font-bold text-gray-500 mb-2">Price Per Day (₹)</label>
-                  <input type="number" name="price_per_day" value={formData.price_per_day} onChange={handleChange} className="w-full px-4 py-2 font-bold text-lg rounded-xl border border-gray-200" />
+            <div className="bg-gray-50 p-6 rounded-2xl md:col-span-2 space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                    <label className="block text-sm font-bold text-gray-500 mb-2">Price Per Day (₹)</label>
+                    <input type="number" name="price_per_day" value={formData.price_per_day} onChange={handleChange} className="w-full px-4 py-2 font-bold text-lg rounded-xl border border-gray-200" />
+                 </div>
+                 <div>
+                    <label className="block text-sm font-bold text-gray-500 mb-2">Security Deposit (₹) — Refundable</label>
+                    <input type="number" name="security_deposit" value={formData.security_deposit} onChange={handleChange} className="w-full px-4 py-2 font-bold text-lg rounded-xl border border-gray-200" />
+                    <p className="text-xs text-gray-400 mt-1">Collected separately. Not included in rental total.</p>
+                 </div>
                </div>
-               <div>
-                  <label className="block text-sm font-bold text-gray-500 mb-2">Security Deposit (₹)</label>
-                  <input type="number" name="security_deposit" value={formData.security_deposit} onChange={handleChange} className="w-full px-4 py-2 font-bold text-lg rounded-xl border border-gray-200" />
-               </div>
-               <div>
-                  <label className="block text-sm font-bold text-[#E89B10] mb-2">Total Amount (₹)</label>
-                  <input type="number" name="total_amount" value={formData.total_amount} onChange={handleChange} className="w-full px-4 py-2 font-black text-xl rounded-xl border-2 border-[#E89B10] bg-orange-50 text-[#0B1F3A]" />
-                  <p className="text-xs text-gray-400 mt-1">Calculated automatically. You can override.</p>
+
+               {/* Summary breakdown */}
+               <div className="border border-gray-200 rounded-xl overflow-hidden">
+                 <div className="px-4 py-3 flex justify-between text-sm text-gray-600 bg-white">
+                   <span>Rental Amount</span>
+                   <span className="font-bold text-gray-800">₹{formData.total_amount.toLocaleString('en-IN')}</span>
+                 </div>
+                 <div className="px-4 py-3 flex justify-between text-sm text-gray-600 bg-white border-t border-dashed border-gray-200">
+                   <span className="flex items-center gap-1">
+                     Security Deposit
+                     <span className="text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Refundable</span>
+                   </span>
+                   <span className="font-bold text-gray-800">₹{Number(formData.security_deposit).toLocaleString('en-IN')}</span>
+                 </div>
+                 <div className="px-4 py-3 flex justify-between items-center bg-orange-50 border-t-2 border-[#E89B10]">
+                   <span className="text-sm font-black uppercase tracking-wider text-[#0B1F3A]">Total Rental Payable</span>
+                   <input type="number" name="total_amount" value={formData.total_amount} onChange={handleChange} className="w-28 px-3 py-1.5 font-black text-lg rounded-xl border-2 border-[#E89B10] bg-white text-[#0B1F3A] text-right" />
+                 </div>
+                 <p className="text-[10px] text-gray-400 px-4 pb-3 bg-orange-50">Rental only. Security deposit is collected separately and is refundable after vehicle return.</p>
                </div>
             </div>
           </div>
@@ -285,16 +356,27 @@ export default function NewAgreementPage() {
             <h2 className="text-xl font-bold text-[#0B1F3A]">Terms & Signature</h2>
           </div>
           
-          <div className="mb-6 bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2 h-40 overflow-y-auto border border-gray-200">
-             <p className="font-bold text-gray-800">Key Rental Terms & Conditions (Summarized for Agreement)</p>
-             <ul className="list-disc pl-5 space-y-1">
-                <li>Customer must hold a valid Indian Driving License and be at least 21 years old.</li>
-                <li><strong>Fuel Policy:</strong> The vehicle must be returned with the same fuel level as supplied.</li>
-                <li><strong>Security Deposit:</strong> Refundable subject to safe return without damages or traffic challans.</li>
-                <li><strong>Damage Liability:</strong> Customer assumes full responsibility for any collision, dent, or mechanical damage during the rental period.</li>
-                <li><strong>Late Returns:</strong> Hourly penalty charges will apply strictly for uninformed late returns.</li>
-                <li><strong>Illegal Activities:</strong> The car must not be used for illegal activities, towing, or racing.</li>
-             </ul>
+          <div className="mb-6 bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2 h-[280px] overflow-y-auto border border-gray-200">
+             <p className="font-bold text-gray-800 text-base mb-3">Key Rental Terms & Conditions</p>
+             <ol className="list-decimal pl-5 space-y-2">
+                <li>The customer must thoroughly inspect the vehicle before taking delivery. Any issue must be reported immediately (within 500 meters of pickup).</li>
+                <li>The vehicle must not be used for racing, stunts, or any illegal activities.</li>
+                <li>Driving under the influence of alcohol or any intoxicating substance is strictly prohibited. A penalty of ₹10,000 will be applicable.</li>
+                <li>The renter must possess a valid and original driving license.</li>
+                <li>Wearing a seatbelt while driving is mandatory. Any penalty will be borne by the renter.</li>
+                <li>The vehicle cannot be transferred to any other person.</li>
+                <li>Late return may result in engine immobilization and extra charges.</li>
+                <li>The vehicle must not be used for goods loading/unloading.</li>
+                <li>Over-speeding (above 80 km/h) will attract penalties.</li>
+                <li>All traffic fines will be paid by the renter.</li>
+                <li>In case of theft, accident, or misuse, the renter is fully responsible.</li>
+                <li>The company is not responsible for disputes arising from accidents.</li>
+                <li>Repairs and parts replacement will be done as per company decision.</li>
+                <li>Rental charges apply even during repair time.</li>
+                <li>Any illegal activity using the vehicle is the renter’s responsibility.</li>
+                <li>Future legal issues related to rental period will be handled by the renter.</li>
+                <li>By signing, the renter agrees to all terms.</li>
+             </ol>
           </div>
 
           <label className="flex items-start gap-3 cursor-pointer mb-8">

@@ -74,6 +74,15 @@ function EditCarPageContent() {
         toast.success("New vehicle added to fleet!");
       }
 
+      // Revalidate frontend paths
+      try {
+        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/' }) });
+        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/cars' }) });
+        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/admin/cars' }) });
+      } catch (err) {
+        console.error('Failed to trigger revalidation:', err);
+      }
+
       router.push('/admin/cars');
       router.refresh();
     } catch (error: any) {

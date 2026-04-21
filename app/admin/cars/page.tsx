@@ -56,23 +56,33 @@ export default function AdminCarsPage() {
       .join(' · ');
   }, [cars]);
 
+  const triggerRevalidation = async () => {
+    try {
+      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/' }) });
+      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/cars' }) });
+    } catch (e) {
+      console.error('Revalidation error:', e);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
       await supabase.from('cars').delete().eq('id', id);
+      await triggerRevalidation();
       fetchCars();
     }
   };
 
-
-
   const toggleFeatured = async (car: Car) => {
     await supabase.from('cars').update({ is_featured: !car.is_featured }).eq('id', car.id);
     setCars(prev => prev.map(c => c.id === car.id ? { ...c, is_featured: !c.is_featured } : c));
+    await triggerRevalidation();
   };
 
   const toggleActive = async (car: Car) => {
     await supabase.from('cars').update({ is_active: !car.is_active }).eq('id', car.id);
     setCars(prev => prev.map(c => c.id === car.id ? { ...c, is_active: !c.is_active } : c));
+    await triggerRevalidation();
   };
 
   if (loading) {

@@ -6,6 +6,8 @@ import { CarsList } from '@/components/cars/CarsList';
 
 // Always fetch fresh data from DB
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Our Premium Fleet | Skydeepgroup Car Rental Indore',

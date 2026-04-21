@@ -10,6 +10,12 @@ export interface Car {
   description: string;
   price_12hr: number;
   price_24hr: number;
+  price_per_week?: number | null;
+  price_weekend?: number | null;
+  price_outstation?: number | null;
+  deposit?: number | null;
+  km_limit_per_day?: number | null;
+  extra_km_rate?: number | null;
   is_featured: boolean;
   is_active: boolean;
   created_at: string;

@@ -66,11 +66,10 @@ export function Navbar() {
   return (
     <>
       <nav
-        className={`sticky top-0 w-full z-50 transition-all duration-500 ${
-          scrolled
+        className={`sticky top-0 w-full z-50 transition-all duration-500 ${scrolled
             ? 'bg-white/90 backdrop-blur-xl shadow-[0_4px_30px_rgba(11,31,58,0.08)]'
             : 'bg-white/60 backdrop-blur-md'
-        }`}
+          }`}
       >
         <div className="flex justify-between items-center px-6 lg:px-8 py-3.5 max-w-7xl mx-auto">
           {/* Logo */}
@@ -86,11 +85,11 @@ export function Navbar() {
                 S
               </span>
             </div>
-            
+
             {/* Logo Text Stack */}
             <div className="flex flex-col leading-none pt-0.5 justify-center">
               <span className="text-[19px] md:text-[22px] font-black tracking-[0.02em] text-[#0f172a] font-headline mb-1 transition-colors duration-300">
-                Sky Deep <span className="bg-gradient-to-br from-[#E89B10] to-[#c7820a] bg-clip-text text-transparent group-hover:from-[#0f172a] group-hover:to-[#0f172a] transition-all duration-300">Group</span>
+                SkyDeep <span className="bg-gradient-to-br from-[#E89B10] to-[#c7820a] bg-clip-text text-transparent group-hover:from-[#0f172a] group-hover:to-[#0f172a] transition-all duration-300">Group</span>
               </span>
               <span className="text-[9px] md:text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.18em] transition-colors duration-300 group-hover:text-slate-500">
                 Car Rental Services
@@ -104,11 +103,10 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative px-4 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 ${
-                  isActive(link.href)
+                className={`relative px-4 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 ${isActive(link.href)
                     ? 'text-[#0B1F3A] bg-[#0B1F3A]/5'
                     : 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
-                }`}
+                  }`}
               >
                 {link.label}
                 {isActive(link.href) && (
@@ -126,11 +124,10 @@ export function Navbar() {
             >
               <button
                 onClick={() => setLocDropdownOpen(!locDropdownOpen)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 flex items-center gap-1.5 ${
-                  isLocationActive
+                className={`relative px-4 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 flex items-center gap-1.5 ${isLocationActive
                     ? 'text-[#0B1F3A] bg-[#0B1F3A]/5'
                     : 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
-                }`}
+                  }`}
               >
                 Locations
                 <span className={`material-symbols-outlined text-base transition-transform duration-300 ${locDropdownOpen ? 'rotate-180' : ''}`}>
@@ -143,11 +140,10 @@ export function Navbar() {
 
               {/* Dropdown Panel */}
               <div
-                className={`absolute top-full right-0 mt-2 w-[340px] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_20px_60px_-12px_rgba(11,31,58,0.18)] border border-gray-100 overflow-hidden transition-all duration-300 origin-top ${
-                  locDropdownOpen
+                className={`absolute top-full right-0 mt-2 w-[340px] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_20px_60px_-12px_rgba(11,31,58,0.18)] border border-gray-100 overflow-hidden transition-all duration-300 origin-top ${locDropdownOpen
                     ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-                }`}
+                  }`}
               >
                 <div className="p-4">
                   {LOCATION_GROUPS.map((group, gi) => (
@@ -164,15 +160,13 @@ export function Navbar() {
                               key={loc.slug}
                               href={locPath}
                               prefetch={true}
-                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                                isCurrent
+                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${isCurrent
                                   ? 'bg-[#E89B10]/10 text-[#0B1F3A] font-bold'
                                   : 'text-[#0B1F3A]/70 hover:bg-[#0B1F3A]/5 hover:text-[#0B1F3A]'
-                              }`}
+                                }`}
                             >
-                              <span className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                isCurrent ? 'bg-[#E89B10]' : 'bg-gray-300 group-hover:bg-[#E89B10]'
-                              }`} />
+                              <span className={`w-1.5 h-1.5 rounded-full transition-colors ${isCurrent ? 'bg-[#E89B10]' : 'bg-gray-300 group-hover:bg-[#E89B10]'
+                                }`} />
                               {loc.name}
                             </Link>
                           );
@@ -224,19 +218,16 @@ export function Navbar() {
           >
             <div className="flex flex-col gap-1.5 w-5">
               <span
-                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${
-                  mobileOpen ? 'rotate-45 translate-y-2' : ''
-                }`}
+                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-2' : ''
+                  }`}
               />
               <span
-                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${
-                  mobileOpen ? 'opacity-0' : ''
-                }`}
+                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''
+                  }`}
               />
               <span
-                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${
-                  mobileOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}
+                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-2' : ''
+                  }`}
               />
             </div>
           </button>
@@ -245,17 +236,15 @@ export function Navbar() {
 
       {/* Mobile Overlay */}
       <div
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
-          mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setMobileOpen(false)}
       />
 
       {/* Mobile Slide-out */}
       <div
-        className={`fixed top-0 right-0 z-50 h-full w-[300px] bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden overflow-y-auto ${
-          mobileOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 z-50 h-full w-[300px] bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden overflow-y-auto ${mobileOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="p-6">
           {/* Close */}
@@ -275,11 +264,10 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  isActive(link.href)
+                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive(link.href)
                     ? 'text-[#0B1F3A] bg-[#E89B10]/10 border-l-4 border-[#E89B10]'
                     : 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -288,11 +276,10 @@ export function Navbar() {
             {/* Mobile Locations Accordion */}
             <button
               onClick={() => setMobileLocOpen(!mobileLocOpen)}
-              className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${
-                isLocationActive
+              className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${isLocationActive
                   ? 'text-[#0B1F3A] bg-[#E89B10]/10 border-l-4 border-[#E89B10]'
                   : 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
-              }`}
+                }`}
             >
               Locations
               <span className={`material-symbols-outlined text-base transition-transform duration-300 ${mobileLocOpen ? 'rotate-180' : ''}`}>
@@ -302,9 +289,8 @@ export function Navbar() {
 
             {/* Accordion Content */}
             <div
-              className={`overflow-hidden transition-all duration-300 ease-out ${
-                mobileLocOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
+              className={`overflow-hidden transition-all duration-300 ease-out ${mobileLocOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
             >
               <div className="pl-4 pb-2 space-y-3 pt-1">
                 {LOCATION_GROUPS.map((group, gi) => (
@@ -319,15 +305,13 @@ export function Navbar() {
                         <Link
                           key={loc.slug}
                           href={locPath}
-                          className={`flex items-center gap-2.5 px-4 py-2 rounded-lg text-sm transition-all ${
-                            isCurrent
+                          className={`flex items-center gap-2.5 px-4 py-2 rounded-lg text-sm transition-all ${isCurrent
                               ? 'font-bold text-[#E89B10] bg-[#E89B10]/5'
                               : 'text-[#0B1F3A]/60 hover:text-[#0B1F3A]'
-                          }`}
+                            }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            isCurrent ? 'bg-[#E89B10]' : 'bg-gray-300'
-                          }`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-[#E89B10]' : 'bg-gray-300'
+                            }`} />
                           {loc.name}
                         </Link>
                       );

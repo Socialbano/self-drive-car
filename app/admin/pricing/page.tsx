@@ -2,8 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { bulkUpdatePricing, getAdminSettings, updateAdminSetting } from '@/lib/supabase/queries';
+import { bulkUpdatePricing } from '@/lib/supabase/queries';
+import toast from 'react-hot-toast';
 import type { Car } from '@/types';
+
+// Fixed UUID for the special offer marquee message — do not change
+const OFFER_BANNER_ID = '00000000-0000-0000-0000-000000000001';
 
 interface EditingCell {
   carId: string;
@@ -21,6 +25,7 @@ export default function AdminPricingPage() {
   const [bulkPercent, setBulkPercent] = useState('');
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [bulkResult, setBulkResult] = useState<string | null>(null);
+  const [bulkConfirm, setBulkConfirm] = useState(false);
 
   // Offer banner state
   const [offerText, setOfferText] = useState('');
@@ -39,15 +44,23 @@ export default function AdminPricingPage() {
     setLoading(false);
   };
 
-  const fetchSettings = async () => {
-    const settings = await getAdminSettings();
-    setOfferText(settings['offer_banner_text'] || '');
-    setOfferActive(settings['offer_banner_active'] === 'true');
+  // Load offer banner from marquee_messages table
+  const fetchOfferBanner = async () => {
+    const { data } = await supabase
+      .from('marquee_messages')
+      .select('text, is_active')
+      .eq('id', OFFER_BANNER_ID)
+      .maybeSingle();
+
+    if (data) {
+      setOfferText(data.text || '');
+      setOfferActive(data.is_active || false);
+    }
   };
 
   useEffect(() => {
     fetchCars();
-    fetchSettings();
+    fetchOfferBanner();
   }, []);
 
   const startEdit = (carId: string, field: string, currentValue: number | null | undefined) => {
@@ -60,11 +73,38 @@ export default function AdminPricingPage() {
     setEditValue('');
   };
 
+  const triggerRevalidation = async (carSlug?: string) => {
+    try {
+      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/' }) });
+      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/cars' }) });
+      if (carSlug) {
+        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: `/cars/${carSlug}` }) });
+      }
+    } catch (e) {
+      console.error('Revalidation error:', e);
+    }
+  };
+
   const saveCell = async (carId: string, field: string) => {
     setSaving(carId + field);
-    const numValue = editValue ? Number(editValue) : null;
-    await supabase.from('cars').update({ [field]: numValue, updated_at: new Date().toISOString() }).eq('id', carId);
+    const numValue = editValue !== '' ? Number(editValue) : null;
+
+    const { error } = await supabase
+      .from('cars')
+      .update({ [field]: numValue })
+      .eq('id', carId);
+
+    if (error) {
+      console.error('Save error:', error);
+      toast.error(`Save failed: ${error.message}`);
+      setSaving(null);
+      return;
+    }
+
     setCars(prev => prev.map(c => c.id === carId ? { ...c, [field]: numValue } : c));
+    const savedCar = cars.find(c => c.id === carId);
+    await triggerRevalidation(savedCar?.slug);
+
     setEditingCell(null);
     setEditValue('');
     setSaving(null);
@@ -78,51 +118,79 @@ export default function AdminPricingPage() {
   const handleBulkUpdate = async () => {
     const percent = parseFloat(bulkPercent);
     if (isNaN(percent) || percent === 0) {
-      setBulkResult('Please enter a valid percentage.');
+      toast.error('Please enter a valid non-zero percentage.');
       return;
     }
-
-    const action = percent > 0 ? 'increase' : 'decrease';
-    const confirmation = confirm(
-      `Are you sure you want to ${action} ALL car prices by ${Math.abs(percent)}%?\n\nThis will affect: Per Day, Per Week, Weekend, and Outstation rates for all ${cars.length} active cars.\n\nThis action cannot be undone.`
-    );
-
-    if (!confirmation) return;
-
+    // First click: show confirm prompt
+    if (!bulkConfirm) {
+      setBulkConfirm(true);
+      return;
+    }
+    // Second click: confirmed — execute
+    setBulkConfirm(false);
     setBulkUpdating(true);
     setBulkResult(null);
-
+    console.log('[BulkUpdate] percent:', percent, 'multiplier:', 1 + percent / 100);
     const multiplier = 1 + (percent / 100);
     const result = await bulkUpdatePricing(multiplier);
-
+    console.log('[BulkUpdate] result:', result);
     if (result.success) {
-      setBulkResult(`✅ Prices ${action}d by ${Math.abs(percent)}% for ${result.updatedCount} cars.`);
+      setBulkResult(`✅ Prices updated by ${Math.abs(percent)}% for ${result.updatedCount} cars.`);
       setBulkPercent('');
-      fetchCars(); // Refresh table
+      toast.success(`Prices updated for ${result.updatedCount} vehicles!`);
+      await triggerRevalidation();
+      fetchCars();
     } else {
-      setBulkResult('❌ Failed to update prices. Please try again.');
+      setBulkResult('❌ Failed to update prices. Check console.');
+      toast.error('Bulk update failed.');
     }
-
     setBulkUpdating(false);
   };
 
+  // Save offer banner directly to marquee_messages table (which MarqueeBar reads)
   const handleOfferSave = async () => {
+    if (offerActive && !offerText.trim()) {
+      toast.error('Please enter banner text before activating.');
+      return;
+    }
+
     setOfferSaving(true);
-    await updateAdminSetting('offer_banner_text', offerText);
-    await updateAdminSetting('offer_banner_active', offerActive.toString());
+
+    const { error } = await supabase
+      .from('marquee_messages')
+      .upsert(
+        {
+          id: OFFER_BANNER_ID,
+          text: offerText.trim() || 'Special Offer!',
+          icon: '🎉',
+          is_active: offerActive,
+          priority: 0,
+        },
+        { onConflict: 'id' }
+      );
+
+    if (error) {
+      console.error('Banner save error:', error);
+      toast.error(`Failed to save banner: ${error.message}`);
+      setOfferSaving(false);
+      return;
+    }
+
+    toast.success(offerActive ? '✅ Banner is now LIVE on website!' : 'Banner saved (inactive).');
     setOfferSaving(false);
     setOfferSaved(true);
     setTimeout(() => setOfferSaved(false), 3000);
   };
 
   const pricingFields = [
-    { key: 'price_per_day', label: 'Per Day', required: true },
-    { key: 'price_per_week', label: 'Per Week', required: false },
-    { key: 'price_weekend', label: 'Weekend', required: false },
-    { key: 'price_outstation', label: 'Outstation', required: false },
-    { key: 'deposit', label: 'Deposit', required: true },
-    { key: 'km_limit_per_day', label: 'KM Limit', required: true },
-    { key: 'extra_km_rate', label: 'Extra KM (₹)', required: true },
+    { key: 'price_12hr',      label: '12 Hours',    prefix: '₹', required: true  },
+    { key: 'price_24hr',      label: '24 Hours',    prefix: '₹', required: true  },
+    { key: 'price_per_week',  label: 'Per Week',    prefix: '₹', required: false },
+    { key: 'price_weekend',   label: 'Weekend',     prefix: '₹', required: false },
+    { key: 'price_outstation',label: 'Outstation',  prefix: '₹', required: false },
+    { key: 'deposit',         label: 'Deposit',     prefix: '₹', required: false },
+    { key: 'km_limit_per_day',label: 'KM Limit',    prefix: '',  required: false },
+    { key: 'extra_km_rate',   label: 'Extra KM (₹)',prefix: '₹', required: false },
   ];
 
   if (loading) {
@@ -178,6 +246,23 @@ export default function AdminPricingPage() {
               ) : 'Apply to All'}
             </button>
           </div>
+          {bulkConfirm && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+              <p className="text-xs text-amber-800 font-semibold">
+                ⚠️ This will update ALL {cars.length} cars by {bulkPercent}%. Confirm?
+              </p>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={handleBulkUpdate}
+                  className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600"
+                >Yes, Apply</button>
+                <button
+                  onClick={() => setBulkConfirm(false)}
+                  className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold hover:bg-gray-200"
+                >Cancel</button>
+              </div>
+            </div>
+          )}
           {bulkResult && (
             <p className={`text-sm font-medium mt-3 ${bulkResult.startsWith('✅') ? 'text-green-600' : 'text-red-500'}`}>
               {bulkResult}
@@ -279,12 +364,12 @@ export default function AdminPricingPage() {
                             className={`inline-block px-3 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer hover:bg-[#E89B10]/10 hover:text-[#E89B10] ${
                               isSaving ? 'animate-pulse' : ''
                             } ${
-                              value
-                                ? field.key === 'price_per_day' ? 'text-[#E89B10]' : 'text-[#0B1F3A]'
+                              value != null
+                                ? (field.key === 'price_12hr' || field.key === 'price_24hr') ? 'text-[#E89B10]' : 'text-[#0B1F3A]'
                                 : 'text-gray-300'
                             }`}
                           >
-                            {value != null ? (field.key.includes('price') || field.key === 'deposit' || field.key === 'extra_km_rate' ? `₹${value.toLocaleString()}` : value) : '—'}
+                            {value != null ? `${field.prefix}${value.toLocaleString()}${field.key === 'km_limit_per_day' ? ' KM' : ''}` : '—'}
                           </button>
                         )}
                       </td>

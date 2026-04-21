@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getInvoiceById, updateInvoiceStatus } from '@/lib/supabase/queries';
+import { DocumentHeader } from '@/components/DocumentHeader';
 import type { Invoice } from '@/types';
 
 function InvoicePreviewContent() {
@@ -11,6 +12,7 @@ function InvoicePreviewContent() {
   const id = searchParams.get('id');
   const router = useRouter();
   const [invoice, setInvoice] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -134,40 +136,22 @@ function InvoicePreviewContent() {
       {/* Invoice Document */}
       <div id="invoice-capture" className="bg-white shadow-xl rounded-2xl p-12 border border-gray-200 relative overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
         
-        {/* Header */}
-        <div className="flex justify-between items-start mb-16 relative z-10">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#0B1F3A] rounded flex items-center justify-center">
-                <span className="material-symbols-outlined text-[#E89B10]">directions_car</span>
+        {/* Header replaced with reusable branding component */}
+        <DocumentHeader 
+          rightContent={
+            <>
+              <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-gray-100 uppercase mt-4 sm:mt-0">Invoice</h2>
+              <div className="mt-4 space-y-1">
+                <p className="text-xs font-bold text-[#E89B10] uppercase tracking-widest">Number</p>
+                <p className="font-bold text-lg text-[#0B1F3A]">{invoice.invoice_number}</p>
               </div>
-              <span className="font-black text-2xl uppercase tracking-tighter text-[#0B1F3A]">Skydeep<span className="text-[#E89B10]">group</span></span>
-            </div>
-            <div className="text-gray-500 text-sm leading-relaxed max-w-xs">
-              Near HDFC Bank, Ramesh Dosa,<br/>
-              Vishnupuri, Bhawarkua, Indore 452001<br/>
-              <span className="flex items-center gap-2 mt-2">
-                <span className="material-symbols-outlined text-[16px]">phone</span>
-                +91 91113 30558
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">receipt</span>
-                GST/VAT: 23AXXPSXXXXX1Z5
-              </span>
-            </div>
-          </div>
-          <div className="text-right">
-            <h2 className="text-5xl font-black tracking-tight text-gray-100 uppercase">Invoice</h2>
-            <div className="mt-4 space-y-1">
-              <p className="text-xs font-bold text-[#E89B10] uppercase tracking-widest">Number</p>
-              <p className="font-bold text-lg text-[#0B1F3A]">{invoice.invoice_number}</p>
-            </div>
-            <div className="mt-4 space-y-1">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date Issued</p>
-              <p className="font-medium text-gray-700">{formatDate(invoice.created_at)}</p>
-            </div>
-          </div>
-        </div>
+              <div className="mt-4 space-y-1">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date Issued</p>
+                <p className="font-medium text-gray-700">{formatDate(invoice.created_at)}</p>
+              </div>
+            </>
+          }
+        />
 
         {/* Info Grid */}
         <div className="grid grid-cols-2 gap-12 mb-16 relative z-10">
@@ -223,25 +207,104 @@ function InvoicePreviewContent() {
           </table>
         </div>
 
-        {/* Totals */}
-        <div className="flex flex-col items-end gap-2">
-          <div className="w-full md:w-1/2 space-y-4">
-            <div className="flex justify-between items-center text-gray-600">
-              <span>Subtotal</span>
-              <span className="font-medium text-[#0B1F3A]">{formatCurrency(invoice.subtotal)}</span>
-            </div>
-            {invoice.gst_enabled && (
-              <div className="flex justify-between items-center text-gray-600">
-                <span>GST (18%)</span>
-                <span className="font-medium text-[#0B1F3A]">{formatCurrency(invoice.tax_amount)}</span>
+        {/* Payment & Totals Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+           
+           {/* Left side: Payment Method & QR code */}
+           <div className="space-y-6 pt-2">
+              <div>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Payment Method</h3>
+                <div className="flex flex-wrap gap-2">
+                   {['UPI', 'Cash', 'Debit Card', 'Credit Card'].map((method) => (
+                     <button
+                       key={method}
+                       onClick={() => setPaymentMethod(method)}
+                       className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                         paymentMethod === method 
+                           ? (invoice.status === 'paid' ? 'border-[#0B1F3A] bg-[#0B1F3A] text-white shadow-md' : 'border-[#E89B10] bg-[#E89B10]/10 text-[#E89B10]')
+                           : 'border-gray-200 text-gray-400 bg-white hover:bg-gray-50'
+                       }`}
+                     >
+                       {method}
+                     </button>
+                   ))}
+                </div>
               </div>
-            )}
-            <div className="h-px bg-gray-200 my-4" />
-            <div className="flex justify-between items-center bg-gray-50 border border-gray-200 p-6 rounded-xl">
-              <p className="text-[11px] font-black uppercase tracking-widest text-[#0B1F3A]">Total Payable</p>
-              <span className="text-3xl font-black tracking-tighter text-[#E89B10]">{formatCurrency(invoice.total_amount)}</span>
-            </div>
-          </div>
+
+              {invoice.status === 'pending' && (
+                <div className="border border-gray-200 bg-white p-4 rounded-xl flex items-center gap-5 max-w-sm shadow-sm ring-1 ring-[#E89B10]/30 animate-in fade-in slide-in-from-bottom-4">
+                   <div className="w-24 h-24 bg-white border border-gray-100 rounded-lg p-1 shrink-0 flex items-center justify-center shadow-inner">
+                      <img src="/assets/upiqr.png" alt="UPI QR Code" className="max-w-full max-h-full object-contain" />
+                   </div>
+                   <div className="space-y-1">
+                      <h4 className="font-bold text-[#0B1F3A] uppercase tracking-tight text-sm">Scan & Pay</h4>
+                      <p className="text-[10px] text-gray-500 leading-relaxed">Pay securely via any UPI app (GPay, PhonePe, Paytm, etc.)</p>
+                   </div>
+                </div>
+              )}
+           </div>
+
+           {/* Right side: Totals */}
+           <div className="flex flex-col items-end gap-2">
+             <div className="w-full space-y-3">
+               <div className="flex justify-between items-center text-gray-600">
+                 <span>Rental Amount</span>
+                 <span className="font-medium text-[#0B1F3A]">{formatCurrency(invoice.subtotal)}</span>
+               </div>
+               {invoice.gst_enabled && (
+                 <div className="flex justify-between items-center text-gray-600">
+                   <span>GST (18%)</span>
+                   <span className="font-medium text-[#0B1F3A]">{formatCurrency(invoice.tax_amount)}</span>
+                 </div>
+               )}
+               {invoice.security_deposit > 0 && (
+                 <div className="flex justify-between items-center text-gray-600">
+                   <span className="flex items-center gap-1.5">
+                     Security Deposit
+                     <span className="text-[9px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">Refundable</span>
+                   </span>
+                   <span className="font-medium text-[#0B1F3A]">{formatCurrency(invoice.security_deposit)}</span>
+                 </div>
+               )}
+               <div className="h-px bg-gray-200 my-2" />
+               <div className="flex justify-between items-center bg-gray-50 border border-gray-200 p-6 rounded-xl relative overflow-hidden">
+                 {invoice.status === 'pending' && <div className="absolute top-0 left-0 w-1 h-full bg-[#E89B10]" />}
+                 {invoice.status === 'paid' && <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />}
+                 <p className="text-[11px] font-black uppercase tracking-widest text-[#0B1F3A]">Total Payable</p>
+                 <span className="text-3xl font-black tracking-tighter text-[#E89B10]">{formatCurrency(invoice.total_amount)}</span>
+               </div>
+               {invoice.security_deposit > 0 && (
+                 <p className="text-[9px] text-gray-400 leading-snug">Security Deposit is refundable after vehicle return (subject to terms).</p>
+               )}
+             </div>
+           </div>
+           
+        </div>
+
+        {/* Additional Terms & Conditions */}
+        <div className="mt-12 pt-8 border-t border-gray-200">
+           <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#0B1F3A] mb-4">Additional Terms & Conditions</h3>
+           <div className="text-[10px] text-gray-500 leading-relaxed text-justify">
+             <ol className="list-decimal pl-4 space-y-4">
+               <li>
+                 <span className="font-bold text-gray-700">Rental Charges:</span><br/>
+                 Rental will be charged based on selected duration (6 hours / 12 hours / 24 hours / per day). Additional charges will apply for extra hours or extra kilometers. Fuel cost will be borne by the renter.<br/>
+                 <span className="block mt-1">Vehicle usage limits: 150 km for 12 hours | 250 km for 24 hours. The vehicle must be returned to the designated location on time.</span>
+               </li>
+               <li>
+                 <span className="font-bold text-gray-700">Insurance:</span><br/>
+                 Only the vehicle is insured. Driver, passengers, and personal belongings are not covered under insurance. In case of an accident, repair costs of the vehicle will be borne by the renter. The company is not responsible for any personal belongings left in the vehicle.
+               </li>
+               <li>
+                 <span className="font-bold text-gray-700">Security Deposit:</span><br/>
+                 The renter must pay a refundable security deposit. In case of any damage, the amount will be adjusted against repair costs or deducted from the deposit.
+               </li>
+               <li>
+                 <span className="font-bold text-gray-700">Jurisdiction:</span><br/>
+                 All disputes are subject to Indore (M.P.) jurisdiction only.
+               </li>
+             </ol>
+           </div>
         </div>
 
         {/* Footer info */}

@@ -172,11 +172,15 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                   <ul className="space-y-3 pt-4 border-t border-white/10">
                     <li className="flex justify-between text-sm">
                       <span className="text-white/60">KM Limit / Day</span>
-                      <span className="text-white font-bold">300 KM</span>
+                      <span className="text-white font-bold">
+                        {car.km_limit_per_day ? `${car.km_limit_per_day} KM` : '—'}
+                      </span>
                     </li>
                     <li className="flex justify-between text-sm">
                       <span className="text-white/60">Extra KM Rate</span>
-                      <span className="text-white font-bold">₹8 / KM</span>
+                      <span className="text-white font-bold">
+                        {car.extra_km_rate ? `₹${car.extra_km_rate} / KM` : '—'}
+                      </span>
                     </li>
                     <li className="flex justify-between text-sm">
                       <span className="text-white/60">Security Deposit</span>
