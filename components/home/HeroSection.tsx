@@ -48,7 +48,8 @@ export function HeroSection() {
       .then(res => res.json())
       .then(data => {
         if (data && data.heroImage) {
-          setHeroBg(data.heroImage);
+          // Append timestamp to bust browser cache
+          setHeroBg(`${data.heroImage}?t=${Date.now()}`);
         }
       })
       .catch(() => {});

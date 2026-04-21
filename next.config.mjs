@@ -7,7 +7,14 @@ const nextConfig = {
     unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
     ],
+  },
+  // Increase body size limit for file uploads (10 MB)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
   async headers() {
     return [
