@@ -4,6 +4,138 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Car } from '@/types';
 import Link from 'next/link';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+
+interface SortableRowProps {
+  car: Car;
+  index: number;
+  handleDelete: (id: string) => void;
+  toggleFeatured: (car: Car) => void;
+  toggleActive: (car: Car) => void;
+}
+
+function SortableCarRow({ car, index, handleDelete, toggleFeatured, toggleActive }: SortableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: car.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto',
+    position: 'relative' as const,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={`hover:bg-gray-50/50 transition-colors group ${isDragging ? 'bg-blue-50/50 ring-2 ring-blue-500/20 ring-inset' : ''}`}
+    >
+      <td className="px-4 py-4 w-10">
+        <div
+          {...attributes}
+          {...listeners}
+          className="p-1 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-600 transition-colors"
+          title="Drag to reorder"
+        >
+          <span className="material-symbols-outlined text-xl">drag_indicator</span>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+            <img
+              src={car.image_url || 'https://via.placeholder.com/64x48?text=Car'}
+              alt={car.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <div className="font-bold text-[#0B1F3A] text-sm">{car.name}</div>
+            <div className="text-xs text-gray-400 capitalize">{car.fuel_type} · {car.transmission} · {car.seats} seats</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <span className="text-xs font-bold uppercase px-2.5 py-1 rounded-lg bg-[#0B1F3A]/5 text-[#0B1F3A]">
+          {car.car_type}
+        </span>
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-[#0B1F3A] font-semibold text-sm">₹{car.price_12hr?.toLocaleString() ?? 0} <span className="text-xs text-gray-400 font-normal">/ 12h</span></span>
+          <span className="text-[#E89B10] font-black text-sm">₹{car.price_24hr?.toLocaleString() ?? 0} <span className="text-xs text-gray-400 font-normal">/ 24h</span></span>
+        </div>
+      </td>
+      <td className="px-6 py-4 text-center">
+        <button
+          onClick={() => toggleFeatured(car)}
+          className={`p-1.5 rounded-lg transition-colors ${car.is_featured ? 'text-[#E89B10] bg-[#E89B10]/10' : 'text-gray-300 hover:text-[#E89B10]'}`}
+          title={car.is_featured ? 'Remove from featured' : 'Mark as featured'}
+        >
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: car.is_featured ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+        </button>
+      </td>
+      <td className="px-6 py-4 text-center">
+        <div className="flex flex-col items-center gap-1">
+          <button
+            onClick={() => toggleActive(car)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${car.is_active ? 'bg-blue-500' : 'bg-gray-300'}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${car.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+          <span className={`text-[10px] font-bold uppercase tracking-wider ${car.is_active ? 'text-blue-600' : 'text-gray-400'}`}>
+            {car.is_active ? 'Active' : 'Hidden'}
+          </span>
+        </div>
+      </td>
+
+      <td className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href={`/admin/cars/edit?id=${car.id}`}
+            className="p-2 text-gray-400 hover:text-[#1152d4] hover:bg-[#1152d4]/5 rounded-full transition-colors"
+            title="Edit"
+          >
+            <span className="material-symbols-outlined text-lg">edit</span>
+          </Link>
+          <button
+            onClick={() => handleDelete(car.id)}
+            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+            title="Delete"
+          >
+            <span className="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 
 export default function AdminCarsPage() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -17,7 +149,9 @@ export default function AdminCarsPage() {
     const { data, error } = await supabase
       .from('cars')
       .select('*')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
+
     
     console.log('Admin cars fetch:', { data, error });
     
@@ -33,6 +167,62 @@ export default function AdminCarsPage() {
   useEffect(() => {
     fetchCars();
   }, []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (search) return;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = cars.findIndex((c) => c.id === active.id);
+      const newIndex = cars.findIndex((c) => c.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const newCars = arrayMove(cars, oldIndex, newIndex);
+      setCars(newCars);
+
+      // Save new order with individual updates to avoid not-null constraint errors
+      console.log('Finalizing reorder in database...');
+      
+      try {
+        const updatePromises = newCars.map((car, idx) => 
+          supabase
+            .from('cars')
+            .update({ display_order: idx + 1 })
+            .eq('id', car.id)
+        );
+
+        const results = await Promise.all(updatePromises);
+        const errors = results.filter(r => r.error);
+
+        if (errors.length > 0) {
+          throw errors[0].error;
+        }
+
+        console.log('Order persisted successfully');
+        await triggerRevalidation();
+      } catch (error) {
+        console.error('Error saving new car order:', error);
+        // Revert on failure to keep UI in sync with DB
+        fetchCars();
+      }
+    }
+  };
+
+
+
 
   // Filtered cars
   const filteredCars = useMemo(() => {
@@ -133,18 +323,27 @@ export default function AdminCarsPage() {
       {/* Search */}
       {cars.length > 0 && (
         <div className="mb-6">
-          <div className="relative max-w-md">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
-            <input
-              type="text"
-              placeholder="Search by name, type, or fuel..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1152d4] focus:border-transparent bg-white"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="relative max-w-md w-full">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+              <input
+                type="text"
+                placeholder="Search by name, type, or fuel..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1152d4] focus:border-transparent bg-white"
+              />
+            </div>
+            {search && (
+              <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-lg text-xs font-medium border border-amber-100">
+                <span className="material-symbols-outlined text-sm">info</span>
+                Drag-and-drop reordering is disabled while searching
+              </div>
+            )}
           </div>
         </div>
       )}
+
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -152,6 +351,7 @@ export default function AdminCarsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/80">
+                <th className="px-4 py-3 w-10"></th>
                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Vehicle</th>
                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Type</th>
                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Pricing (12H / 24H)</th>
@@ -161,81 +361,32 @@ export default function AdminCarsPage() {
                 <th className="px-6 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-gray-400">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredCars.map(car => (
-                <tr key={car.id} className="hover:bg-gray-50/50 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                        <img
-                          src={car.image_url || 'https://via.placeholder.com/64x48?text=Car'}
-                          alt={car.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <div className="font-bold text-[#0B1F3A] text-sm">{car.name}</div>
-                        <div className="text-xs text-gray-400 capitalize">{car.fuel_type} · {car.transmission} · {car.seats} seats</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-bold uppercase px-2.5 py-1 rounded-lg bg-[#0B1F3A]/5 text-[#0B1F3A]">
-                      {car.car_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[#0B1F3A] font-semibold text-sm">₹{car.price_12hr?.toLocaleString() ?? 0} <span className="text-xs text-gray-400 font-normal">/ 12h</span></span>
-                      <span className="text-[#E89B10] font-black text-sm">₹{car.price_24hr?.toLocaleString() ?? 0} <span className="text-xs text-gray-400 font-normal">/ 24h</span></span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => toggleFeatured(car)}
-                      className={`p-1.5 rounded-lg transition-colors ${car.is_featured ? 'text-[#E89B10] bg-[#E89B10]/10' : 'text-gray-300 hover:text-[#E89B10]'}`}
-                      title={car.is_featured ? 'Remove from featured' : 'Mark as featured'}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontVariationSettings: car.is_featured ? "'FILL' 1" : "'FILL' 0" }}>star</span>
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <button
-                        onClick={() => toggleActive(car)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${car.is_active ? 'bg-blue-500' : 'bg-gray-300'}`}
-                      >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${car.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
-                      </button>
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${car.is_active ? 'text-blue-600' : 'text-gray-400'}`}>
-                        {car.is_active ? 'Active' : 'Hidden'}
-                      </span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/admin/cars/edit?id=${car.id}`}
-                        className="p-2 text-gray-400 hover:text-[#1152d4] hover:bg-[#1152d4]/5 rounded-full transition-colors"
-                        title="Edit"
-                      >
-                        <span className="material-symbols-outlined text-lg">edit</span>
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(car.id)}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                        title="Delete"
-                      >
-                        <span className="material-symbols-outlined text-lg">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-gray-50 relative">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToVerticalAxis]}
+              >
+                <SortableContext
+                  items={filteredCars.map(c => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {filteredCars.map((car, index) => (
+                    <SortableCarRow
+                      key={car.id}
+                      car={car}
+                      index={index}
+                      handleDelete={handleDelete}
+                      toggleFeatured={toggleFeatured}
+                      toggleActive={toggleActive}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
               {filteredCars.length === 0 && cars.length > 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <span className="material-symbols-outlined text-5xl text-gray-300 mb-4 block">search_off</span>
                     <p className="text-gray-500 font-medium">No vehicles match &quot;{search}&quot;</p>
                     <button onClick={() => setSearch('')} className="text-sm font-semibold text-[#1152d4] hover:text-[#E89B10] mt-2 transition-colors">
@@ -246,7 +397,7 @@ export default function AdminCarsPage() {
               )}
               {cars.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-16 text-center">
+                  <td colSpan={8} className="px-6 py-16 text-center">
                     <span className="material-symbols-outlined text-5xl text-gray-300 mb-4 block">directions_car</span>
                     <p className="text-gray-500 font-medium mb-4">No cars in fleet yet</p>
                     <Link href="/admin/cars/edit" className="text-sm font-bold text-[#E89B10] hover:text-[#d08c0e]">
@@ -255,6 +406,7 @@ export default function AdminCarsPage() {
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>

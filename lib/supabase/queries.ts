@@ -15,8 +15,10 @@ export async function getFeaturedCars(): Promise<Car[]> {
       .select('*')
       .eq('is_active', true)
       .eq('is_featured', true)
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(6);
+
     
     if (error) throw error;
     return (data || []) as Car[];
@@ -35,7 +37,9 @@ export async function getCars(): Promise<Car[]> {
       .from('cars')
       .select('*')
       .eq('is_active', true)
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
+
       
     if (error) throw error;
     return (data || []) as Car[];
@@ -53,7 +57,9 @@ export async function getAllCarsAdmin(): Promise<Car[]> {
     const { data, error } = await supabase
       .from('cars')
       .select('*')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
+
       
     if (error) throw error;
     return (data || []) as Car[];

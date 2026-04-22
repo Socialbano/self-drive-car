@@ -69,10 +69,22 @@ function EditCarPageContent() {
         if (error) throw error;
         toast.success("Vehicle updated successfully!");
       } else {
-        const { error } = await supabase.from('cars').insert([payload]);
+        // Fetch max display_order to append to end
+        const { data: maxOrderData } = await supabase
+          .from('cars')
+          .select('display_order')
+          .order('display_order', { ascending: false })
+          .limit(1);
+        
+        const nextOrder = (maxOrderData && maxOrderData.length > 0) 
+          ? (maxOrderData[0].display_order || 0) + 1 
+          : 1;
+
+        const { error } = await supabase.from('cars').insert([{ ...payload, display_order: nextOrder }]);
         if (error) throw error;
         toast.success("New vehicle added to fleet!");
       }
+
 
       // Revalidate frontend paths
       try {
