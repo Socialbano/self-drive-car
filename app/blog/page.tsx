@@ -4,15 +4,29 @@ import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
 import { BUSINESS } from '@/lib/constants';
 import { BlogListClient } from './BlogListClient';
 
-export const metadata = {
-  title: `Blog | ${BUSINESS.name}`,
-  description: 'Your ultimate guide to self-drive adventures in Indore and beyond. Discover hidden routes, safety tips, and the best travel experiences.',
-  alternates: {
-    canonical: '/blog',
-  },
-};
+import { getAdminSettings, getBlogs, getActiveLocations } from '@/lib/supabase/queries';
+import type { Metadata } from 'next';
 
-export default function BlogPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  return {
+    title: `Blog | ${name}`,
+    description: `Your ultimate guide to self-drive adventures in ${city} and beyond. Discover hidden routes, safety tips, and the best travel experiences.`,
+    alternates: {
+      canonical: '/blog',
+    },
+  };
+}
+
+export default async function BlogPage() {
+  const settings = await getAdminSettings();
+  const city = settings.business_city || BUSINESS.city;
+  
+  const blogs = await getBlogs();
+  const locations = await getActiveLocations();
+
   return (
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
       <Navbar />
@@ -33,13 +47,13 @@ export default function BlogPage() {
                <span className="gradient-text">Self-Drive Adventures</span>
             </h1>
             <p className="text-white/60 text-lg leading-relaxed max-w-2xl mx-auto">
-               Discover hidden routes, safety tips, and the best travel experiences in and around Indore.
+               Discover hidden routes, safety tips, and the best travel experiences in and around {city}.
             </p>
          </div>
       </header>
 
       {/* Main Content Component */}
-      <BlogListClient />
+      <BlogListClient initialBlogs={blogs} locations={locations} />
 
       <Footer />
       <WhatsAppFloat />

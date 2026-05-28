@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { whatsappLink } from '@/lib/constants';
+import { useSettings } from '@/components/SettingsProvider';
 
 export default function BookingPopup() {
   const [isOpen, setIsOpen] = useState(false);
+  const { settings } = useSettings();
 
   useEffect(() => {
     // Check if user has already seen the popup in this session
@@ -82,7 +84,7 @@ export default function BookingPopup() {
                 <span className="text-3xl">🚗</span> Need Help Booking Your Car?
               </h3>
               <p className="text-blue-100/90 text-sm md:text-base font-body max-w-lg mx-auto relative z-10 leading-relaxed">
-                Talk to our booking expert & get instant car availability in Indore.
+                Talk to our booking expert & get instant car availability in {settings.city || 'Indore'}.
               </p>
             </div>
 
@@ -100,7 +102,7 @@ export default function BookingPopup() {
                 </div>
                 
                 <a 
-                  href="tel:+919111330558"
+                  href={`tel:${settings.phone}`}
                   className="group flex flex-col items-center justify-center bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl py-4 transition-all shadow-lg hover:shadow-xl w-full"
                 >
                   <span className="font-bold text-lg md:text-xl flex items-center gap-2 mb-1">
@@ -109,7 +111,7 @@ export default function BookingPopup() {
                     </svg>
                     Call Now
                   </span>
-                  <span className="text-2xl md:text-3xl font-black tracking-tight group-hover:text-green-50">+91 9111330558</span>
+                  <span className="text-2xl md:text-3xl font-black tracking-tight group-hover:text-green-50">{settings.phone}</span>
                 </a>
 
                 <div className="relative flex items-center py-2">
@@ -119,7 +121,7 @@ export default function BookingPopup() {
                 </div>
 
                 <a 
-                  href={whatsappLink('Hi Skydeep! I saw the popup on your website and need help booking a car.')}
+                  href={whatsappLink(`Hi ${settings.name}! I saw the popup on your website and need help booking a car.`, settings.whatsapp)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full border-2 border-[#25D366] text-[#16a34a] bg-white hover:bg-[#25D366] hover:text-white rounded-xl py-3 border-solid font-bold transition-all shadow-sm hover:shadow-md text-[16px] group"
@@ -137,7 +139,7 @@ export default function BookingPopup() {
               {/* Right Section - Value Proposition */}
               <div className="flex-1 flex flex-col justify-center pt-2 md:pt-0">
                 <h4 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 border-b border-gray-100 pb-3 flex items-center md:items-start text-center md:text-left justify-center md:justify-start">
-                  Why SkydeepGroup?
+                  Why {settings.name || 'Us'}?
                 </h4>
                 
                 <ul className="space-y-4 mb-6">

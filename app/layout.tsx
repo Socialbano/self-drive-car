@@ -4,9 +4,15 @@ import './globals.css';
 import { clsx } from 'clsx';
 import { BUSINESS } from '@/lib/constants';
 import { Toaster } from 'react-hot-toast';
-import BookingPopup from '@/components/BookingPopup';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { MetaPixel } from '@/components/MetaPixel';
 import { PublicOnlyWrapper } from '@/components/layout/PublicOnlyWrapper';
+import { SettingsProvider } from '@/components/SettingsProvider';
+import { mapDatabaseSettings } from '@/lib/settings-utils';
+import { getAdminSettings, getActiveLocations } from '@/lib/supabase/queries';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 const poppins = Poppins({
   weight: ['400', '500', '600', '700'],
@@ -27,42 +33,99 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: `${BUSINESS.name} | Self Drive Car Rental Indore`,
-  description: `Rent self drive cars in Indore from ${BUSINESS.name}. Hatchback, Sedan, SUV available. Call or WhatsApp ${BUSINESS.phoneDisplay}.`,
-  metadataBase: new URL('https://www.skydeepgroup.com'),
-  openGraph: {
-    title: `${BUSINESS.name} | Self Drive Car Rental Indore`,
-    description: `Rent self drive cars in Indore from ${BUSINESS.name}. Hatchback, Sedan, SUV available.`,
-    url: 'https://www.skydeepgroup.com',
-    siteName: BUSINESS.name,
-    locale: 'en_IN',
-    type: 'website',
-  },
-  verification: {
-    google: 'google-site-verification=PLACEHOLDER',
-  },
-};
+// Dynamic metadata generation based on active database configuration
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const settings = await getAdminSettings();
+    const name = settings.business_name || BUSINESS.name;
+    const phone = settings.business_phone || BUSINESS.phone;
+    const phoneDisplay = phone.replace(/^\+91/, '');
+    const city = settings.business_city || BUSINESS.city;
+    
+    // Dynamic values from DB if configured, otherwise fallback to auto-generated strings
+    const title = settings.business_seo_title || `${name} | Self Drive Car Rental ${city}`;
+    const description = settings.business_seo_description || `Rent self drive cars in ${city} from ${name}. Hatchback, Sedan, SUV available. Call or WhatsApp ${phoneDisplay}.`;
+    const keywords = settings.business_seo_keywords || undefined;
+    const googleVerification = settings.business_google_site_verification || undefined;
+    const siteUrl = settings.business_site_url || 'https://selfdrivecarrental.in';
+    
+    return {
+      title,
+      description,
+      keywords,
+      metadataBase: new URL(siteUrl),
+      verification: {
+        google: googleVerification,
+      },
+      openGraph: {
+        title,
+        description,
+        url: siteUrl,
+        siteName: name,
+        locale: 'en_IN',
+        type: 'website',
+      },
+    };
+  } catch {
+    return {
+      title: `${BUSINESS.name} | Self Drive Car Rental ${BUSINESS.city}`,
+      description: `Rent self drive cars in ${BUSINESS.city} from ${BUSINESS.name}. Hatchback, Sedan, SUV available.`,
+    };
+  }
+}
 
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let name: string = BUSINESS.name;
+  let phone: string = BUSINESS.phone;
+  let address: string = BUSINESS.address;
+  let city: string = BUSINESS.city;
+  let state: string = BUSINESS.state;
+  let pincode: string = BUSINESS.pincode;
+  let siteUrl: string = 'https://selfdrivecarrental.in';
+
+  let initialSettingsData: any = undefined;
+  let initialLocationsData: any = undefined;
+
+  try {
+    const rawSettings = await getAdminSettings();
+    if (rawSettings && Object.keys(rawSettings).length > 0) {
+      initialSettingsData = mapDatabaseSettings(rawSettings);
+      
+      name = rawSettings.business_name || name;
+      phone = rawSettings.business_phone || phone;
+      address = rawSettings.business_address || address;
+      city = rawSettings.business_city || city;
+      state = rawSettings.business_state || state;
+      pincode = rawSettings.business_pincode || pincode;
+      siteUrl = rawSettings.business_site_url || siteUrl;
+    }
+  } catch (err) {
+    console.error('Failed to resolve settings in Layout:', err);
+  }
+
+  try {
+    initialLocationsData = await getActiveLocations();
+  } catch (err) {
+    console.error('Failed to resolve locations in Layout:', err);
+  }
+
   const schemaMarkup = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: BUSINESS.name,
+    name: name,
     description: 'Self-Drive Car Rental Service in Indore',
-    url: 'https://www.skydeepgroup.com',
-    telephone: BUSINESS.phone,
+    url: siteUrl,
+    telephone: phone,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Near HDFC Bank, Ramesh Dosa, Vishnupuri, Bhawarkua',
-      addressLocality: BUSINESS.city,
-      addressRegion: BUSINESS.state,
-      postalCode: BUSINESS.pincode,
+      streetAddress: address,
+      addressLocality: city,
+      addressRegion: state,
+      postalCode: pincode,
       addressCountry: 'IN',
     },
     geo: {
@@ -84,12 +147,15 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <GoogleAnalytics />
-        <PublicOnlyWrapper />
-        <main className="flex min-h-screen flex-col">
-          {children}
-        </main>
-        <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
+        <SettingsProvider initialSettings={initialSettingsData} initialLocations={initialLocationsData}>
+          <GoogleAnalytics />
+          <MetaPixel />
+          <PublicOnlyWrapper />
+          <main className="flex min-h-screen flex-col">
+            {children}
+          </main>
+          <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
+        </SettingsProvider>
       </body>
     </html>
   );

@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
-import { BUSINESS, whatsappLink } from '@/lib/constants';
+import { whatsappLink } from '@/lib/constants';
 import { LeadStatusBadge } from '@/components/admin/LeadStatusBadge';
+import { useSettings } from '@/components/SettingsProvider';
 import type { Lead } from '@/types';
 
 interface DashboardStats {
@@ -15,6 +16,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const { settings } = useSettings();
   const [stats, setStats] = useState<DashboardStats>({ newLeadsToday: 0, totalLeads: 0, totalCars: 0, availableCars: 0 });
   const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -266,7 +268,7 @@ export default function AdminDashboard() {
                         <span className="material-symbols-outlined text-lg">call</span>
                       </a>
                       <a
-                        href={whatsappLink(`Hi ${lead.name}! This is ${BUSINESS.name}. We received your inquiry.`)}
+                        href={whatsappLink(`Hi ${lead.name}! This is ${settings.name}. We received your inquiry.`, settings.whatsapp)}
                         target="_blank"
                         rel="noreferrer"
                         className="p-2 text-[#25D366] hover:bg-[#25D366]/5 rounded-full transition-colors"

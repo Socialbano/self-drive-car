@@ -5,13 +5,21 @@ import { getCars } from '@/lib/supabase/queries';
 import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
 import { Car } from '@/types';
 
-export const metadata = {
-  title: `Self Drive Car Indore Price | Daily & Monthly Rates | ${BUSINESS.name}`,
-  description: 'Simple and transparent self-drive car rental pricing in Indore. View daily, weekly, and weekend rates for our entire fleet with zero hidden charges.',
-  alternates: {
-    canonical: '/pricing',
-  },
-};
+import { getAdminSettings } from '@/lib/supabase/queries';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  return {
+    title: `Self Drive Car ${city} Price | Daily & Monthly Rates | ${name}`,
+    description: `Simple and transparent self-drive car rental pricing in ${city}. View daily, weekly, and weekend rates for our entire fleet with zero hidden charges.`,
+    alternates: {
+      canonical: '/pricing',
+    },
+  };
+}
 
 function PricingTable({ cars, title }: { cars: Car[]; title: string }) {
   if (!cars || cars.length === 0) return null;
@@ -69,7 +77,13 @@ function PricingTable({ cars, title }: { cars: Car[]; title: string }) {
 }
 
 export default async function PricingPage() {
-  const cars = await getCars();
+  const [cars, settings] = await Promise.all([
+    getCars(),
+    getAdminSettings()
+  ]);
+  
+  const name = settings.business_name || BUSINESS.name;
+  const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
   
   const hatchbacks = cars.filter(c => c.car_type === 'hatchback');
   const sedans = cars.filter(c => c.car_type === 'sedan');
@@ -131,7 +145,7 @@ export default async function PricingPage() {
               <p className="text-[#0B1F3A]/80 font-medium">Book for 7+ days and get 15% off your total rental cost.</p>
             </div>
           </div>
-          <a filter-id="promo" href={whatsappLink('Hi! I want to claim the 15% weekly booking discount.')} target="_blank" rel="noopener noreferrer" className="bg-[#0B1F3A] text-white px-8 py-3 rounded-xl font-bold whitespace-nowrap hover:bg-[#0B1F3A]/90 transition-all active:scale-95 shadow-lg w-full md:w-auto text-center">
+          <a filter-id="promo" href={whatsappLink('Hi! I want to claim the 15% weekly booking discount.', whatsappNumber)} target="_blank" rel="noopener noreferrer" className="bg-[#0B1F3A] text-white px-8 py-3 rounded-xl font-bold whitespace-nowrap hover:bg-[#0B1F3A]/90 transition-all active:scale-95 shadow-lg w-full md:w-auto text-center">
             Claim Offer
           </a>
         </div>
@@ -168,7 +182,7 @@ export default async function PricingPage() {
              </p>
              <div className="flex flex-col sm:flex-row justify-center gap-4">
                <a 
-                 href={whatsappLink('Hi Skydeepgroup! I need a custom quote for a long trip.')} 
+                 href={whatsappLink(`Hi ${name}! I need a custom quote for a long trip.`, whatsappNumber)} 
                  target="_blank" 
                  rel="noopener noreferrer"
                  className="bg-[#25D366] text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all hover:-translate-y-1 shadow-xl shadow-[#25D366]/20"

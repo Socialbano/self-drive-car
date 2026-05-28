@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
+import { whatsappLink as staticWhatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
 import { useEffect, useRef, useState } from 'react';
+import { useSettings } from '@/components/SettingsProvider';
 
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -41,19 +42,13 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
 }
 
 export function HeroSection() {
-  const [heroBg, setHeroBg] = useState<string>("https://lh3.googleusercontent.com/aida-public/AB6AXuC_TdM_ImPwMCMM2dYlQk6EyDq0xxvq77Xn8kYNsIvRucFG6jemS1JzrM8LjdcN2S967DWrk1whhNKKHYzWHuaJdjoZJqzdg1p8f9aqhX0xfpAjA3LFcDOsm1sdUYiJfU9BkJmrBzcZ_KW2AcMSzaHXdyfgL2Iop1fbJtGo3a9kSJroBay9q5yuSQ10aHZAzW_MzUeCA2A1I1LyRd2ZYoyfMhVtkKJlUfWkGlarcb3a7GAQzT2X8WPe48a7z6Xl7Txa7m-7xtwss6k");
+  const { settings } = useSettings();
 
-  useEffect(() => {
-    fetch('/api/hero-settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.heroImage) {
-          // Append timestamp to bust browser cache
-          setHeroBg(`${data.heroImage}?t=${Date.now()}`);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const whatsappLink = (message: string) => {
+    return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(message)}`;
+  };
+
+  const heroBg = settings.heroImageUrl;
 
   return (
     <section className="relative min-h-[90vh] w-full flex items-center overflow-hidden">
@@ -75,19 +70,18 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-1.5 mb-8 border border-white/10">
             <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
             <span className="text-white/80 text-xs font-semibold tracking-wider uppercase">
-              Now Serving Indore, Goa & Jaipur
+              {settings.heroTagline}
             </span>
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white font-headline leading-[1.1] mb-6 tracking-tight">
-            Self Drive Car{' '}
+            {settings.heroTitleP1}{' '}
             <br />
-            <span className="gradient-text">Rental in Indore</span>
+            <span className="gradient-text">{settings.heroTitleP2}</span>
           </h1>
 
           <p className="text-lg md:text-xl text-white/60 mb-10 leading-relaxed max-w-lg">
-            Premium self-drive car rental service with zero security deposit.
-            Experience the freedom of the road with our fleet of luxury SUVs and sedans.
+            {settings.heroDescription}
           </p>
 
           {/* CTAs */}
@@ -117,13 +111,13 @@ export function HeroSection() {
           {/* Stats */}
           <div className="mt-16 flex gap-12">
             <div>
-              <AnimatedCounter target={1500} suffix="+" />
-              <p className="text-white/40 text-sm font-medium mt-1">Happy Customers</p>
+              <AnimatedCounter target={settings.heroStat1Value} suffix="+" />
+              <p className="text-white/40 text-sm font-medium mt-1">{settings.heroStat1Label}</p>
             </div>
             <div className="w-px bg-white/10" />
             <div>
-              <AnimatedCounter target={100} suffix="+" />
-              <p className="text-white/40 text-sm font-medium mt-1">Cars in Fleet</p>
+              <AnimatedCounter target={settings.heroStat2Value} suffix="+" />
+              <p className="text-white/40 text-sm font-medium mt-1">{settings.heroStat2Label}</p>
             </div>
           </div>
         </div>

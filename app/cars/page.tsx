@@ -1,21 +1,28 @@
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
-import { getCars } from '@/lib/supabase/queries';
+import { getCars, getAdminSettings } from '@/lib/supabase/queries';
 import { CarsList } from '@/components/cars/CarsList';
+import { BUSINESS } from '@/lib/constants';
+import type { Metadata } from 'next';
 
 // Always fetch fresh data from DB
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
-export const metadata = {
-  title: 'Our Premium Fleet | Skydeepgroup Car Rental Indore',
-  description: 'Explore our wide range of premium self-drive cars in Indore. Choose from hatchbacks, sedans, and luxury SUVs with zero security deposit options.',
-  alternates: {
-    canonical: '/cars',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  return {
+    title: `Our Premium Fleet | ${name} Car Rental ${city}`,
+    description: `Explore our wide range of premium self-drive cars in ${city}. Choose from hatchbacks, sedans, and luxury SUVs with zero security deposit options.`,
+    alternates: {
+      canonical: '/cars',
+    },
+  };
+}
 
 export default async function CarsPage() {
   const cars = await getCars();

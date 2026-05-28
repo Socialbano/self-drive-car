@@ -19,8 +19,8 @@ function FeaturedCarCard({ car, locationName }: { car: Car, locationName?: strin
   const transmission = car.transmission || 'manual';
 
   const whatsappMessage = locationName 
-    ? `Hi Skydeepgroup! I want to book the ${carName} in ${locationName}.`
-    : `Hi Skydeepgroup! I want to book the ${carName} . Is it available?`;
+    ? `Hi! I want to book the ${carName} in ${locationName}.`
+    : `Hi! I want to book the ${carName}. Is it available?`;
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(11,31,58,0.12)] hover:-translate-y-1 border border-gray-100">

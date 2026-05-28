@@ -1,4 +1,12 @@
+'use client';
+
+import { useState } from 'react';
+import { useSettings } from '@/components/SettingsProvider';
+
 export function WhyChooseUs() {
+  const { settings } = useSettings();
+  const [activeIdx, setActiveIdx] = useState(0);
+
   const features = [
     {
       icon: 'account_balance_wallet',
@@ -26,22 +34,79 @@ export function WhyChooseUs() {
     },
   ];
 
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const cardWidth = container.firstElementChild 
+      ? (container.firstElementChild as HTMLElement).offsetWidth 
+      : 280;
+    const gap = 16; // gap-4 is 16px
+    const index = Math.round(scrollLeft / (cardWidth + gap));
+    if (index >= 0 && index < features.length) {
+      setActiveIdx(index);
+    }
+  };
+
   return (
     <section className="section-padding bg-white">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}} />
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10 md:mb-16">
           <span className="text-[#E89B10] font-bold tracking-widest uppercase text-xs">Why Us</span>
           <h2 className="text-3xl md:text-4xl font-black text-[#0B1F3A] font-headline mt-2 tracking-tight">
-            Why Skydeep is Indore's Favorite
+            Why {settings.name} is {settings.city}'s Favorite
           </h2>
           <p className="text-gray-400 mt-4 max-w-xl mx-auto">
             We provide a seamless and trustworthy car rental experience built around your convenience.
           </p>
         </div>
 
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Mobile View: Horizontal Scrollable Carousel Cards (Compact & Smooth) */}
+        <div className="md:hidden">
+          <div 
+            onScroll={handleScroll}
+            className="flex overflow-x-auto gap-4 snap-x snap-mandatory no-scrollbar pb-4 px-1"
+          >
+            {features.map((feature, i) => (
+              <div
+                key={i}
+                className={`snap-center shrink-0 w-[85%] relative p-6 rounded-2xl bg-gradient-to-br ${feature.gradient} border border-gray-100/50 shadow-[0_8px_30px_rgba(11,31,58,0.03)] transition-all`}
+              >
+                <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined text-[#0B1F3A] text-xl">
+                    {feature.icon}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-[#0B1F3A] mb-2">{feature.title}</h3>
+                <p className="text-gray-500 text-xs leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+          
+          {/* Progress dots */}
+          <div className="flex justify-center gap-1.5 mt-2">
+            {features.map((_, idx) => (
+              <span 
+                key={idx} 
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  activeIdx === idx ? 'w-4 bg-[#E89B10]' : 'w-1.5 bg-gray-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Feature Grid (Hidden on mobile) */}
+        <div className="hidden md:grid grid-cols-2 gap-6">
           {features.map((feature, i) => (
             <div
               key={i}
@@ -61,3 +126,4 @@ export function WhyChooseUs() {
     </section>
   );
 }
+

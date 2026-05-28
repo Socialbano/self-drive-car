@@ -158,27 +158,56 @@ export default function NewAgreementPage() {
          signatureBase64 = canvasRef.current.toDataURL('image/png');
       }
 
-      // Prepare payload based on entry mode
-      const payload: any = {
-        ...formData,
-        signature_data: signatureBase64
-      };
+      // Determine manual vs saved values
+      let price_12hr = 0;
+      let price_24hr = 0;
+      let manual_vehicle_name = null;
+      let manual_vehicle_type = null;
+      let car_id = null;
 
-      if (payload.is_manual_entry) {
-         payload.car_id = null; // NULL out car_id relation
-         payload.custom_price = payload.price_per_day; // Map calculated daily to custom price column
+      if (formData.is_manual_entry) {
+        price_24hr = Number(formData.price_per_day) || 0;
+        price_12hr = price_24hr; // default to same for manual entry
+        manual_vehicle_name = formData.custom_vehicle_name;
+        manual_vehicle_type = formData.custom_vehicle_type;
+        car_id = null;
       } else {
-         payload.custom_vehicle_name = null;
-         payload.custom_vehicle_type = null;
-         payload.custom_price = null;
+        const selectedCar = cars.find(c => c.id === formData.car_id);
+        price_12hr = selectedCar ? selectedCar.price_12hr : 0;
+        price_24hr = selectedCar ? selectedCar.price_24hr : 0;
+        car_id = formData.car_id || null;
+        manual_vehicle_name = null;
+        manual_vehicle_type = null;
       }
+
+      // Construct payload matching exact database table schema
+      const payload = {
+        customer_name: formData.customer_name,
+        mobile: formData.mobile,
+        email: formData.email || null,
+        address: formData.address,
+        aadhaar_number: formData.aadhaar_number,
+        driving_license: formData.driving_license,
+        car_id: car_id,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        price_12hr: price_12hr,
+        price_24hr: price_24hr,
+        total_amount: Number(formData.total_amount) || 0,
+        security_deposit: Number(formData.security_deposit) || 0,
+        terms_accepted: formData.terms_accepted,
+        signature_data: signatureBase64,
+        manual_vehicle_name: manual_vehicle_name,
+        manual_vehicle_type: manual_vehicle_type,
+      };
 
       const res = await createAgreement(payload);
       if (res.success) {
         toast.success("Agreement created successfully!");
         router.push('/admin/agreements');
       } else {
-        toast.error("Failed to create agreement. See console.");
+        console.error("Supabase error detail:", res.error);
+        toast.error("Failed to create agreement: " + (res.error?.message || "See console."));
       }
     } catch (error) {
       console.error(error);

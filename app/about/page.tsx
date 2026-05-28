@@ -3,15 +3,28 @@ import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
 import { BUSINESS } from '@/lib/constants';
 
-export const metadata = {
-  title: `About Us | ${BUSINESS.name}`,
-  description: 'Indore\'s premier self-drive car rental company providing reliable, insured, and sanitized vehicles with zero security deposit.',
-  alternates: {
-    canonical: '/about',
-  },
-};
+import { getAdminSettings } from '@/lib/supabase/queries';
+import type { Metadata } from 'next';
 
-export default function AboutPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  return {
+    title: `About Us | ${name}`,
+    description: `${city}'s premier self-drive car rental company providing reliable, insured, and sanitized vehicles with zero security deposit.`,
+    alternates: {
+      canonical: '/about',
+    },
+  };
+}
+
+export default async function AboutPage() {
+  const settings = await getAdminSettings();
+  const address = settings.business_address || BUSINESS.address;
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  
   const offerings = [
     {
       icon: 'star',
@@ -39,22 +52,22 @@ export default function AboutPage() {
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
       <Navbar />
       
-      {/* Page Header */}
+      {/* Hero Header */}
       <header className="bg-[#000615] relative overflow-hidden pt-32 pb-24 px-6 lg:px-8 border-b border-white/10">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#1152d4] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#E89B10] rounded-full mix-blend-multiply filter blur-[100px] opacity-10 -translate-x-1/2 translate-y-1/2"></div>
         
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
+        <div className="max-w-7xl mx-auto relative z-10 text-center">
           <nav className="flex justify-center mb-6 text-sm font-bold tracking-widest text-white/40 uppercase">
             <span>Home</span>
             <span className="mx-3 text-[#E89B10]">•</span>
             <span className="text-white">About Us</span>
           </nav>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-headline tracking-tight mb-6">
-            Redefining <span className="gradient-text">Self-Drive</span> Travel
+            Our <span className="gradient-text">Story</span>
           </h1>
-          <p className="text-white/60 text-lg leading-relaxed max-w-2xl mx-auto">
-            Born from a passion for the open road, we bridge the gap between expensive chauffeur services and the freedom of driving yourself.
+          <p className="text-white/60 max-w-2xl mx-auto text-lg leading-relaxed">
+            Learn more about our mission to provide the ultimate driving freedom.
           </p>
         </div>
       </header>
@@ -66,11 +79,11 @@ export default function AboutPage() {
             <span className="text-[#E89B10] font-bold tracking-widest uppercase text-xs">Our Story</span>
             <h2 className="text-3xl md:text-4xl font-black text-[#0B1F3A] font-headline">Driven by Trust.<br/> Fueled by Quality.</h2>
             <p className="text-gray-500 leading-relaxed">
-              At Skydeepgroup, our mission is to empower travelers with high-quality, sanitized, and reliable self-drive vehicles. We believe that a journey should be as beautiful as the destination, and that starts with having complete control over your steering wheel.
+              At {name || 'our company'}, our mission is to empower travelers with high-quality, sanitized, and reliable self-drive vehicles. We believe that a journey should be as beautiful as the destination, and that starts with having complete control over your steering wheel.
             </p>
              <p className="text-gray-500 leading-relaxed flex items-center gap-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm mt-6">
                <span className="material-symbols-outlined text-[#1152d4] text-3xl">location_on</span>
-               <span>Proudly based in <strong>{BUSINESS.address}</strong>, deeply connected to the local travel ecosystem.</span>
+               <span>Proudly based in <strong>{address}</strong>, deeply connected to the local travel ecosystem.</span>
              </p>
           </div>
           
@@ -78,7 +91,7 @@ export default function AboutPage() {
             <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl relative">
               <img 
                 src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80" 
-                alt="SkydeepGroup Self Drive Car Fleet in Indore" 
+                alt={`${name || 'Self Drive Car'} Fleet in ${city}`} 
                 loading="lazy"
                 className="w-full h-full object-cover"
               />

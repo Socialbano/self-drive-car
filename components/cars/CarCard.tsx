@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -6,15 +8,18 @@ import { Car } from '@/types';
 import { getCloudinaryUrl } from '@/lib/cloudinary';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { whatsappLink, WHATSAPP_MESSAGES, BUSINESS } from '@/lib/constants';
+import { WHATSAPP_MESSAGES } from '@/lib/constants';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface CarCardProps {
   car: Car;
 }
 
 export function CarCard({ car }: CarCardProps) {
+  const { settings } = useSettings();
   const imageUrl = getCloudinaryUrl(car.image_url, { width: 600, height: 400, crop: 'auto' });
   const safeSlug = car.slug || '#';
+  const whatsappLink = `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(WHATSAPP_MESSAGES.carBooking(car.name))}`;
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -80,7 +85,7 @@ export function CarCard({ car }: CarCardProps) {
           
           <div className="grid grid-cols-2 gap-2">
             <Button
-              href={`tel:${BUSINESS.phone}`}
+              href={`tel:${settings.phone}`}
               variant="secondary"
               className="w-full text-sm font-semibold h-11"
               leftIcon={<Phone className="w-4 h-4" />}
@@ -88,7 +93,7 @@ export function CarCard({ car }: CarCardProps) {
               Call
             </Button>
             <Button
-              href={whatsappLink(WHATSAPP_MESSAGES.carBooking(car.name))}
+              href={whatsappLink}
               variant="whatsapp"
               className="w-full text-sm font-semibold h-11 shadow-sm"
               leftIcon={<MessageCircle className="w-4 h-4" />}

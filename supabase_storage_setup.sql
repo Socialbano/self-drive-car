@@ -21,3 +21,15 @@ CREATE POLICY "Admin Hero Manage" ON storage.objects
   FOR ALL TO service_role
   USING (bucket_id = 'hero-images')
   WITH CHECK (bucket_id = 'hero-images');
+
+DROP POLICY IF EXISTS "Authenticated Hero Manage" ON storage.objects;
+CREATE POLICY "Authenticated Hero Manage" ON storage.objects
+  FOR ALL TO authenticated
+  USING (bucket_id = 'hero-images')
+  WITH CHECK (bucket_id = 'hero-images');
+
+DROP POLICY IF EXISTS "Anon Hero Manage" ON storage.objects;
+CREATE POLICY "Anon Hero Manage" ON storage.objects
+  FOR ALL TO anon
+  USING (bucket_id = 'hero-images')
+  WITH CHECK (bucket_id = 'hero-images');

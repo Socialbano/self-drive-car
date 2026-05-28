@@ -15,7 +15,7 @@ export const article5: BlogPost = {
   content: (
     <div className="space-y-6 text-gray-700 leading-relaxed">
       <p>
-        The most irritating part of renting a car is often having to travel 15 kilometers across the city just to pick it up. That entirely defeats the purpose of convenience! Users constantly search for a <em>"self drive car rental near me"</em> to save time. At SkydeepGroup, we have established prime drop-off networks across the most critical areas of Indore to ensure the car reaches you, not the other way around.
+        The most irritating part of renting a car is often having to travel 15 kilometers across the city just to pick it up. That entirely defeats the purpose of convenience! Users constantly search for a <em>"self drive car rental near me"</em> to save time. We have established prime drop-off networks across the most critical areas of Indore to ensure the car reaches you, not the other way around.
       </p>
 
       <h2 className="text-2xl font-bold text-[#0B1F3A] mt-8 mb-4">Location 1: The Ultimate Airport Delivery</h2>
@@ -53,7 +53,7 @@ export const article5: BlogPost = {
 
       <p className="text-xl font-bold text-[#0B1F3A] mt-8">Stop searching, start driving.</p>
       <div className="flex gap-4 mt-6">
-        <a href={whatsappLink('Hi SkydeepGroup! I want to check how fast you can deliver a self drive car to my location.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={whatsappLink('Hi! I want to check how fast you can deliver a self drive car to my location.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Book Your Car Now on WhatsApp
         </a>
       </div>

@@ -55,7 +55,7 @@ export const article4: BlogPost = {
 
       <p className="text-xl font-bold text-[#0B1F3A] mt-8">Ready to ride in style?</p>
       <div className="flex gap-4 mt-6">
-        <a href={whatsappLink('Hi SkydeepGroup! I want to book a Premium/Luxury car.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={whatsappLink('Hi! I want to book a Premium/Luxury car.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Book Your Luxury Car on WhatsApp
         </a>
       </div>

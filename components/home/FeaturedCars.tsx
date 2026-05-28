@@ -1,16 +1,18 @@
 import Link from 'next/link';
-import { getFeaturedCars } from '@/lib/supabase/queries';
-import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
+import { getFeaturedCars, getAdminSettings } from '@/lib/supabase/queries';
+import { BUSINESS, WHATSAPP_MESSAGES } from '@/lib/constants';
 import type { Car } from '@/types';
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600';
 
-function FeaturedCarCard({ car }: { car: Car }) {
+function FeaturedCarCard({ car, whatsappNumber }: { car: Car; whatsappNumber: string }) {
   const safeSlug = car.slug || '#';
   const carName = car.name || 'Vehicle';
   const carType = car.car_type || 'car';
   const fuelType = car.fuel_type || 'petrol';
   const transmission = car.transmission || 'manual';
+
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(WHATSAPP_MESSAGES.carBooking(carName))}`;
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(11,31,58,0.12)] hover:-translate-y-1 border border-gray-100">
@@ -63,7 +65,7 @@ function FeaturedCarCard({ car }: { car: Car }) {
         {/* CTAs */}
         <div className="flex gap-2">
           <a
-            href={whatsappLink(WHATSAPP_MESSAGES.carBooking(carName))}
+            href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all active:scale-95"
@@ -86,6 +88,16 @@ function FeaturedCarCard({ car }: { car: Car }) {
 
 export async function FeaturedCars() {
   const cars = await getFeaturedCars();
+  let whatsappNumber: string = BUSINESS.whatsapp;
+
+  try {
+    const settings = await getAdminSettings();
+    if (settings && settings.business_whatsapp) {
+      whatsappNumber = settings.business_whatsapp;
+    }
+  } catch (err) {
+    console.error('Error fetching settings in FeaturedCars:', err);
+  }
 
   // If no featured cars in DB, show a helpful message
   if (!cars || cars.length === 0) {
@@ -141,7 +153,7 @@ export async function FeaturedCars() {
         {/* Car Grid — ALL data from database */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {cars.slice(0, 6).map((car) => (
-            <FeaturedCarCard key={car.id} car={car} />
+            <FeaturedCarCard key={car.id} car={car} whatsappNumber={whatsappNumber} />
           ))}
         </div>
       </div>

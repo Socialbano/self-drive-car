@@ -6,8 +6,10 @@ import { getAgreements, deleteAgreement } from '@/lib/supabase/queries';
 import { Agreement } from '@/types';
 import { Trash2 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { useSettings } from '@/components/SettingsProvider';
 
 export default function AgreementsPage() {
+  const { settings } = useSettings();
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,7 +37,7 @@ export default function AgreementsPage() {
   const getWhatsAppLink = (agreement: Agreement) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const link = `${origin}/agreements/${agreement.id}`;
-    const text = `Hi ${agreement.customer_name},\n\nYour rental agreement from SkydeepGroup is ready.\n\n📄 View & Download here: ${link}\n\nThank you for choosing us!`;
+    const text = `Hi ${agreement.customer_name},\n\nYour rental agreement from ${settings.name || 'us'} is ready.\n\n📄 View & Download here: ${link}\n\nThank you for choosing us!`;
     return `https://wa.me/91${agreement.mobile}?text=${encodeURIComponent(text)}`;
   };
 
@@ -123,7 +125,7 @@ export default function AgreementsPage() {
                     <td className="py-4 px-6">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
                         <span className="material-symbols-outlined text-[14px]">directions_car</span>
-                        {agreement.cars?.name || 'Unknown Car'}
+                        {agreement.cars?.name || agreement.manual_vehicle_name || 'Unknown Car'}
                       </span>
                     </td>
                     <td className="py-4 px-6">

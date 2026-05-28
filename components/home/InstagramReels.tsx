@@ -4,7 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import type { InstagramReel } from '@/types';
 
+import { useSettings } from '@/components/SettingsProvider';
+
 export function InstagramReels() {
+  const { settings } = useSettings();
   const [reels, setReels] = useState<InstagramReel[]>([]);
   const [activeReelUrl, setActiveReelUrl] = useState<string | null>(null);
 
@@ -43,7 +46,7 @@ export function InstagramReels() {
               Follow Our Journey
             </h2>
             <p className="text-gray-500 text-lg">
-              Watch real experiences from our customers and stay updated with the latest from Skydeep Group.
+              Watch real experiences from our customers and stay updated with the latest from {settings.name}.
             </p>
           </div>
 
@@ -114,7 +117,7 @@ export function InstagramReels() {
 
           <div className="mt-12 text-center">
             <a
-              href="https://instagram.com/skydeep_car_rental"
+              href={settings.instagramUrl || 'https://instagram.com/'}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#0B1F3A] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#0B1F3A]/90 hover:-translate-y-1 transition-all shadow-lg shadow-[#0B1F3A]/20"

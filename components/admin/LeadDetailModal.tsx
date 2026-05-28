@@ -2,8 +2,9 @@
 
 import React from 'react';
 import type { Lead } from '@/types';
-import { BUSINESS, whatsappLink } from '@/lib/constants';
+import { whatsappLink } from '@/lib/constants';
 import { LEAD_STATUSES } from '@/lib/constants';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface LeadDetailModalProps {
   lead: Lead;
@@ -12,6 +13,7 @@ interface LeadDetailModalProps {
 }
 
 export function LeadDetailModal({ lead, onClose, onStatusChange }: LeadDetailModalProps) {
+  const { settings } = useSettings();
   const statusStyles: Record<string, string> = {
     new: 'bg-blue-100 text-blue-800 ring-blue-200',
     contacted: 'bg-yellow-100 text-yellow-800 ring-yellow-200',
@@ -109,7 +111,7 @@ export function LeadDetailModal({ lead, onClose, onStatusChange }: LeadDetailMod
             Call Now
           </a>
           <a
-            href={whatsappLink(`Hi ${lead.name}! This is ${BUSINESS.name}. We received your inquiry regarding ${lead.car_type || 'car rental'}. How can we help?`)}
+            href={whatsappLink(`Hi ${lead.name}! This is ${settings.name}. We received your inquiry regarding ${lead.car_type || 'car rental'}. How can we help?`)}
             target="_blank"
             rel="noreferrer"
             className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#20BD5A] transition-colors"

@@ -4,8 +4,10 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { DocumentHeader } from '@/components/DocumentHeader';
+import { useSettings } from '@/components/SettingsProvider';
 
 function PublicInvoiceViewer() {
+  const { settings } = useSettings();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [invoice, setInvoice] = useState<any>(null);
@@ -54,7 +56,7 @@ function PublicInvoiceViewer() {
       <div className="flex flex-col items-center justify-center p-20 min-h-screen bg-gray-50 text-center">
         <span className="material-symbols-outlined text-5xl text-red-500 mb-4">error</span>
         <h1 className="text-2xl font-bold text-[#0B1F3A]">{error}</h1>
-        <p className="text-gray-500 mt-2">Please contact Skydeepgroup support if you believe this is an error.</p>
+        <p className="text-gray-500 mt-2">Please contact {settings.name || 'our'} support if you believe this is an error.</p>
       </div>
     );
   }
@@ -84,7 +86,7 @@ function PublicInvoiceViewer() {
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-8 no-print animate-in fade-in">
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-[#0B1F3A]">Skydeepgroup Invoice</h1>
+            <h1 className="text-2xl font-black tracking-tight text-[#0B1F3A]">{settings.name || 'Tax'} Invoice</h1>
             <p className="text-gray-500 text-sm">Download or print your official tax invoice</p>
           </div>
           <button onClick={handlePrint} className="flex items-center gap-2 bg-[#0B1F3A] text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:bg-slate-800 transition-all text-sm">
@@ -191,7 +193,7 @@ function PublicInvoiceViewer() {
                 {invoice.status === 'pending' && (
                   <div className="border border-gray-200 bg-white p-4 rounded-xl flex items-center gap-5 max-w-sm shadow-sm ring-1 ring-[#E89B10]/30 animate-in fade-in slide-in-from-bottom-4">
                      <div className="w-24 h-24 bg-white border border-gray-100 rounded-lg p-1 shrink-0 flex items-center justify-center shadow-inner">
-                        <img src="/assets/upiqr.png" alt="UPI QR Code" className="max-w-full max-h-full object-contain" />
+                        <img src={settings.upiQrUrl || '/assets/upiqr.png'} alt="UPI QR Code" className="max-w-full max-h-full object-contain" />
                      </div>
                      <div className="space-y-1">
                         <h4 className="font-bold text-[#0B1F3A] uppercase tracking-tight text-sm">Scan & Pay</h4>
@@ -258,7 +260,7 @@ function PublicInvoiceViewer() {
                  </li>
                  <li>
                    <span className="font-bold text-gray-700">Jurisdiction:</span><br/>
-                   All disputes are subject to Indore (M.P.) jurisdiction only.
+                   All disputes are subject to {settings.city} ({settings.state}) jurisdiction only.
                  </li>
                </ol>
              </div>
@@ -268,11 +270,11 @@ function PublicInvoiceViewer() {
           <div className="mt-16 text-[11px] text-gray-400 border-t border-gray-100 pt-8 flex justify-between items-end">
              <div>
                <p className="font-bold text-[#0B1F3A] uppercase tracking-widest mb-1">Support</p>
-               <p>booking@skydeepgroup.com</p>
-               <p>+91 91113 30558</p>
+               <p>{settings.email}</p>
+               <p>{settings.phone}</p>
              </div>
              <div className="text-right">
-               <p className="font-bold text-[#0B1F3A] uppercase tracking-widest">Skydeep Group</p>
+               <p className="font-bold text-[#0B1F3A] uppercase tracking-widest">{settings.name}</p>
                <p>Thank you for choosing us.</p>
              </div>
           </div>

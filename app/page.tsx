@@ -15,13 +15,22 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
-export const metadata = {
-  title: 'Self Drive Car in Indore | Car Rental Without Driver | SkydeepGroup',
-  description: 'Book the best self drive cars in Indore. Hatchback, Sedan, and Luxury SUVs available on daily and monthly rent. Zero security deposit, 24/7 support.',
-  alternates: {
-    canonical: '/',
-  },
-};
+import type { Metadata } from 'next';
+import { getAdminSettings } from '@/lib/supabase/queries';
+import { BUSINESS } from '@/lib/constants';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  return {
+    title: `Self Drive Car in ${city} | Car Rental Without Driver | ${name}`,
+    description: `Book the best self drive cars in ${city} from ${name}. Hatchback, Sedan, and Luxury SUVs available on daily and monthly rent. Zero security deposit, 24/7 support.`,
+    alternates: {
+      canonical: '/',
+    },
+  };
+}
 
 export default function Home() {
   return (

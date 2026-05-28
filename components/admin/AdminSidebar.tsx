@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useSettings } from '@/components/SettingsProvider';
 
 const navLinks = [
   { name: 'Dashboard', href: '/admin', icon: 'dashboard' },
@@ -11,6 +12,9 @@ const navLinks = [
   { name: 'Fleet / Cars', href: '/admin/cars', icon: 'directions_car' },
   { name: 'Billing / Invoices', href: '/admin/billing', icon: 'receipt_long' },
   { name: 'Agreements', href: '/admin/agreements', icon: 'handshake' },
+  { name: 'Location Pages', href: '/admin/locations', icon: 'map' },
+  { name: 'Blog Manager', href: '/admin/blog', icon: 'book' },
+  { name: 'FAQ Manager', href: '/admin/faq', icon: 'help_center' },
   { name: 'Pricing', href: '/admin/pricing', icon: 'payments' },
   { name: 'Hero Image', href: '/admin/hero', icon: 'wallpaper' },
   { name: 'Instagram Reels', href: '/admin/reels', icon: 'smart_display' },
@@ -19,8 +23,13 @@ const navLinks = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { settings } = useSettings();
   const [newLeadCount, setNewLeadCount] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'developer@socialbano.in';
+  const isSuperAdmin = userEmail === superAdminEmail;
 
   useEffect(() => {
     const fetchNewLeads = async () => {
@@ -34,7 +43,19 @@ export function AdminSidebar() {
         setNewLeadCount(0);
       }
     };
+    
+    const fetchUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUserEmail(session?.user?.email || null);
+      } catch (e) {
+        console.error('Error fetching user email for sidebar:', e);
+      }
+    };
+
     fetchNewLeads();
+    fetchUser();
+    
     const interval = setInterval(fetchNewLeads, 30000); // refresh every 30s
     return () => clearInterval(interval);
   }, []);
@@ -49,15 +70,26 @@ export function AdminSidebar() {
     return pathname?.startsWith(href) ?? false;
   };
 
-  const SidebarContent = () => (
-    <>
-      {/* Brand */}
-      <div className="px-6 py-6 border-b border-white/10">
-        <h1 className="text-xl font-black tracking-tight text-white uppercase">
-          Skydeep<span className="text-[#E89B10]">group</span>
-        </h1>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1">Admin Console</p>
-      </div>
+  const SidebarContent = () => {
+    // Split brand name dynamically
+    let firstName = 'Car';
+    let lastName = 'Rental';
+    const trimmedName = (settings?.name || '').trim();
+    if (trimmedName) {
+      const nameParts = trimmedName.split(/\s+/);
+      firstName = nameParts[0] || '';
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
+
+    return (
+      <>
+        {/* Brand */}
+        <div className="px-6 py-6 border-b border-white/10">
+          <h1 className="text-xl font-black tracking-tight text-white uppercase">
+            {firstName}<span className="text-[#E89B10]">{lastName}</span>
+          </h1>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1">Admin Console</p>
+        </div>
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1">
@@ -97,8 +129,12 @@ export function AdminSidebar() {
               : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
-          <span className="flex-1">Security Settings</span>
+          <span className="material-symbols-outlined text-[20px]">
+            {isSuperAdmin ? 'settings' : 'lock'}
+          </span>
+          <span className="flex-1">
+            {isSuperAdmin ? 'Control Settings' : 'Change Password'}
+          </span>
         </Link>
         <button
           onClick={handleLogout}
@@ -109,7 +145,8 @@ export function AdminSidebar() {
         </button>
       </div>
     </>
-  );
+    );
+  };
 
   return (
     <>

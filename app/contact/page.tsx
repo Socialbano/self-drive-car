@@ -4,15 +4,32 @@ import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { BUSINESS, whatsappLink } from '@/lib/constants';
 
-export const metadata = {
-  title: `Contact Us | ${BUSINESS.name} Indore`,
-  description: 'Get in touch with Skydeepgroup for self-drive car rentals in Indore. Call us, WhatsApp us, or visit our office at Bhawarkua.',
-  alternates: {
-    canonical: '/contact',
-  },
-};
+import { getAdminSettings } from '@/lib/supabase/queries';
+import type { Metadata } from 'next';
 
-export default function ContactPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  return {
+    title: `Contact Us | ${name} ${city}`,
+    description: `Get in touch with ${name} for self-drive car rentals in ${city}. Call us, WhatsApp us, or visit our office.`,
+    alternates: {
+      canonical: '/contact',
+    },
+  };
+}
+
+export default async function ContactPage() {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const address = settings.business_address || BUSINESS.address;
+  const phone = settings.business_phone || BUSINESS.phone;
+  const phoneDisplay = phone.replace(/^\+91/, '');
+  const email = settings.business_email || BUSINESS.email;
+  const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+  const city = settings.business_city || BUSINESS.city;
+  
   return (
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
       <Navbar />
@@ -56,7 +73,7 @@ export default function ContactPage() {
                    </div>
                    <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Our Office</h4>
-                      <p className="font-bold text-[#0B1F3A] leading-relaxed">{BUSINESS.address}</p>
+                      <p className="font-bold text-[#0B1F3A] leading-relaxed">{address}</p>
                    </div>
                 </div>
 
@@ -67,7 +84,7 @@ export default function ContactPage() {
                    </div>
                    <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Call Us 24/7</h4>
-                      <a href={`tel:${BUSINESS.phone}`} className="font-bold text-[#0B1F3A] hover:text-[#1152d4] transition-colors">{BUSINESS.phoneDisplay}</a>
+                      <a href={`tel:${phone}`} className="font-bold text-[#0B1F3A] hover:text-[#1152d4] transition-colors">{phoneDisplay}</a>
                    </div>
                 </div>
 
@@ -78,7 +95,7 @@ export default function ContactPage() {
                    </div>
                    <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Email Us</h4>
-                      <a href={`mailto:${BUSINESS.email}`} className="font-bold text-[#0B1F3A] hover:text-[#1152d4] transition-colors">{BUSINESS.email}</a>
+                      <a href={`mailto:${email}`} className="font-bold text-[#0B1F3A] hover:text-[#1152d4] transition-colors">{email}</a>
                    </div>
                 </div>
 
@@ -89,7 +106,7 @@ export default function ContactPage() {
                    </div>
                    <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-[#25D366] mb-1">WhatsApp</h4>
-                      <a href={whatsappLink('Hi Skydeepgroup! I need some assistance.')} target="_blank" rel="noopener noreferrer" className="font-bold text-[#0B1F3A] hover:text-[#25D366] transition-colors">Chat with us instantly</a>
+                      <a href={whatsappLink(`Hi ${name}! I need some assistance.`, whatsappNumber)} target="_blank" rel="noopener noreferrer" className="font-bold text-[#0B1F3A] hover:text-[#25D366] transition-colors">Chat with us instantly</a>
                    </div>
                 </div>
              </div>
@@ -98,14 +115,14 @@ export default function ContactPage() {
              <div className="aspect-[21/9] bg-gray-100 rounded-3xl overflow-hidden relative border border-gray-200">
                 <img 
                   src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80" 
-                  alt="SkydeepGroup car rental office location map in Bhawarkua Indore" 
+                  alt={`${name || 'Self Drive Car'} rental office location map in ${city || 'Indore'}`} 
                   loading="lazy"
                   className="w-full h-full object-cover grayscale opacity-50"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                    <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-gray-100 shadow-xl flex items-center gap-3">
                       <div className="w-3 h-3 bg-[#1152d4] rounded-full animate-ping"></div>
-                      <span className="font-bold text-[#0B1F3A]">Bhawarkua, Indore</span>
+                      <span className="font-bold text-[#0B1F3A]">{city}</span>
                    </div>
                 </div>
              </div>

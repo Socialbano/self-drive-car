@@ -6,54 +6,73 @@ import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
 import { getCarBySlug, getSimilarCars } from '@/lib/supabase/queries';
 import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
+import { getAdminSettings } from '@/lib/supabase/queries';
+import type { Metadata } from 'next';
 
 // Dynamic page — no generateStaticParams needed (SSR fetches live from DB)
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const car = await getCarBySlug(params.slug);
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const [car, settings] = await Promise.all([
+    getCarBySlug(params.slug),
+    getAdminSettings()
+  ]);
   if (!car) return { title: 'Car Not Found' };
   
-  return {
-    title: `${car.name} Rental Indore | ${BUSINESS.name}`,
-    description: `Rent ${car.name} (${car.car_type}) in Indore for ₹${car.price_24hr}/24hrs. Book instantly on WhatsApp.`,
-    alternates: {
-      canonical: `/cars/${params.slug}`,
-    },
-    openGraph: {
-      title: `${car.name} Self Drive Rental Indore | ${BUSINESS.name}`,
+  const name = settings?.business_name || BUSINESS.name;
+  const siteUrl = settings?.business_site_url || 'https://selfdrivecarrental.in';
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+
+    return {
+      title: `${car.name} Rental Indore | ${name}`,
       description: `Rent ${car.name} (${car.car_type}) in Indore for ₹${car.price_24hr}/24hrs. Book instantly on WhatsApp.`,
-      images: [car.image_url || 'https://skydeepgroup.com/default-car.png'],
-      type: 'website',
-    },
-  };
+      alternates: {
+        canonical: `/cars/${params.slug}`,
+      },
+      openGraph: {
+        title: `${car.name} Self Drive Rental Indore | ${name}`,
+        description: `Rent ${car.name} (${car.car_type}) in Indore for ₹${car.price_24hr}/24hrs. Book instantly on WhatsApp.`,
+        images: [car.image_url || `${cleanSiteUrl}/default-car.png`],
+        type: 'website',
+      },
+    };
 }
 
 export default async function CarDetailPage({ params }: { params: { slug: string } }) {
-  const car = await getCarBySlug(params.slug);
+  const [car, settings] = await Promise.all([
+    getCarBySlug(params.slug),
+    getAdminSettings()
+  ]);
   
   if (!car) {
     notFound();
   }
 
+  const name = settings.business_name || BUSINESS.name;
+  const phone = settings.business_phone || BUSINESS.phone;
+  const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+
   const similarCars = await getSimilarCars(car.car_type, car.id);
+
+  const siteUrl = settings?.business_site_url || 'https://selfdrivecarrental.in';
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
 
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: `${car.name} Self Drive Rental`,
-    image: car.image_url || 'https://skydeepgroup.com/default-car.png',
+    image: car.image_url || `${cleanSiteUrl}/default-car.png`,
     description: car.description || `Rent ${car.name} self drive car in Indore.`,
     brand: {
       '@type': 'Brand',
-      name: BUSINESS.name,
+      name: name,
     },
     offers: {
       '@type': 'Offer',
       price: car.price_24hr,
       priceCurrency: 'INR',
       availability: 'https://schema.org/InStock',
-      url: `https://skydeepgroup.com/cars/${car.slug}`,
+      url: `${cleanSiteUrl}/cars/${car.slug}`,
     },
   };
 
@@ -191,7 +210,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
 
                 <div className="space-y-3">
                   <a 
-                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '12 hours', car.price_12hr))}
+                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '12 hours', car.price_12hr), whatsappNumber)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all duration-300 active:scale-95 shadow-lg shadow-[#25D366]/20"
@@ -200,7 +219,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     Book for 12 Hours
                   </a>
                   <a 
-                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '24 hours', car.price_24hr))}
+                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '24 hours', car.price_24hr), whatsappNumber)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#E89B10] text-[#0B1F3A] py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#d08c0e] hover:text-white transition-all duration-300 active:scale-95 shadow-lg"
@@ -209,7 +228,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     Book for 24 Hours
                   </a>
                   <a 
-                    href={`tel:${BUSINESS.phone}`}
+                    href={`tel:${phone}`}
                     className="w-full bg-white text-[#0B1F3A] py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all duration-300 active:scale-95"
                   >
                     <span className="material-symbols-outlined">call</span>

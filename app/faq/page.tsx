@@ -5,106 +5,33 @@ import { Accordion } from '@/components/ui/Accordion';
 import { getFAQs } from '@/lib/supabase/queries';
 import { BUSINESS, whatsappLink } from '@/lib/constants';
 
-export const metadata = {
-  title: `FAQ & Support | ${BUSINESS.name}`,
-  description: 'Find answers to frequently asked questions about car rentals, security deposits, insurance, and our self-drive policies in Indore.',
-  alternates: {
-    canonical: '/faq',
-  },
-};
+import { getAdminSettings } from '@/lib/supabase/queries';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  return {
+    title: `FAQ & Support | ${name}`,
+    description: 'Find answers to frequently asked questions about car rentals, security deposits, insurance, and our self-drive policies in Indore.',
+    alternates: {
+      canonical: '/faq',
+    },
+  };
+}
 
 export default async function FAQPage() {
-  const faqs = [
-    {
-      id: 1,
-      question: "Can I get a self drive car in Indore?",
-      answer: "Yes! SkydeepGroup offers the most reliable self drive car Indore service. Whether you need a simple hatchback for city errands or a big SUV for family travel, you can easily rent a car without driver from us."
-    },
-    {
-      id: 2,
-      question: "What is the self drive car Indore price per day?",
-      answer: "Humara pricing bohot simple aur transparent hai. Our self drive car Indore price starts from just ₹1200 per day. Koi hidden charges nahi hain; what you see is exactly what you pay!"
-    },
-    {
-      id: 3,
-      question: "What documents do I need to rent a car?",
-      answer: "Gaadi rent karne ke liye aapko bas ek valid original Indian Driving License, apna Aadhaar Card, aur ek alternative ID (like Voter ID or Passport) dikhani hogi. Simple document check and you are good to go!"
-    },
-    {
-      id: 4,
-      question: "Can I get a self drive car Indore airport par?",
-      answer: "Haan bilkul! Hum hassle-free airport pickup aur drop facility provide karte hain. Agar aap landing ke baad seedhe safely apne hotel jana chahte hain, toh choose our self drive car Indore airport delivery options."
-    },
-    {
-      id: 5,
-      question: "Do you deliver cars in the Vijay Nagar area?",
-      answer: "Yes, we offer fast delivery for car rental Indore Vijay Nagar and surrounding prime areas. Agar aap Vijay Nagar ya Bhawarkua mein hain, toh aap easily humari home delivery facilities ka fayda utha sakte hain."
-    },
-    {
-      id: 6,
-      question: "How to quickly book a self drive car near me?",
-      answer: "Booking is super easy! Apni pasand ki car website par select karein and WhatsApp button dabayein. For a quick \"self drive car near me\" search, just ping us your location and we'll arrange the closest available vehicle."
-    },
-    {
-      id: 7,
-      question: "Kya main outstation travel ke liye gaadi le ja sakta hu?",
-      answer: "Absolutely! Our car rental Indore without driver is perfect for outstation trips like Ujjain Mahakal, Omkareshwar, ya out-of-state travel. Hum long road trips ke liye specially customized packages bhi dete hain."
-    },
-    {
-      id: 8,
-      question: "Is there a daily KM limit for road trips?",
-      answer: "Standard daily rentals mein generally 300 KM per day ki generous limit hoti hai. Agar aap limit cross karte hain, toh sirf ek nominal per KM charge apply hota hai. No heavy penalties!"
-    },
-    {
-      id: 9,
-      question: "What is your fuel policy for self-drive cars?",
-      answer: "Hum \"Level-to-Level\" fuel policy effectively follow karte hain. Jis fuel level par hum aapko gaadi deliver karte hain, exactly ussi level par aapko gaadi wapis karni hoti hai. Simple and clean."
-    },
-    {
-      id: 10,
-      question: "Is any security deposit required to rent a vehicle?",
-      answer: "Hum zero hidden fees mein believe karte hain! Bas approval/verification process ke dauran ek chhota refundable security deposit liya jata hai. Safely car return karne ke baad ye amount instantly refund ho jata hai."
-    },
-    {
-      id: 11,
-      question: "What is the minimum age to drive your rental cars?",
-      answer: "SkydeepGroup se directly gaadi rent karne ke liye aapki age at least 21 saal honi chahiye. Saath hi, safety standards ke liye aapke paas kam se kam ek saal purana valid driving license hona zaroori hai."
-    },
-    {
-      id: 12,
-      question: "Can I book a luxury car rental Indore for a wedding?",
-      answer: "Ji haan! Hum premium luxury car rental Indore options bhi provide karte hain. Whether it's a VIP event, a wedding, or a special anniversary, you can book our top-tier SUVs and sedans in advance."
-    },
-    {
-      id: 13,
-      question: "How can I securely pay for my car booking?",
-      answer: "Aap UPI apps (Google Pay, PhonePe, Paytm), Net Banking, ya bank transfer ke through payment kar sakte hain. Secure your booking online on WhatsApp before taking the keys!"
-    },
-    {
-      id: 14,
-      question: "How can I just book a vehicle via WhatsApp?",
-      answer: "Sabse fast confirmation ke liye, humari website pe \"Book via WhatsApp\" button par click karein. Humari 24/7 support team aapse instantly connect karegi and aapki gaadi confirm kar degi."
-    },
-    {
-      id: 15,
-      question: "What is your cancellation and refund policy?",
-      answer: "Because travel plans can change, hum flexible cancellation options dete hain. Agar aapko cancel karna hai, toh please trip start hone se 24 hours pehle bata dein taaki standard refund process initiate ho sake."
-    },
-    {
-      id: 16,
-      question: "What happens if I return the car late?",
-      answer: "Agar aap raste mein stuck ho gaye hain aur late hain, toh please humari team ko time se pehle urgently inform karein. Uninformed late returns par standard hourly rental penalty apply hoti hai."
-    },
-    {
-      id: 17,
-      question: "How do I know if my favorite car is available?",
-      answer: "Humari fleet hamesha in-demand rehti hai. Apni choice ki SUV ya hatchback select karke turant hume WhatsApp drop karein. We will check real-time availability and block the car for your dates immediately."
-    }
-  ];
+  const settings = await getAdminSettings();
+  const name = settings.business_name || BUSINESS.name;
+  const phone = settings.business_phone || BUSINESS.phone;
+  const phoneDisplay = phone.replace(/^\+91/, '');
+  const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+  
+  const faqs = await getFAQs();
 
   // Map to Accordion format
   const accordionItems = faqs.map(faq => ({
-    id: faq.id.toString(),
+    id: faq.id ? faq.id.toString() : Math.random().toString(),
     title: faq.question,
     content: <div dangerouslySetInnerHTML={{ __html: faq.answer }} className="prose prose-sm prose-slate max-w-none text-gray-500" />
   }));
@@ -145,7 +72,7 @@ export default async function FAQPage() {
             Frequently Asked <span className="gradient-text">Questions</span>
           </h1>
           <p className="text-white/60 text-lg leading-relaxed max-w-2xl mx-auto">
-            Everything you need to know about renting a car with Skydeepgroup. Can't find the answer you're looking for? Reach out to our 24/7 support team.
+            Everything you need to know about renting a car with {name}. Can't find the answer you're looking for? Reach out to our 24/7 support team.
           </p>
         </div>
       </header>
@@ -180,11 +107,11 @@ export default async function FAQPage() {
                   Our dedicated support team is available 24/7 to assist you with bookings, roadside help, or general inquiries.
                 </p>
                 <div className="space-y-3">
-                  <a href={`tel:${BUSINESS.phone}`} className="flex items-center gap-3 w-full bg-white text-[#0B1F3A] py-3 px-4 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
+                  <a href={`tel:${phone}`} className="flex items-center gap-3 w-full bg-white text-[#0B1F3A] py-3 px-4 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
                     <span className="material-symbols-outlined text-xl">call</span>
-                    {BUSINESS.phoneDisplay}
+                    {phoneDisplay}
                   </a>
-                  <a href={whatsappLink('Hi Skydeep Support, I have a question regarding a rental.')} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 w-full bg-[#25D366] text-white py-3 px-4 rounded-xl font-bold text-sm hover:bg-[#20bd5a] transition-colors">
+                  <a href={whatsappLink(`Hi ${name} Support, I have a question regarding a rental.`, whatsappNumber)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 w-full bg-[#25D366] text-white py-3 px-4 rounded-xl font-bold text-sm hover:bg-[#20bd5a] transition-colors">
                     <span className="material-symbols-outlined text-xl">chat</span>
                     Message on WhatsApp
                   </a>

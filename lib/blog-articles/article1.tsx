@@ -41,7 +41,7 @@ export const article1: BlogPost = {
 
       <h2 className="text-2xl font-bold text-[#0B1F3A] mt-8 mb-4">Pricing Breakdown</h2>
       <p>
-        Transparency is our core principle at SkydeepGroup. We do not believe in hidden surges. Our daily pricing is categorized simply:
+        Transparency is our core principle. We do not believe in hidden surges. Our daily pricing is categorized simply:
       </p>
       <ol className="list-decimal pl-6 space-y-2">
         <li><strong>Hatchbacks (Swift/Baleno):</strong> Starting at highly affordable daily rates suitable for quick city navigation.</li>
@@ -67,7 +67,7 @@ export const article1: BlogPost = {
 
       <p className="text-xl font-bold text-[#0B1F3A] mt-8">Ready to hit the road?</p>
       <div className="flex gap-4 mt-6">
-        <a href={whatsappLink('Hi SkydeepGroup! I want to book the best self drive car in Indore.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={whatsappLink('Hi! I want to book the best self drive car in Indore.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Book Your Car Now on WhatsApp
         </a>
       </div>
@@ -85,7 +85,7 @@ export const article1: BlogPost = {
     },
     {
       question: "Can I get a CNG self drive car in Indore?",
-      answer: "Yes, SkydeepGroup provides highly economical CNG self drive cars for customers looking to optimize their fuel expenses."
+      answer: "Yes, we provide highly economical CNG self drive cars for customers looking to optimize their fuel expenses."
     },
     {
       question: "What is the security deposit for renting a car?",

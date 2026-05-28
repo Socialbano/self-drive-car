@@ -315,6 +315,19 @@ export async function updateAdminSetting(key: string, value: string): Promise<bo
   return true;
 }
 
+export async function updateAdminSettings(settings: Record<string, string>): Promise<boolean> {
+  const rows = Object.entries(settings).map(([key, value]) => ({ key, value: String(value) }));
+  const { error } = await supabase
+    .from('admin_settings')
+    .upsert(rows, { onConflict: 'key' });
+
+  if (error) {
+    console.error('Error updating admin settings:', error);
+    return false;
+  }
+  return true;
+}
+
 // ======================================
 // BILLING & INVOICING QUERIES
 // ======================================
@@ -454,4 +467,102 @@ export async function deleteAgreement(id: string) {
     return { success: false, error };
   }
   return { success: true };
+}
+
+export async function getActiveLocations(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from('locations')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+    
+  if (error) {
+    console.error('Error fetching active locations:', error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function getBlogs(): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*, locations(id, name, slug)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Error in getBlogs:', err);
+    return [];
+  }
+}
+
+export async function getBlogBySlug(slug: string): Promise<any | null> {
+  try {
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*, locations(id, name, slug)')
+      .eq('slug', slug)
+      .single();
+
+    if (error) throw error;
+    return data || null;
+  } catch (err) {
+    console.error(`Error in getBlogBySlug for ${slug}:`, err);
+    return null;
+  }
+}
+
+export async function getBlogsByLocation(locationId: string): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*, locations(id, name, slug)')
+      .or(`location_id.eq.${locationId},location_id.is.null`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error(`Error in getBlogsByLocation for ${locationId}:`, err);
+    return [];
+  }
+}
+
+export async function upsertBlog(blogData: any, id?: string): Promise<{ success: boolean; error?: any }> {
+  try {
+    if (id && id !== '') {
+      const { error } = await supabase
+        .from('blogs')
+        .update(blogData)
+        .eq('id', id);
+      if (error) throw error;
+    } else {
+      const { id: _id, ...insertData } = blogData;
+      const { error } = await supabase
+        .from('blogs')
+        .insert([insertData]);
+      if (error) throw error;
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Error in upsertBlog:', error);
+    return { success: false, error };
+  }
+}
+
+export async function deleteBlog(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('blogs')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error(`Error deleting blog ${id}:`, err);
+    return false;
+  }
 }

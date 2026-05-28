@@ -5,7 +5,10 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
+import { useSettings } from '@/components/SettingsProvider';
+
 export function Testimonials() {
+  const { settings } = useSettings();
   const testimonials = [
     {
       name: 'Rahul Sharma',
@@ -16,7 +19,7 @@ export function Testimonials() {
     {
       name: 'Ananya Jain',
       role: 'Tech Lead',
-      quote: "No security deposit is a game changer. Skydeep makes it so easy to get a car whenever you need one. Professional service.",
+      quote: `No security deposit is a game changer. ${settings.name} makes it so easy to get a car whenever you need one. Professional service.`,
       rating: 5,
     },
     {
@@ -28,7 +31,7 @@ export function Testimonials() {
     {
       name: 'Priya Mishra',
       role: 'Frequent Traveler',
-      quote: "Transformed my regular Ujjain trips. The cars are always in pristine condition. Their 24/7 support is actually 24/7.",
+      quote: `Transformed my regular ${settings.city} trips. The cars are always in pristine condition. Their 24/7 support is actually 24/7.`,
       rating: 5,
     }
   ];
@@ -39,7 +42,7 @@ export function Testimonials() {
         <div className="text-center mb-16">
           <span className="text-[#E89B10] font-bold tracking-widest uppercase text-xs">Testimonials</span>
           <h2 className="text-3xl md:text-4xl font-black text-[#0B1F3A] font-headline mt-2 tracking-tight">
-            Loved by Indore's Travelers
+            Loved by {settings.city}'s Travelers
           </h2>
         </div>
 

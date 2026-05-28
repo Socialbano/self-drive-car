@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useSettings } from '@/components/SettingsProvider';
 
 export default function AdminLogin() {
+  const { settings } = useSettings();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,6 +15,16 @@ export default function AdminLogin() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const router = useRouter();
+
+  // Split brand name dynamically
+  let firstName = 'Car';
+  let lastName = 'Rental';
+  const trimmedName = (settings?.name || '').trim();
+  if (trimmedName) {
+    const nameParts = trimmedName.split(/\s+/);
+    firstName = nameParts[0] || '';
+    lastName = nameParts.slice(1).join(' ') || '';
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +89,7 @@ export default function AdminLogin() {
         {/* Branding */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">
-            Skydeep<span className="text-[#E89B10]">group</span>
+            {firstName}<span className="text-[#E89B10]">{lastName}</span>
           </h1>
           <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400 mt-2">Admin Console</p>
         </div>
@@ -122,7 +134,7 @@ export default function AdminLogin() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@skydeepgroup.com"
+                      placeholder="admin@example.com"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1152d4] focus:border-transparent transition-all"
                     />
                   </div>
@@ -170,7 +182,7 @@ export default function AdminLogin() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@skydeepgroup.com"
+                    placeholder="admin@example.com"
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1152d4] focus:border-transparent transition-all"
                   />
                 </div>
@@ -225,7 +237,7 @@ export default function AdminLogin() {
 
         {/* Footer */}
         <p className="text-center text-xs text-slate-500 mt-6">
-          Skydeepgroup Admin Console · Self Drive Car Rental, Indore
+          {settings?.name || 'Car Rental'} Admin Console · Self Drive Car Rental, {settings?.city || 'Indore'}
         </p>
       </div>
     </div>

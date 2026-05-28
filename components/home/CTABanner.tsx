@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { useSettings } from '@/components/SettingsProvider';
 
 export function CTABanner() {
+  const { settings } = useSettings();
   return (
     <section className="py-24 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
@@ -15,7 +19,7 @@ export function CTABanner() {
               Ready to hit the road?
             </h2>
             <p className="text-white/80 text-lg mb-10 leading-relaxed">
-              Book your ride today and experience the ultimate freedom of self-drive in Indore with our premium, sanitized fleet.
+              Book your ride today and experience the ultimate freedom of self-drive in {settings.city} with our premium, sanitized fleet.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">

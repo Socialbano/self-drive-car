@@ -57,10 +57,10 @@ export function ContactForm() {
         <input 
           type="text" 
           required
-          placeholder="John Doe"
+          placeholder="Name"
           value={formData.name}
           onChange={(e) => setFormData({...formData, name: e.target.value})}
-          className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow"
+          className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold placeholder:text-gray-400 placeholder:font-normal focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow"
         />
       </div>
 
@@ -73,17 +73,17 @@ export function ContactForm() {
             placeholder="+91 00000 00000"
             value={formData.phone}
             onChange={(e) => setFormData({...formData, phone: e.target.value})}
-            className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow"
+            className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold placeholder:text-gray-400 placeholder:font-normal focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow"
           />
         </div>
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Email</label>
           <input 
             type="email" 
-            placeholder="john@example.com"
+            placeholder="Email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow"
+            className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold placeholder:text-gray-400 placeholder:font-normal focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow"
           />
         </div>
       </div>
@@ -123,7 +123,7 @@ export function ContactForm() {
           placeholder="How can we help you today?"
           value={formData.message}
           onChange={(e) => setFormData({...formData, message: e.target.value})}
-          className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow resize-none"
+          className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-[#0B1F3A] font-semibold placeholder:text-gray-400 placeholder:font-normal focus:ring-2 focus:ring-[#1152d4] outline-none transition-shadow resize-none"
         ></textarea>
       </div>
 

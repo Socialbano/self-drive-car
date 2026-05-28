@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
-import { BLOG_POSTS } from '@/lib/blog-data';
 import { BUSINESS, whatsappLink } from '@/lib/constants';
+import { getAdminSettings, getBlogBySlug } from '@/lib/supabase/queries';
 
 interface Props {
   params: {
@@ -13,8 +13,11 @@ interface Props {
   };
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const post = BLOG_POSTS.find((p) => p.slug === params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const [post, settings] = await Promise.all([
+    getBlogBySlug(params.slug),
+    getAdminSettings()
+  ]);
   
   if (!post) {
     return {
@@ -22,27 +25,36 @@ export function generateMetadata({ params }: Props): Metadata {
     };
   }
 
+  const name = settings.business_name || BUSINESS.name;
+
   return {
-    title: `${post.title} | ${BUSINESS.name}`,
-    description: post.metaDescription,
+    title: `${post.title} | ${name}`,
+    description: post.meta_description,
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
-      description: post.metaDescription,
+      description: post.meta_description,
       type: 'article',
       images: [post.image],
     },
   };
 }
 
-export default function SingleBlogPost({ params }: Props) {
-  const post = BLOG_POSTS.find((p) => p.slug === params.slug);
+export default async function SingleBlogPost({ params }: Props) {
+  const [post, settings] = await Promise.all([
+    getBlogBySlug(params.slug),
+    getAdminSettings()
+  ]);
 
   if (!post) {
     notFound();
   }
+
+  const name = settings.business_name || BUSINESS.name;
+  const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+  const blogCity = post.locations?.name || settings.business_city || BUSINESS.city;
 
   const jsonLdArticle = {
     '@context': 'https://schema.org',
@@ -52,23 +64,25 @@ export default function SingleBlogPost({ params }: Props) {
     datePublished: post.date,
     author: {
       '@type': 'Organization',
-      name: BUSINESS.name,
+      name: name,
     },
     publisher: {
       '@type': 'Organization',
-      name: BUSINESS.name,
+      name: name,
       logo: {
         '@type': 'ImageObject',
-        url: 'https://skydeepgroup.com/logo.png', // Replace with actual logo URL later
+        url: settings.business_logo_url || (settings.business_site_url ? `${settings.business_site_url.replace(/\/$/, '')}/logo.png` : 'https://selfdrivecarrental.in/logo.png'),
       },
     },
-    description: post.metaDescription,
+    description: post.meta_description,
   };
+
+  const faqsList = Array.isArray(post.faqs) ? post.faqs : [];
 
   const jsonLdFaq = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: post.faqs.map((faq) => ({
+    mainEntity: faqsList.map((faq: any) => ({
       '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {
@@ -107,7 +121,7 @@ export default function SingleBlogPost({ params }: Props) {
             {post.title}
           </h1>
 
-          <div className="flex items-center gap-4 text-white/60 text-sm font-medium">
+          <div className="flex items-center gap-4 text-white/60 text-sm font-medium flex-wrap">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-lg">calendar_month</span>
               {post.date}
@@ -117,6 +131,15 @@ export default function SingleBlogPost({ params }: Props) {
               <span className="material-symbols-outlined text-lg">folder</span>
               {post.category}
             </div>
+            {post.locations && (
+              <>
+                <div className="w-1 h-1 rounded-full bg-white/30" />
+                <div className="flex items-center gap-2 text-emerald-400">
+                  <span className="material-symbols-outlined text-lg">location_on</span>
+                  {post.locations.name}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -135,17 +158,18 @@ export default function SingleBlogPost({ params }: Props) {
 
       {/* Content Wrapper */}
       <div className="flex-grow max-w-4xl mx-auto px-6 lg:px-8 pb-20 w-full">
-        {/* The generated React Content */}
-        <article className="prose prose-lg max-w-none prose-h2:text-3xl prose-h2:font-black prose-h2:text-[#0B1F3A] prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#1152d4] prose-strong:text-[#0B1F3A]">
-          {post.content}
-        </article>
+        {/* Render HTML content safely */}
+        <article 
+          className="prose prose-lg max-w-none prose-h2:text-3xl prose-h2:font-black prose-h2:text-[#0B1F3A] prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#1152d4] prose-strong:text-[#0B1F3A]"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         {/* FAQs */}
-        {post.faqs && post.faqs.length > 0 && (
+        {faqsList.length > 0 && (
           <div className="mt-16 pt-12 border-t border-gray-200">
             <h2 className="text-3xl font-black text-[#0B1F3A] mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6">
-              {post.faqs.map((faq, index) => (
+              {faqsList.map((faq: any, index: number) => (
                 <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                   <h3 className="font-bold text-lg text-[#0B1F3A] mb-2">{faq.question}</h3>
                   <p className="text-gray-600">{faq.answer}</p>
@@ -165,14 +189,14 @@ export default function SingleBlogPost({ params }: Props) {
                     Start Your Journey
                 </span>
                 <h2 className="text-3xl md:text-4xl font-black text-white font-headline mb-6">
-                    Ready to book your self-drive experience in Indore?
+                    Ready to book your self-drive experience in {blogCity}?
                 </h2>
                 <p className="text-white/70 mb-8 text-lg">
-                    Check our fleet naturally and effortlessly. We bring the car to you across Vijay Nagar, Airport, and Palasia!
+                    Check our fleet naturally and effortlessly. We bring the car directly to your requested location in {blogCity}!
                 </p>
                 
                 <a 
-                    href={whatsappLink(`Hi SkydeepGroup! I read your blog: ${post.title} and want to book a car.`)} 
+                    href={whatsappLink(`Hi ${name}! I read your blog: "${post.title}" and want to book a car in ${blogCity}.`, whatsappNumber)} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-3 bg-[#E89B10] text-[#0B1F3A] px-8 py-4 rounded-xl font-black text-lg hover:bg-white hover:-translate-y-1 transition-all duration-300 shadow-xl shadow-[#E89B10]/30"

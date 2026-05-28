@@ -62,7 +62,7 @@ export const article3: BlogPost = {
 
       <p className="text-xl font-bold text-[#0B1F3A] mt-8">Lock in a monthly rate before the fleet sells out.</p>
       <div className="flex gap-4 mt-6">
-        <a href={whatsappLink('Hi SkydeepGroup! I am interested in exploring monthly long-term car rental discounts.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={whatsappLink('Hi! I am interested in exploring monthly long-term car rental discounts.')} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Get Monthly Price Quote on WhatsApp
         </a>
       </div>
@@ -80,7 +80,7 @@ export const article3: BlogPost = {
     },
     {
       question: "Who pays for the maintenance during a 3-month rental?",
-      answer: "SkydeepGroup handles all routine wear-and-tear maintenance. You only manage your fuel and any physical damages."
+      answer: "We handle all routine wear-and-tear maintenance. You only manage your fuel and any physical damages."
     },
     {
       question: "Can I swap the car mid-way through my monthly rental?",

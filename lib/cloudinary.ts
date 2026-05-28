@@ -9,7 +9,7 @@ export function getCloudinaryUrl(
   // If it's already a full URL (not just a public ID), just return it
   if (publicIdOrUrl.startsWith('http')) return publicIdOrUrl;
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'skydeepgroup';
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'demo';
   
   const width = options?.width ? `w_${options.width}` : '';
   const height = options?.height ? `h_${options.height}` : '';

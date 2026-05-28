@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
-import { LOCATION_GROUPS } from '@/lib/locations';
+import { whatsappLink as staticWhatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
+import { useSettings } from '@/components/SettingsProvider';
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
@@ -18,12 +18,41 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const { settings, locations } = useSettings();
+
+  // Dynamic location groups calculated from the context
+  const dynamicLocationGroups = [
+    {
+      label: 'Popular Cities',
+      items: locations.filter((loc) => loc.category === 'city'),
+    },
+    {
+      label: 'Areas',
+      items: locations.filter((loc) => loc.category === 'area'),
+    },
+  ].filter(group => group.items.length > 0);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [locDropdownOpen, setLocDropdownOpen] = useState(false);
   const [mobileLocOpen, setMobileLocOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Dynamic whatsapp links using database settings
+  const whatsappLink = (message: string) => {
+    return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(message)}`;
+  };
+
+  // Split logo name dynamically
+  let firstName = 'Car';
+  let lastName = 'Rental';
+  const trimmedName = settings.name.trim();
+  if (trimmedName) {
+    const nameParts = trimmedName.split(/\s+/);
+    firstName = nameParts[0] || '';
+    lastName = nameParts.slice(1).join(' ') || '';
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -78,21 +107,31 @@ export function Navbar() {
             className="group flex flex-row items-center gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           >
             {/* Logo Icon */}
-            <div className="w-[42px] h-[42px] rounded-[14px] bg-gradient-to-br from-[#0B1F3A] to-[#1a365d] flex items-center justify-center shadow-md shadow-[#0B1F3A]/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#0B1F3A]/30 relative overflow-hidden">
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-overlay" />
-              <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/20 to-transparent" />
-              <span className="text-white text-xl font-black tracking-wider relative z-10 drop-shadow-sm font-headline">
-                S
-              </span>
-            </div>
+            {settings.logoUrl ? (
+              <div className="w-[42px] h-[42px] relative flex items-center justify-center overflow-hidden shrink-0">
+                <img 
+                  src={settings.logoUrl} 
+                  alt={`${firstName} logo`} 
+                  className="w-full h-full object-contain rounded-[14px]"
+                />
+              </div>
+            ) : (
+              <div className="w-[42px] h-[42px] rounded-[14px] bg-gradient-to-br from-[#0B1F3A] to-[#1a365d] flex items-center justify-center shadow-md shadow-[#0B1F3A]/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-[#0B1F3A]/30 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-overlay" />
+                <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/20 to-transparent" />
+                <span className="text-white text-xl font-black tracking-wider relative z-10 drop-shadow-sm font-headline">
+                  {firstName.charAt(0)}
+                </span>
+              </div>
+            )}
 
             {/* Logo Text Stack */}
             <div className="flex flex-col leading-none pt-0.5 justify-center">
               <span className="text-[19px] md:text-[22px] font-black tracking-[0.02em] text-[#0f172a] font-headline mb-1 transition-colors duration-300">
-                Skydeep <span className="bg-gradient-to-br from-[#E89B10] to-[#c7820a] bg-clip-text text-transparent group-hover:from-[#0f172a] group-hover:to-[#0f172a] transition-all duration-300">Group</span>
+                {firstName} <span className="bg-gradient-to-br from-[#E89B10] to-[#c7820a] bg-clip-text text-transparent group-hover:from-[#0f172a] group-hover:to-[#0f172a] transition-all duration-300">{lastName}</span>
               </span>
               <span className="text-[9px] md:text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.18em] transition-colors duration-300 group-hover:text-slate-500">
-                Car Rental Services
+                {settings.subtitle || 'Car Rental Services'}
               </span>
             </div>
           </Link>
@@ -145,8 +184,8 @@ export function Navbar() {
                   : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                   }`}
               >
-                <div className="p-4">
-                  {LOCATION_GROUPS.map((group, gi) => (
+                 <div className="p-4">
+                  {dynamicLocationGroups.map((group, gi) => (
                     <div key={gi} className={gi > 0 ? 'mt-3 pt-3 border-t border-gray-100' : ''}>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-3 mb-2">
                         {group.label}
@@ -194,11 +233,11 @@ export function Navbar() {
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
             <a
-              href={`tel:${BUSINESS.phone}`}
+              href={`tel:${settings.phone}`}
               className="flex items-center gap-2 text-sm font-semibold text-[#0B1F3A]/70 hover:text-[#0B1F3A] transition-colors"
             >
               <span className="material-symbols-outlined text-lg">call</span>
-              {BUSINESS.phoneDisplay}
+              {settings.phoneDisplay}
             </a>
             <a
               href={whatsappLink(WHATSAPP_MESSAGES.hero)}
@@ -293,7 +332,7 @@ export function Navbar() {
                 }`}
             >
               <div className="pl-4 pb-2 space-y-3 pt-1">
-                {LOCATION_GROUPS.map((group, gi) => (
+                {dynamicLocationGroups.map((group, gi) => (
                   <div key={gi}>
                     <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 px-4 mb-1.5">
                       {group.label}
@@ -325,11 +364,11 @@ export function Navbar() {
           {/* Mobile CTA */}
           <div className="mt-8 space-y-3">
             <a
-              href={`tel:${BUSINESS.phone}`}
+              href={`tel:${settings.phone}`}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-[#0B1F3A]/10 text-sm font-bold text-[#0B1F3A] hover:bg-[#0B1F3A]/5 transition-all"
             >
               <span className="material-symbols-outlined text-lg">call</span>
-              Call {BUSINESS.phoneDisplay}
+              Call {settings.phoneDisplay}
             </a>
             <a
               href={whatsappLink(WHATSAPP_MESSAGES.hero)}

@@ -3,13 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getAgreementById } from '@/lib/supabase/queries';
-import { BUSINESS } from '@/lib/constants';
 import { DocumentHeader } from '@/components/DocumentHeader';
-
-// Simple fallback if constants aren't fully populated
-const COMPANY_NAME = BUSINESS?.name || 'SkydeepGroup';
-const COMPANY_ADDRESS = BUSINESS?.address || 'Near HDFC Bank, Ramesh Dosa, Vishnupuri, Bhawarkua, Indore 452001';
-const COMPANY_PHONE = BUSINESS?.phone || '9111330558';
 
 export default function PublicAgreementViewer() {
   const { id } = useParams();
@@ -122,13 +116,13 @@ export default function PublicAgreementViewer() {
               <tbody>
                  <tr>
                     <td className="border border-gray-200 p-3 font-bold">
-                       {agreement.is_manual_entry 
-                          ? agreement.custom_vehicle_name 
+                       {!agreement.car_id 
+                          ? agreement.manual_vehicle_name 
                           : (agreement.cars?.name || 'Unknown Vehicle')}
                     </td>
                     <td className="border border-gray-200 p-3">{new Date(agreement.start_date).toLocaleDateString('en-GB')}</td>
                     <td className="border border-gray-200 p-3">{new Date(agreement.end_date).toLocaleDateString('en-GB')}</td>
-                    <td className="border border-gray-200 p-3 text-right">₹{agreement.price_per_day}</td>
+                    <td className="border border-gray-200 p-3 text-right">₹{agreement.price_24hr}</td>
                  </tr>
               </tbody>
            </table>
