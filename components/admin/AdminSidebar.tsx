@@ -92,7 +92,7 @@ export function AdminSidebar() {
         </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {navLinks.map((link) => {
           const active = isActive(link.href);
           return (

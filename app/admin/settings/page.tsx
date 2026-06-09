@@ -3,14 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { Eye, EyeOff, LockKeyhole, Building2, Phone, Mail, MapPin, Clock, MessageSquare, Map, ShieldCheck, Upload, Trash2, Sliders, FileText, Globe, BarChart3 } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, Building2, Phone, Mail, MapPin, Clock, MessageSquare, Map, ShieldCheck, Upload, Trash2, Sliders, FileText, Globe, BarChart3, Info } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { ABOUT_DEFAULTS } from '@/lib/about-defaults';
 
 export default function AdminSettingsPage() {
   const router = useRouter();
   
   // Tab State
-  const [activeTab, setActiveTab] = useState<'profile' | 'hero' | 'seo' | 'security'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'hero' | 'seo' | 'about' | 'security'>('profile');
   
   // Auth State
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -68,11 +69,86 @@ export default function AdminSettingsPage() {
     business_meta_pixel_id: '',
     business_site_url: '',
     business_instagram_url: '',
+    
+    // About Section
+    about_hero_title: '',
+    about_hero_subtitle: '',
+    about_stat_trips: '',
+    about_stat_trips_label: '',
+    about_stat_customers: '',
+    about_stat_customers_label: '',
+    about_stat_vehicles: '',
+    about_stat_vehicles_label: '',
+    about_stat_cities: '',
+    about_stat_cities_label: '',
+    about_intro_title: '',
+    about_intro_desc: '',
+    about_intro_location_text: '',
+    about_founder_name: '',
+    about_founder_title: '',
+    about_founder_story: '',
+    about_founder_quote: '',
+    about_founder_avatar_url: '',
+    about_card1_title: '',
+    about_card1_desc: '',
+    about_card1_icon: '',
+    about_card2_title: '',
+    about_card2_desc: '',
+    about_card2_icon: '',
+    about_card3_title: '',
+    about_card3_desc: '',
+    about_card3_icon: '',
+    about_card4_title: '',
+    about_card4_desc: '',
+    about_card4_icon: '',
+    about_card5_title: '',
+    about_card5_desc: '',
+    about_card5_icon: '',
+    about_card6_title: '',
+    about_card6_desc: '',
+    about_card6_icon: '',
+    about_why_card1_title: '',
+    about_why_card1_desc: '',
+    about_why_card2_title: '',
+    about_why_card2_desc: '',
+    about_why_card3_title: '',
+    about_why_card3_desc: '',
+    about_why_card4_title: '',
+    about_why_card4_desc: '',
+    about_why_card5_title: '',
+    about_why_card5_desc: '',
+    about_why_card6_title: '',
+    about_why_card6_desc: '',
+    about_step1_title: '',
+    about_step1_desc: '',
+    about_step2_title: '',
+    about_step2_desc: '',
+    about_step3_title: '',
+    about_step3_desc: '',
+    about_step4_title: '',
+    about_step4_desc: '',
+    about_step5_title: '',
+    about_step5_desc: '',
+    about_safety_card1_title: '',
+    about_safety_card1_desc: '',
+    about_safety_card2_title: '',
+    about_safety_card2_desc: '',
+    about_safety_card3_title: '',
+    about_safety_card3_desc: '',
+    about_safety_card4_title: '',
+    about_safety_card4_desc: '',
+    about_safety_card5_title: '',
+    about_safety_card5_desc: '',
+    about_safety_card6_title: '',
+    about_safety_card6_desc: '',
+    about_cta_title: '',
+    about_cta_desc: '',
   });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingQr, setUploadingQr] = useState(false);
+  const [uploadingFounderAvatar, setUploadingFounderAvatar] = useState(false);
 
   useEffect(() => {
     // Fetch logged in user email and check session
@@ -127,6 +203,80 @@ export default function AdminSettingsPage() {
             business_meta_pixel_id: data.business_meta_pixel_id || '',
             business_site_url: data.business_site_url || '',
             business_instagram_url: data.business_instagram_url || '',
+            
+            // About Section fallbacks
+            about_hero_title: data.about_hero_title || ABOUT_DEFAULTS.about_hero_title,
+            about_hero_subtitle: data.about_hero_subtitle || ABOUT_DEFAULTS.about_hero_subtitle,
+            about_stat_trips: data.about_stat_trips || ABOUT_DEFAULTS.about_stat_trips,
+            about_stat_trips_label: data.about_stat_trips_label || ABOUT_DEFAULTS.about_stat_trips_label,
+            about_stat_customers: data.about_stat_customers || ABOUT_DEFAULTS.about_stat_customers,
+            about_stat_customers_label: data.about_stat_customers_label || ABOUT_DEFAULTS.about_stat_customers_label,
+            about_stat_vehicles: data.about_stat_vehicles || ABOUT_DEFAULTS.about_stat_vehicles,
+            about_stat_vehicles_label: data.about_stat_vehicles_label || ABOUT_DEFAULTS.about_stat_vehicles_label,
+            about_stat_cities: data.about_stat_cities || ABOUT_DEFAULTS.about_stat_cities,
+            about_stat_cities_label: data.about_stat_cities_label || ABOUT_DEFAULTS.about_stat_cities_label,
+            about_intro_title: data.about_intro_title || ABOUT_DEFAULTS.about_intro_title,
+            about_intro_desc: data.about_intro_desc || ABOUT_DEFAULTS.about_intro_desc,
+            about_intro_location_text: data.about_intro_location_text || ABOUT_DEFAULTS.about_intro_location_text,
+            about_founder_name: data.about_founder_name || ABOUT_DEFAULTS.about_founder_name,
+            about_founder_title: data.about_founder_title || ABOUT_DEFAULTS.about_founder_title,
+            about_founder_story: data.about_founder_story || ABOUT_DEFAULTS.about_founder_story,
+            about_founder_quote: data.about_founder_quote || ABOUT_DEFAULTS.about_founder_quote,
+            about_founder_avatar_url: data.about_founder_avatar_url || ABOUT_DEFAULTS.about_founder_avatar_url,
+            about_card1_title: data.about_card1_title || ABOUT_DEFAULTS.about_card1_title,
+            about_card1_desc: data.about_card1_desc || ABOUT_DEFAULTS.about_card1_desc,
+            about_card1_icon: data.about_card1_icon || ABOUT_DEFAULTS.about_card1_icon,
+            about_card2_title: data.about_card2_title || ABOUT_DEFAULTS.about_card2_title,
+            about_card2_desc: data.about_card2_desc || ABOUT_DEFAULTS.about_card2_desc,
+            about_card2_icon: data.about_card2_icon || ABOUT_DEFAULTS.about_card2_icon,
+            about_card3_title: data.about_card3_title || ABOUT_DEFAULTS.about_card3_title,
+            about_card3_desc: data.about_card3_desc || ABOUT_DEFAULTS.about_card3_desc,
+            about_card3_icon: data.about_card3_icon || ABOUT_DEFAULTS.about_card3_icon,
+            about_card4_title: data.about_card4_title || ABOUT_DEFAULTS.about_card4_title,
+            about_card4_desc: data.about_card4_desc || ABOUT_DEFAULTS.about_card4_desc,
+            about_card4_icon: data.about_card4_icon || ABOUT_DEFAULTS.about_card4_icon,
+            about_card5_title: data.about_card5_title || ABOUT_DEFAULTS.about_card5_title,
+            about_card5_desc: data.about_card5_desc || ABOUT_DEFAULTS.about_card5_desc,
+            about_card5_icon: data.about_card5_icon || ABOUT_DEFAULTS.about_card5_icon,
+            about_card6_title: data.about_card6_title || ABOUT_DEFAULTS.about_card6_title,
+            about_card6_desc: data.about_card6_desc || ABOUT_DEFAULTS.about_card6_desc,
+            about_card6_icon: data.about_card6_icon || ABOUT_DEFAULTS.about_card6_icon,
+            about_why_card1_title: data.about_why_card1_title || ABOUT_DEFAULTS.about_why_card1_title,
+            about_why_card1_desc: data.about_why_card1_desc || ABOUT_DEFAULTS.about_why_card1_desc,
+            about_why_card2_title: data.about_why_card2_title || ABOUT_DEFAULTS.about_why_card2_title,
+            about_why_card2_desc: data.about_why_card2_desc || ABOUT_DEFAULTS.about_why_card2_desc,
+            about_why_card3_title: data.about_why_card3_title || ABOUT_DEFAULTS.about_why_card3_title,
+            about_why_card3_desc: data.about_why_card3_desc || ABOUT_DEFAULTS.about_why_card3_desc,
+            about_why_card4_title: data.about_why_card4_title || ABOUT_DEFAULTS.about_why_card4_title,
+            about_why_card4_desc: data.about_why_card4_desc || ABOUT_DEFAULTS.about_why_card4_desc,
+            about_why_card5_title: data.about_why_card5_title || ABOUT_DEFAULTS.about_why_card5_title,
+            about_why_card5_desc: data.about_why_card5_desc || ABOUT_DEFAULTS.about_why_card5_desc,
+            about_why_card6_title: data.about_why_card6_title || ABOUT_DEFAULTS.about_why_card6_title,
+            about_why_card6_desc: data.about_why_card6_desc || ABOUT_DEFAULTS.about_why_card6_desc,
+            about_step1_title: data.about_step1_title || ABOUT_DEFAULTS.about_step1_title,
+            about_step1_desc: data.about_step1_desc || ABOUT_DEFAULTS.about_step1_desc,
+            about_step2_title: data.about_step2_title || ABOUT_DEFAULTS.about_step2_title,
+            about_step2_desc: data.about_step2_desc || ABOUT_DEFAULTS.about_step2_desc,
+            about_step3_title: data.about_step3_title || ABOUT_DEFAULTS.about_step3_title,
+            about_step3_desc: data.about_step3_desc || ABOUT_DEFAULTS.about_step3_desc,
+            about_step4_title: data.about_step4_title || ABOUT_DEFAULTS.about_step4_title,
+            about_step4_desc: data.about_step4_desc || ABOUT_DEFAULTS.about_step4_desc,
+            about_step5_title: data.about_step5_title || ABOUT_DEFAULTS.about_step5_title,
+            about_step5_desc: data.about_step5_desc || ABOUT_DEFAULTS.about_step5_desc,
+            about_safety_card1_title: data.about_safety_card1_title || ABOUT_DEFAULTS.about_safety_card1_title,
+            about_safety_card1_desc: data.about_safety_card1_desc || ABOUT_DEFAULTS.about_safety_card1_desc,
+            about_safety_card2_title: data.about_safety_card2_title || ABOUT_DEFAULTS.about_safety_card2_title,
+            about_safety_card2_desc: data.about_safety_card2_desc || ABOUT_DEFAULTS.about_safety_card2_desc,
+            about_safety_card3_title: data.about_safety_card3_title || ABOUT_DEFAULTS.about_safety_card3_title,
+            about_safety_card3_desc: data.about_safety_card3_desc || ABOUT_DEFAULTS.about_safety_card3_desc,
+            about_safety_card4_title: data.about_safety_card4_title || ABOUT_DEFAULTS.about_safety_card4_title,
+            about_safety_card4_desc: data.about_safety_card4_desc || ABOUT_DEFAULTS.about_safety_card4_desc,
+            about_safety_card5_title: data.about_safety_card5_title || ABOUT_DEFAULTS.about_safety_card5_title,
+            about_safety_card5_desc: data.about_safety_card5_desc || ABOUT_DEFAULTS.about_safety_card5_desc,
+            about_safety_card6_title: data.about_safety_card6_title || ABOUT_DEFAULTS.about_safety_card6_title,
+            about_safety_card6_desc: data.about_safety_card6_desc || ABOUT_DEFAULTS.about_safety_card6_desc,
+            about_cta_title: data.about_cta_title || ABOUT_DEFAULTS.about_cta_title,
+            about_cta_desc: data.about_cta_desc || ABOUT_DEFAULTS.about_cta_desc,
           });
         }
       } catch (err: any) {
@@ -265,6 +415,49 @@ export default function AdminSettingsPage() {
       const fileName = `upi-qr-${Date.now()}.${ext}`;
 
       const { data, error } = await supabase.storage
+         .from('hero-images')
+         .upload(fileName, file, {
+           upsert: true,
+           contentType: file.type,
+         });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+         .from('hero-images')
+         .getPublicUrl(fileName);
+
+      setProfileData(prev => ({ ...prev, business_upi_qr_url: publicUrl }));
+      toast.success('UPI QR Code uploaded successfully!');
+    } catch (err: any) {
+      console.error('Error uploading QR code:', err);
+      toast.error(`QR Code upload failed: ${err.message}`);
+    } finally {
+      setUploadingQr(false);
+    }
+  };
+
+  const handleFounderAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Avatar image must be under 2MB.');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG, PNG, and WEBP formats are supported.');
+      return;
+    }
+
+    setUploadingFounderAvatar(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const fileName = `founder-${Date.now()}.${ext}`;
+
+      const { data, error } = await supabase.storage
         .from('hero-images')
         .upload(fileName, file, {
           upsert: true,
@@ -277,13 +470,13 @@ export default function AdminSettingsPage() {
         .from('hero-images')
         .getPublicUrl(fileName);
 
-      setProfileData(prev => ({ ...prev, business_upi_qr_url: publicUrl }));
-      toast.success('UPI QR Code uploaded successfully!');
+      setProfileData(prev => ({ ...prev, about_founder_avatar_url: publicUrl }));
+      toast.success('Founder avatar uploaded successfully!');
     } catch (err: any) {
-      console.error('Error uploading QR code:', err);
-      toast.error(`QR Code upload failed: ${err.message}`);
+      console.error('Error uploading avatar:', err);
+      toast.error(`Avatar upload failed: ${err.message}`);
     } finally {
-      setUploadingQr(false);
+      setUploadingFounderAvatar(false);
     }
   };
 
@@ -390,6 +583,17 @@ export default function AdminSettingsPage() {
             >
               <Globe size={16} />
               SEO & Pixels
+            </button>
+            <button
+              onClick={() => setActiveTab('about')}
+              className={`px-5 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${
+                activeTab === 'about'
+                  ? 'bg-white text-[#0B1F3A] shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <Info size={16} />
+              About Page
             </button>
             <button
               onClick={() => setActiveTab('security')}
@@ -1175,6 +1379,396 @@ export default function AdminSettingsPage() {
                 </button>
               </div>
 
+            </form>
+          )}
+        </div>
+      )}
+
+      {/* Tab Content: About Page Settings */}
+      {activeTab === 'about' && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-8 border-b border-gray-100 bg-gray-50/50">
+            <h2 className="text-xl font-bold text-[#0B1F3A]">About Page Customization</h2>
+            <p className="text-sm text-gray-500 mt-1">Configure layout contents, statistics, timelines, and founder details for the premium About Page.</p>
+          </div>
+
+          {loadingProfile ? (
+            <div className="p-16 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
+                <span className="text-gray-500 text-sm font-medium">Fetching settings...</span>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleProfileSave} className="p-8 space-y-6">
+              <div className="space-y-4">
+                
+                {/* 1. Hero & Counter Metrics */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20" open>
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <Sliders size={18} className="text-[#E89B10]" />
+                      1. About Hero Section & Counter Stats
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Hero Main Title</label>
+                      <input type="text" name="about_hero_title" value={profileData.about_hero_title} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Hero Subtitle</label>
+                      <textarea name="about_hero_subtitle" rows={2} value={profileData.about_hero_subtitle} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 1 (Trips)</label>
+                        <input type="text" name="about_stat_trips" value={profileData.about_stat_trips} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 1 Label</label>
+                        <input type="text" name="about_stat_trips_label" value={profileData.about_stat_trips_label} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 2 (Customers)</label>
+                        <input type="text" name="about_stat_customers" value={profileData.about_stat_customers} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 2 Label</label>
+                        <input type="text" name="about_stat_customers_label" value={profileData.about_stat_customers_label} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 3 (Vehicles)</label>
+                        <input type="text" name="about_stat_vehicles" value={profileData.about_stat_vehicles} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 3 Label</label>
+                        <input type="text" name="about_stat_vehicles_label" value={profileData.about_stat_vehicles_label} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 4 (Cities)</label>
+                        <input type="text" name="about_stat_cities" value={profileData.about_stat_cities} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Stat 4 Label</label>
+                        <input type="text" name="about_stat_cities_label" value={profileData.about_stat_cities_label} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                      </div>
+                    </div>
+                  </div>
+                </details>
+
+                {/* 2. Company Introduction */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <Building2 size={18} className="text-[#E89B10]" />
+                      2. Company Introduction & Left/Right Columns
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Introduction Heading</label>
+                      <input type="text" name="about_intro_title" value={profileData.about_intro_title} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Story / Mission Details</label>
+                      <textarea name="about_intro_desc" rows={4} value={profileData.about_intro_desc} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location Tagline / Based-In details</label>
+                      <input type="text" name="about_intro_location_text" value={profileData.about_intro_location_text} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-6 mb-2 border-b pb-2">Right Column Features (6 Premium Cards)</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 1 Title</label>
+                        <input type="text" name="about_card1_title" value={profileData.about_card1_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white" />
+                        <label className="block text-[10px] text-gray-400 mt-1">Card 1 Desc</label>
+                        <input type="text" name="about_card1_desc" value={profileData.about_card1_desc} onChange={handleProfileChange} className="w-full px-3 py-1 rounded-lg border text-[11px] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 2 Title</label>
+                        <input type="text" name="about_card2_title" value={profileData.about_card2_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white" />
+                        <label className="block text-[10px] text-gray-400 mt-1">Card 2 Desc</label>
+                        <input type="text" name="about_card2_desc" value={profileData.about_card2_desc} onChange={handleProfileChange} className="w-full px-3 py-1 rounded-lg border text-[11px] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 3 Title</label>
+                        <input type="text" name="about_card3_title" value={profileData.about_card3_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white" />
+                        <label className="block text-[10px] text-gray-400 mt-1">Card 3 Desc</label>
+                        <input type="text" name="about_card3_desc" value={profileData.about_card3_desc} onChange={handleProfileChange} className="w-full px-3 py-1 rounded-lg border text-[11px] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 4 Title</label>
+                        <input type="text" name="about_card4_title" value={profileData.about_card4_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white" />
+                        <label className="block text-[10px] text-gray-400 mt-1">Card 4 Desc</label>
+                        <input type="text" name="about_card4_desc" value={profileData.about_card4_desc} onChange={handleProfileChange} className="w-full px-3 py-1 rounded-lg border text-[11px] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 5 Title</label>
+                        <input type="text" name="about_card5_title" value={profileData.about_card5_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white" />
+                        <label className="block text-[10px] text-gray-400 mt-1">Card 5 Desc</label>
+                        <input type="text" name="about_card5_desc" value={profileData.about_card5_desc} onChange={handleProfileChange} className="w-full px-3 py-1 rounded-lg border text-[11px] bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 6 Title</label>
+                        <input type="text" name="about_card6_title" value={profileData.about_card6_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white" />
+                        <label className="block text-[10px] text-gray-400 mt-1">Card 6 Desc</label>
+                        <input type="text" name="about_card6_desc" value={profileData.about_card6_desc} onChange={handleProfileChange} className="w-full px-3 py-1 rounded-lg border text-[11px] bg-white" />
+                      </div>
+                    </div>
+                  </div>
+                </details>
+
+                {/* 3. Founder Spotlight */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <ShieldCheck size={18} className="text-[#E89B10]" />
+                      3. Founder / Owner Spotlight Section
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 space-y-4">
+                    {/* Avatar Upload */}
+                    <div className="p-6 border border-dashed border-gray-200 rounded-2xl bg-gray-50 flex items-center gap-6">
+                      <div className="w-20 h-20 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center relative overflow-hidden shrink-0">
+                        {profileData.about_founder_avatar_url ? (
+                          <img src={profileData.about_founder_avatar_url} alt="Founder Avatar Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-gray-400 font-bold text-lg">
+                            {profileData.about_founder_name ? profileData.about_founder_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'FN'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h4 className="text-sm font-bold text-[#0B1F3A]">Founder Photo Avatar</h4>
+                        <p className="text-xs text-gray-400">Supported types: JPG, PNG, WEBP. Max 2MB.</p>
+                        <div className="flex gap-2">
+                          <label className={`cursor-pointer px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${uploadingFounderAvatar ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#0B1F3A] hover:bg-[#0B1F3A]/90 text-white shadow-md'}`}>
+                            <Upload size={12} />
+                            {uploadingFounderAvatar ? 'Uploading...' : 'Choose Photo'}
+                            <input type="file" accept="image/*" onChange={handleFounderAvatarUpload} disabled={uploadingFounderAvatar} className="hidden" />
+                          </label>
+                          {profileData.about_founder_avatar_url && (
+                            <button type="button" onClick={() => setProfileData(prev => ({ ...prev, about_founder_avatar_url: '' }))} className="px-3 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold flex items-center gap-1">
+                              <Trash2 size={12} />
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Founder Name</label>
+                        <input type="text" name="about_founder_name" value={profileData.about_founder_name} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Founder Role / Title</label>
+                        <input type="text" name="about_founder_title" value={profileData.about_founder_title} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none bg-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Founder Inspiring Story</label>
+                      <textarea name="about_founder_story" rows={4} value={profileData.about_founder_story} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Elegant Quote Card Text</label>
+                      <input type="text" name="about_founder_quote" value={profileData.about_founder_quote} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none bg-white" />
+                    </div>
+                  </div>
+                </details>
+
+                {/* 4. Why Choose Us Bento Grid */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <Sliders size={18} className="text-[#E89B10]" />
+                      4. Why Choose Us Bento Grid (6 Cards)
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 1: Instant Booking</label>
+                      <input type="text" name="about_why_card1_title" value={profileData.about_why_card1_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white mb-1" />
+                      <input type="text" name="about_why_card1_desc" value={profileData.about_why_card1_desc} onChange={handleProfileChange} className="w-full px-3 py-1.5 rounded-lg border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 2: Wide Fleet Collection</label>
+                      <input type="text" name="about_why_card2_title" value={profileData.about_why_card2_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white mb-1" />
+                      <input type="text" name="about_why_card2_desc" value={profileData.about_why_card2_desc} onChange={handleProfileChange} className="w-full px-3 py-1.5 rounded-lg border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 3: Affordable Pricing</label>
+                      <input type="text" name="about_why_card3_title" value={profileData.about_why_card3_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white mb-1" />
+                      <input type="text" name="about_why_card3_desc" value={profileData.about_why_card3_desc} onChange={handleProfileChange} className="w-full px-3 py-1.5 rounded-lg border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 4: Fully Maintained Cars</label>
+                      <input type="text" name="about_why_card4_title" value={profileData.about_why_card4_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white mb-1" />
+                      <input type="text" name="about_why_card4_desc" value={profileData.about_why_card4_desc} onChange={handleProfileChange} className="w-full px-3 py-1.5 rounded-lg border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 5: Legal Agreements</label>
+                      <input type="text" name="about_why_card5_title" value={profileData.about_why_card5_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white mb-1" />
+                      <input type="text" name="about_why_card5_desc" value={profileData.about_why_card5_desc} onChange={handleProfileChange} className="w-full px-3 py-1.5 rounded-lg border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Card 6: Emergency Support</label>
+                      <input type="text" name="about_why_card6_title" value={profileData.about_why_card6_title} onChange={handleProfileChange} className="w-full px-3 py-2 rounded-lg border text-xs bg-white mb-1" />
+                      <input type="text" name="about_why_card6_desc" value={profileData.about_why_card6_desc} onChange={handleProfileChange} className="w-full px-3 py-1.5 rounded-lg border text-[11px] bg-white" />
+                    </div>
+                  </div>
+                </details>
+
+                {/* 5. Rental Timeline */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <Clock size={18} className="text-[#E89B10]" />
+                      5. Rental Process Timeline (5 Steps)
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="border p-3 rounded-lg bg-gray-50">
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Step 1 Title</label>
+                        <input type="text" name="about_step1_title" value={profileData.about_step1_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                        <label className="block text-[10px] text-gray-400">Step 1 Desc</label>
+                        <textarea name="about_step1_desc" rows={3} value={profileData.about_step1_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                      </div>
+                      <div className="border p-3 rounded-lg bg-gray-50">
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Step 2 Title</label>
+                        <input type="text" name="about_step2_title" value={profileData.about_step2_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                        <label className="block text-[10px] text-gray-400">Step 2 Desc</label>
+                        <textarea name="about_step2_desc" rows={3} value={profileData.about_step2_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                      </div>
+                      <div className="border p-3 rounded-lg bg-gray-50">
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Step 3 Title</label>
+                        <input type="text" name="about_step3_title" value={profileData.about_step3_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                        <label className="block text-[10px] text-gray-400">Step 3 Desc</label>
+                        <textarea name="about_step3_desc" rows={3} value={profileData.about_step3_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                      </div>
+                      <div className="border p-3 rounded-lg bg-gray-50">
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Step 4 Title</label>
+                        <input type="text" name="about_step4_title" value={profileData.about_step4_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                        <label className="block text-[10px] text-gray-400">Step 4 Desc</label>
+                        <textarea name="about_step4_desc" rows={3} value={profileData.about_step4_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                      </div>
+                      <div className="border p-3 rounded-lg bg-gray-50">
+                        <label className="block text-xs font-bold text-gray-500 mb-1">Step 5 Title</label>
+                        <input type="text" name="about_step5_title" value={profileData.about_step5_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                        <label className="block text-[10px] text-gray-400">Step 5 Desc</label>
+                        <textarea name="about_step5_desc" rows={3} value={profileData.about_step5_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                      </div>
+                    </div>
+                  </div>
+                </details>
+
+                {/* 6. Trust & Safety */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <ShieldCheck size={18} className="text-[#E89B10]" />
+                      6. Trust & Safety Section (6 Cards)
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Safety Card 1 (Verified Drivers)</label>
+                      <input type="text" name="about_safety_card1_title" value={profileData.about_safety_card1_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                      <input type="text" name="about_safety_card1_desc" value={profileData.about_safety_card1_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Safety Card 2 (Sanitized Cars)</label>
+                      <input type="text" name="about_safety_card2_title" value={profileData.about_safety_card2_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                      <input type="text" name="about_safety_card2_desc" value={profileData.about_safety_card2_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Safety Card 3 (Insurance Support)</label>
+                      <input type="text" name="about_safety_card3_title" value={profileData.about_safety_card3_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                      <input type="text" name="about_safety_card3_desc" value={profileData.about_safety_card3_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Safety Card 4 (Secure Payments)</label>
+                      <input type="text" name="about_safety_card4_title" value={profileData.about_safety_card4_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                      <input type="text" name="about_safety_card4_desc" value={profileData.about_safety_card4_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Safety Card 5 (GPS Tracking)</label>
+                      <input type="text" name="about_safety_card5_title" value={profileData.about_safety_card5_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                      <input type="text" name="about_safety_card5_desc" value={profileData.about_safety_card5_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Safety Card 6 (24x7 Assistance)</label>
+                      <input type="text" name="about_safety_card6_title" value={profileData.about_safety_card6_title} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-xs bg-white mb-1 font-semibold" />
+                      <input type="text" name="about_safety_card6_desc" value={profileData.about_safety_card6_desc} onChange={handleProfileChange} className="w-full px-2 py-1 rounded border text-[11px] bg-white" />
+                    </div>
+                  </div>
+                </details>
+
+                {/* 7. Final CTA Banner */}
+                <details className="group border border-gray-200 rounded-2xl p-6 bg-gray-50/20">
+                  <summary className="flex items-center justify-between cursor-pointer focus:outline-none list-none">
+                    <h3 className="text-md font-bold text-[#0B1F3A] flex items-center gap-2">
+                      <MessageSquare size={18} className="text-[#E89B10]" />
+                      7. Final Call To Action Banner
+                    </h3>
+                    <span className="transition group-open:-rotate-180">
+                      <span className="material-symbols-outlined text-gray-500">expand_more</span>
+                    </span>
+                  </summary>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CTA Banner Heading</label>
+                      <input type="text" name="about_cta_title" value={profileData.about_cta_title} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CTA Banner Subtitle/Description</label>
+                      <input type="text" name="about_cta_desc" value={profileData.about_cta_desc} onChange={handleProfileChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] bg-white" />
+                    </div>
+                  </div>
+                </details>
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="w-full bg-[#0B1F3A] text-white px-6 py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#0B1F3A]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                >
+                  {savingProfile ? (
+                    <>
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving changes...
+                    </>
+                  ) : (
+                    'Save About Page Settings'
+                  )}
+                </button>
+              </div>
             </form>
           )}
         </div>
