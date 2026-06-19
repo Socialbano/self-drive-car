@@ -12,6 +12,8 @@ interface TestimonialsProps {
   initialTestimonials?: DBTestimonial[];
 }
 
+import { TestimonialCard } from '@/components/ui/TestimonialCard';
+
 export function Testimonials({ initialTestimonials }: TestimonialsProps) {
   const { settings } = useSettings();
   
@@ -82,25 +84,13 @@ export function Testimonials({ initialTestimonials }: TestimonialsProps) {
           >
             {testimonials.map((t, i) => (
               <SwiperSlide key={i} className="h-auto">
-                <div className="h-full bg-white p-8 rounded-3xl border border-gray-100 shadow-[0_10px_40px_-10px_rgba(11,31,58,0.04)] flex flex-col hover:-translate-y-1 transition-transform duration-300">
-                  <div className="flex text-[#E89B10] mb-6">
-                    {[...Array(t.rating)].map((_, j) => (
-                      <span key={j} className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    ))}
-                  </div>
-                  <p className="text-gray-600 mb-8 flex-grow leading-relaxed italic">
-                    "{t.quote}"
-                  </p>
-                  <div className="flex items-center gap-4 mt-auto">
-                    <div className="w-12 h-12 bg-[#0B1F3A]/5 rounded-full flex items-center justify-center font-bold text-[#0B1F3A] font-headline">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-[#0B1F3A]">{t.name}</h4>
-                      <p className="text-xs text-gray-400">{t.role}</p>
-                    </div>
-                  </div>
-                </div>
+                <TestimonialCard
+                  name={t.name}
+                  role={t.role}
+                  quote={t.quote}
+                  rating={t.rating}
+                  variant="white"
+                />
               </SwiperSlide>
             ))}
           </Swiper>

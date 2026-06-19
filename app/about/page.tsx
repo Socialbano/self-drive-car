@@ -5,6 +5,7 @@ import { BUSINESS, whatsappLink } from '@/lib/constants';
 import { getAdminSettings, getTestimonials } from '@/lib/supabase/queries';
 import { ABOUT_DEFAULTS } from '@/lib/about-defaults';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
+import { TestimonialCard } from '@/components/ui/TestimonialCard';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -365,30 +366,14 @@ export default async function AboutPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {testimonials.map((t) => (
-                <div key={t.id} className="p-8 bg-gray-50 border border-gray-100 rounded-3xl hover:border-[#E89B10]/30 hover:bg-white hover:shadow-lg transition-all duration-300 shadow-sm flex flex-col justify-between relative">
-                  <div className="absolute top-6 right-8 opacity-5">
-                    <span className="material-symbols-outlined text-[#0B1F3A] text-6xl">format_quote</span>
-                  </div>
-                  <div>
-                    {/* Stars */}
-                    <div className="flex gap-1 mb-4 text-[#E89B10]">
-                      {Array.from({ length: t.rating || 5 }).map((_, i) => (
-                        <span key={i} className="material-symbols-outlined text-sm shrink-0">star</span>
-                      ))}
-                    </div>
-                    <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-6 font-body italic">
-                      “{t.review_text}”
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                    <div className="w-10 h-10 rounded-full bg-[#0B1F3A]/5 flex items-center justify-center text-[#0B1F3A] font-bold text-sm uppercase">
-                      {t.customer_name[0]}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-[#0B1F3A]">{t.customer_name}</h4>
-                      <p className="text-gray-400 text-[11px] font-semibold tracking-wide uppercase mt-0.5">{t.city} • {t.car_rented || 'Self Drive'}</p>
-                    </div>
-                  </div>
+                <div key={t.id}>
+                  <TestimonialCard
+                    name={t.customer_name}
+                    role={t.car_rented ? `${t.car_rented} (${t.city})` : t.city || 'Self Drive'}
+                    quote={t.review_text}
+                    rating={t.rating || 5}
+                    variant="gray"
+                  />
                 </div>
               ))}
             </div>
