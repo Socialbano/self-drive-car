@@ -21,9 +21,15 @@ export default function AdminLogin() {
   let lastName = 'Rental';
   const trimmedName = (settings?.name || '').trim();
   if (trimmedName) {
-    const nameParts = trimmedName.split(/\s+/);
-    firstName = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
+    if (trimmedName.includes('.')) {
+      const lastDotIndex = trimmedName.lastIndexOf('.');
+      firstName = trimmedName.substring(0, lastDotIndex);
+      lastName = trimmedName.substring(lastDotIndex + 1);
+    } else {
+      const nameParts = trimmedName.split(/\s+/);
+      firstName = nameParts[0] || '';
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -89,7 +95,12 @@ export default function AdminLogin() {
         {/* Branding */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">
-            {firstName}<span className="text-[#E89B10]">{lastName}</span>
+            {firstName}
+            {lastName && (
+              <span className="text-[#E89B10]">
+                {trimmedName.includes('.') ? '.' : ' '}{lastName}
+              </span>
+            )}
           </h1>
           <p className="text-[11px] uppercase tracking-[0.25em] text-slate-400 mt-2">Admin Console</p>
         </div>

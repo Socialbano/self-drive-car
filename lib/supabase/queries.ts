@@ -566,3 +566,61 @@ export async function deleteBlog(id: string): Promise<boolean> {
     return false;
   }
 }
+
+// ======================================
+// TESTIMONIALS ADMIN QUERIES
+// ======================================
+
+export async function getAllTestimonialsAdmin(): Promise<Testimonial[]> {
+  try {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .select('*')
+      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as Testimonial[];
+  } catch (e) {
+    console.error('Error in getAllTestimonialsAdmin:', e);
+    return [];
+  }
+}
+
+export async function upsertTestimonial(testimonialData: Partial<Testimonial>, id?: string): Promise<{ success: boolean; error?: any }> {
+  try {
+    if (id && id !== '') {
+      const { error } = await supabase
+        .from('testimonials')
+        .update(testimonialData)
+        .eq('id', id);
+      if (error) throw error;
+    } else {
+      const { id: _id, ...insertData } = testimonialData;
+      const { error } = await supabase
+        .from('testimonials')
+        .insert([insertData]);
+      if (error) throw error;
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Error in upsertTestimonial:', error);
+    return { success: false, error };
+  }
+}
+
+export async function deleteTestimonial(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('testimonials')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error(`Error deleting testimonial ${id}:`, err);
+    return false;
+  }
+}
+

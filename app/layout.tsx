@@ -89,6 +89,8 @@ export default async function RootLayout({
 
   let initialSettingsData: any = undefined;
   let initialLocationsData: any = undefined;
+  let primaryColor = '#0B1F3A';
+  let accentColor = '#E89B10';
 
   try {
     const rawSettings = await getAdminSettings();
@@ -102,6 +104,8 @@ export default async function RootLayout({
       state = rawSettings.business_state || state;
       pincode = rawSettings.business_pincode || pincode;
       siteUrl = rawSettings.business_site_url || siteUrl;
+      primaryColor = rawSettings.theme_primary_color || primaryColor;
+      accentColor = rawSettings.theme_accent_color || accentColor;
     }
   } catch (err) {
     console.error('Failed to resolve settings in Layout:', err);
@@ -138,7 +142,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className={clsx(poppins.variable, inter.variable, plusJakartaSans.variable, 'light')}>
+    <html lang="en" className={clsx(poppins.variable, inter.variable, plusJakartaSans.variable, 'light')} style={{ '--color-primary': primaryColor, '--color-accent': accentColor } as React.CSSProperties}>
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <script
@@ -151,7 +155,7 @@ export default async function RootLayout({
           <GoogleAnalytics />
           <MetaPixel />
           <PublicOnlyWrapper />
-          <main className="flex min-h-screen flex-col">
+          <main className="flex min-h-screen flex-col relative">
             {children}
           </main>
           <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />

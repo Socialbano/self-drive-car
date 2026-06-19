@@ -57,9 +57,8 @@ export default async function FAQPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
       
-      {/* Page Header */}
       <header className="bg-[#000615] relative overflow-hidden pt-32 pb-24 px-6 lg:px-8 border-b border-white/10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#1152d4] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: 'var(--color-primary)' }}></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#E89B10] rounded-full mix-blend-multiply filter blur-[100px] opacity-10 -translate-x-1/2 translate-y-1/2"></div>
         
         <div className="max-w-4xl mx-auto relative z-10 text-center">
@@ -120,7 +119,7 @@ export default async function FAQPage() {
             </div>
 
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4">
-               <span className="material-symbols-outlined text-[#1152d4] text-2xl">info</span>
+               <span className="material-symbols-outlined text-[var(--color-accent)] text-2xl">info</span>
                <div>
                  <h4 className="font-bold text-[#0B1F3A] mb-1">Rental Requirements</h4>
                  <p className="text-gray-500 text-sm">To rent a car, you must be 21+ years old and hold a valid Indian driving license & original Aadhaar card.</p>

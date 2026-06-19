@@ -6,10 +6,16 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import { useSettings } from '@/components/SettingsProvider';
+import type { Testimonial as DBTestimonial } from '@/types';
 
-export function Testimonials() {
+interface TestimonialsProps {
+  initialTestimonials?: DBTestimonial[];
+}
+
+export function Testimonials({ initialTestimonials }: TestimonialsProps) {
   const { settings } = useSettings();
-  const testimonials = [
+  
+  const staticTestimonials = [
     {
       name: 'Rahul Sharma',
       role: 'Business Owner',
@@ -36,6 +42,16 @@ export function Testimonials() {
     }
   ];
 
+  const testimonials = initialTestimonials && initialTestimonials.length > 0
+    ? initialTestimonials.map(t => ({
+        name: t.customer_name,
+        role: t.car_rented ? `${t.car_rented} (${t.city})` : t.city || 'Verified Customer',
+        quote: t.review_text,
+        rating: t.rating || 5,
+      }))
+    : staticTestimonials;
+
+
   return (
     <section className="section-padding bg-[#f9f9f9] overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -48,7 +64,7 @@ export function Testimonials() {
 
         <div className="relative">
           {/* Decorative quote marks */}
-          <span className="absolute -top-10 -left-6 text-9xl text-[#1152d4]/5 font-serif leading-none z-0">
+          <span className="absolute -top-10 -left-6 text-9xl text-[var(--color-primary)]/5 font-serif leading-none z-0">
             "
           </span>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { BlogPost } from '../blog-data';
-import { whatsappLink } from '@/lib/constants';
+import { whatsappLink, BUSINESS } from '@/lib/constants';
 
 export const article1: BlogPost = {
   id: 1,
@@ -50,7 +50,7 @@ export const article1: BlogPost = {
       </ol>
       <p className="mt-4">
         You can check our exact vehicle models and daily rates on our 
-        <Link href="/cars" className="text-[#1152d4] font-semibold hover:underline ml-1">Fleet page</Link>.
+        <Link href="/cars" className="text-[#E89B10] font-semibold hover:underline ml-1">Fleet page</Link>.
       </p>
 
       <h2 className="text-2xl font-bold text-[#0B1F3A] mt-8 mb-4">Tips for Booking</h2>
@@ -58,8 +58,8 @@ export const article1: BlogPost = {
         Always securely book your vehicle at least 2 days in advance if you need specific models like the Thar or Scorpio, especially around festive weekends or major events. Keep your Driving License and Aadhar handy for our quick, paperless digital KYC.
       </p>
 
-      <div className="bg-[#1152d4]/5 border-l-4 border-[#1152d4] p-6 rounded-r-2xl my-8">
-        <h3 className="text-lg font-bold text-[#1152d4] mb-2">💡 Quick Booking Summary</h3>
+      <div className="bg-[#E89B10]/5 border-l-4 border-[#E89B10] p-6 rounded-r-2xl my-8">
+        <h3 className="text-lg font-bold text-[#E89B10] mb-2">💡 Quick Booking Summary</h3>
         <p className="text-sm">
           We bring the car directly to your requested location, whether you are staying in Vijay Nagar or arriving at the airport.
         </p>
@@ -72,7 +72,7 @@ export const article1: BlogPost = {
         </a>
       </div>
       <div className="flex gap-4 mt-3">
-        <a href="tel:+919999999999" className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={`tel:${BUSINESS.phone}`} className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Call Now for Instant Booking
         </a>
       </div>

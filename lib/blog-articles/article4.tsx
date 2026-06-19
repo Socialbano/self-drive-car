@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { BlogPost } from '../blog-data';
-import { whatsappLink } from '@/lib/constants';
+import { whatsappLink, BUSINESS } from '@/lib/constants';
 
 export const article4: BlogPost = {
   id: 4,
@@ -46,8 +46,8 @@ export const article4: BlogPost = {
         While holding the power of a Thar steering wheel is intoxicating, there are moments you just want to sit in the back with a laptop. If you require a VIP treatment without the driving hassle, we also offer elite <strong>car rental indore with driver</strong> options for these luxury vehicles.
       </p>
 
-      <div className="bg-[#1152d4]/5 border-l-4 border-[#1152d4] p-6 rounded-r-2xl my-8">
-        <h3 className="text-lg font-bold text-[#1152d4] mb-2">💡 Wedding Bookings</h3>
+      <div className="bg-[#E89B10]/5 border-l-4 border-[#E89B10] p-6 rounded-r-2xl my-8">
+        <h3 className="text-lg font-bold text-[#E89B10] mb-2">💡 Wedding Bookings</h3>
         <p className="text-sm">
           Luxury cars sell out weeks in advance during the major Indore wedding seasons. Always pre-book your Scorpio or Verna well ahead of time!
         </p>
@@ -60,7 +60,7 @@ export const article4: BlogPost = {
         </a>
       </div>
       <div className="flex gap-4 mt-3">
-        <a href="tel:+919999999999" className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={`tel:${BUSINESS.phone}`} className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Call Now for Instant VIP Booking
         </a>
       </div>

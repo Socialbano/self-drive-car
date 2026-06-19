@@ -18,9 +18,15 @@ export function Footer() {
   let lastName = 'Rental';
   const trimmedName = settings.name.trim();
   if (trimmedName) {
-    const nameParts = trimmedName.split(/\s+/);
-    firstName = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
+    if (trimmedName.includes('.')) {
+      const lastDotIndex = trimmedName.lastIndexOf('.');
+      firstName = trimmedName.substring(0, lastDotIndex);
+      lastName = trimmedName.substring(lastDotIndex + 1);
+    } else {
+      const nameParts = trimmedName.split(/\s+/);
+      firstName = nameParts[0] || '';
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
   }
 
   return (
@@ -45,7 +51,12 @@ export function Footer() {
                 </div>
               ) : null}
               <span className="text-2xl font-black text-white tracking-widest uppercase font-headline">
-                {firstName}<span className="text-[#E89B10]">{lastName}</span>
+                {firstName}
+                {lastName && (
+                  <span className="text-[#E89B10]">
+                    {trimmedName.includes('.') ? '.' : ' '}{lastName}
+                  </span>
+                )}
               </span>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed">

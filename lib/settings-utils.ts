@@ -38,6 +38,24 @@ export interface BusinessSettings {
   metaPixelId: string;
   siteUrl: string;
   instagramUrl: string;
+  themePrimaryColor: string;
+  themeAccentColor: string;
+  
+  // Special Offers Settings
+  offersSectionTitle: string;
+  offersSectionSubtitle: string;
+  offer1Active: boolean;
+  offer1Title: string;
+  offer1Discount: string;
+  offer1Description: string;
+  offer1BtnText: string;
+  offer1WhatsappMsg: string;
+  offer2Active: boolean;
+  offer2Title: string;
+  offer2Discount: string;
+  offer2Description: string;
+  offer2BtnText: string;
+  offer2WhatsappMsg: string;
 }
 
 export const DEFAULT_SETTINGS: BusinessSettings = {
@@ -78,6 +96,24 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
   metaPixelId: '',
   siteUrl: '',
   instagramUrl: 'https://instagram.com/',
+  themePrimaryColor: '#0B1F3A',
+  themeAccentColor: '#E89B10',
+  
+  // Special Offers Defaults
+  offersSectionTitle: 'Special Offers',
+  offersSectionSubtitle: 'Take advantage of our exclusive deals and save on your next rental',
+  offer1Active: true,
+  offer1Title: 'Weekend Discount',
+  offer1Discount: '20% OFF',
+  offer1Description: 'Get 20% off on weekend rentals. Perfect for your short getaways and weekend adventures.',
+  offer1BtnText: 'Claim Offer',
+  offer1WhatsappMsg: 'Hi! I want to claim the 20% Weekend Discount for my car rental.',
+  offer2Active: true,
+  offer2Title: 'First Booking Offer',
+  offer2Discount: '15% OFF',
+  offer2Description: 'New users get a discount on their first ride. Start your journey with us and save today!',
+  offer2BtnText: 'Get Started',
+  offer2WhatsappMsg: 'Hi! I want to claim the 15% First Booking Offer for my car rental.',
 };
 
 export function mapDatabaseSettings(data: Record<string, any>): BusinessSettings {
@@ -120,5 +156,23 @@ export function mapDatabaseSettings(data: Record<string, any>): BusinessSettings
     metaPixelId: data.business_meta_pixel_id || DEFAULT_SETTINGS.metaPixelId,
     siteUrl: data.business_site_url || DEFAULT_SETTINGS.siteUrl,
     instagramUrl: data.business_instagram_url || DEFAULT_SETTINGS.instagramUrl,
+    themePrimaryColor: data.theme_primary_color || DEFAULT_SETTINGS.themePrimaryColor,
+    themeAccentColor: data.theme_accent_color || DEFAULT_SETTINGS.themeAccentColor,
+    
+    // Special Offers Settings
+    offersSectionTitle: data.offers_section_title || DEFAULT_SETTINGS.offersSectionTitle,
+    offersSectionSubtitle: data.offers_section_subtitle || DEFAULT_SETTINGS.offersSectionSubtitle,
+    offer1Active: data.offer1_active !== undefined ? (data.offer1_active === 'true' || data.offer1_active === true) : DEFAULT_SETTINGS.offer1Active,
+    offer1Title: data.offer1_title || DEFAULT_SETTINGS.offer1Title,
+    offer1Discount: data.offer1_discount || DEFAULT_SETTINGS.offer1Discount,
+    offer1Description: data.offer1_description || DEFAULT_SETTINGS.offer1Description,
+    offer1BtnText: data.offer1_btn_text || DEFAULT_SETTINGS.offer1BtnText,
+    offer1WhatsappMsg: data.offer1_whatsapp_msg || DEFAULT_SETTINGS.offer1WhatsappMsg,
+    offer2Active: data.offer2_active !== undefined ? (data.offer2_active === 'true' || data.offer2_active === true) : DEFAULT_SETTINGS.offer2Active,
+    offer2Title: data.offer2_title || DEFAULT_SETTINGS.offer2Title,
+    offer2Discount: data.offer2_discount || DEFAULT_SETTINGS.offer2Discount,
+    offer2Description: data.offer2_description || DEFAULT_SETTINGS.offer2Description,
+    offer2BtnText: data.offer2_btn_text || DEFAULT_SETTINGS.offer2BtnText,
+    offer2WhatsappMsg: data.offer2_whatsapp_msg || DEFAULT_SETTINGS.offer2WhatsappMsg,
   };
 }

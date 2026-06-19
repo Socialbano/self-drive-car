@@ -80,6 +80,18 @@ export function SettingsProvider({
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      if (settings.themePrimaryColor) {
+        root.style.setProperty('--color-primary', settings.themePrimaryColor);
+      }
+      if (settings.themeAccentColor) {
+        root.style.setProperty('--color-accent', settings.themeAccentColor);
+      }
+    }
+  }, [settings.themePrimaryColor, settings.themeAccentColor]);
+
   return (
     <SettingsContext.Provider value={{ settings, locations, loading, refreshSettings: fetchSettings }}>
       {children}

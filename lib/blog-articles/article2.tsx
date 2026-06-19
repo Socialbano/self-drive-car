@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { BlogPost } from '../blog-data';
-import { whatsappLink } from '@/lib/constants';
+import { whatsappLink, BUSINESS } from '@/lib/constants';
 
 export const article2: BlogPost = {
   id: 2,
@@ -43,7 +43,7 @@ export const article2: BlogPost = {
       </p>
       <p className="mt-4">
         Review our transparent numbers on the 
-        <Link href="/pricing" className="text-[#1152d4] font-semibold hover:underline ml-1">Pricing page</Link>.
+        <Link href="/pricing" className="text-[#E89B10] font-semibold hover:underline ml-1">Pricing page</Link>.
       </p>
 
       <h2 className="text-2xl font-bold text-[#0B1F3A] mt-8 mb-4">The Basic Rules and Document KYC</h2>
@@ -56,8 +56,8 @@ export const article2: BlogPost = {
         <li>A nominal, refundable security deposit is held to ensure traffic rules are respected during the rental timeline.</li>
       </ol>
 
-      <div className="bg-[#1152d4]/5 border-l-4 border-[#1152d4] p-6 rounded-r-2xl my-8">
-        <h3 className="text-lg font-bold text-[#1152d4] mb-2">💡 Drop-off Rule</h3>
+      <div className="bg-[#E89B10]/5 border-l-4 border-[#E89B10] p-6 rounded-r-2xl my-8">
+        <h3 className="text-lg font-bold text-[#E89B10] mb-2">💡 Drop-off Rule</h3>
         <p className="text-sm">
           You can easily schedule a drop-off near locations like Vijay Nagar or Bhanwar Kuan. Just coordinate your time with our operational team.
         </p>
@@ -70,7 +70,7 @@ export const article2: BlogPost = {
         </a>
       </div>
       <div className="flex gap-4 mt-3">
-        <a href="tel:+919999999999" className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={`tel:${BUSINESS.phone}`} className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Call Now for Instant Booking
         </a>
       </div>

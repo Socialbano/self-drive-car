@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { BlogPost } from '../blog-data';
-import { whatsappLink } from '@/lib/constants';
+import { whatsappLink, BUSINESS } from '@/lib/constants';
 
 export const article5: BlogPost = {
   id: 5,
@@ -44,8 +44,8 @@ export const article5: BlogPost = {
         <li>You take the keys and drive off!</li>
       </ul>
 
-      <div className="bg-[#1152d4]/5 border-l-4 border-[#1152d4] p-6 rounded-r-2xl my-8">
-        <h3 className="text-lg font-bold text-[#1152d4] mb-2">💡 Outstation Returning Tip</h3>
+      <div className="bg-[#E89B10]/5 border-l-4 border-[#E89B10] p-6 rounded-r-2xl my-8">
+        <h3 className="text-lg font-bold text-[#E89B10] mb-2">💡 Outstation Returning Tip</h3>
         <p className="text-sm">
           If you took a <strong>car rental in indore for outstation</strong>, you don't necessarily have to return it exactly where you picked it up. Pick it up at Vijay Nagar and drop it off at the Airport on your way out! (Small location-handling fees may apply).
         </p>
@@ -58,7 +58,7 @@ export const article5: BlogPost = {
         </a>
       </div>
       <div className="flex gap-4 mt-3">
-        <a href="tel:+919999999999" className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={`tel:${BUSINESS.phone}`} className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Call Now for Instant Drop-off Status
         </a>
       </div>

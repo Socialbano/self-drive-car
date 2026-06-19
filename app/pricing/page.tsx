@@ -55,7 +55,7 @@ function PricingTable({ cars, title }: { cars: Car[]; title: string }) {
                           className="w-full h-full object-cover mix-blend-multiply"
                         />
                       </div>
-                      <span className="font-bold text-[#0B1F3A] group-hover:text-[#1152d4] transition-colors">{car.name}</span>
+                      <span className="font-bold text-[#0B1F3A] group-hover:text-[var(--color-accent)] transition-colors">{car.name}</span>
                     </div>
                   </td>
                   <td className="px-6 py-5">
@@ -63,7 +63,7 @@ function PricingTable({ cars, title }: { cars: Car[]; title: string }) {
                       {car.transmission}
                     </span>
                   </td>
-                  <td className="px-6 py-5 font-black text-[#1152d4]">₹{car.price_12hr?.toLocaleString()}</td>
+                  <td className="px-6 py-5 font-black text-[var(--color-primary)]">₹{car.price_12hr?.toLocaleString()}</td>
                   <td className="px-6 py-5 font-black text-[#E89B10]">₹{car.price_24hr?.toLocaleString()}</td>
                   <td className="px-6 py-5 font-semibold text-gray-600 hidden md:table-cell">₹0 (T&C Apply)</td>
                 </tr>
@@ -111,9 +111,8 @@ export default async function PricingPage() {
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
       <Navbar />
       
-      {/* Page Header */}
       <header className="bg-[#000615] relative overflow-hidden pt-32 pb-24 px-6 lg:px-8 border-b border-white/10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#1152d4] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: 'var(--color-primary)' }}></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#E89B10] rounded-full mix-blend-multiply filter blur-[100px] opacity-10 -translate-x-1/2 translate-y-1/2"></div>
         
         <div className="max-w-4xl mx-auto relative z-10 text-center">
@@ -162,7 +161,7 @@ export default async function PricingPage() {
           {policies.map((policy, i) => (
             <div key={i} className="bg-white p-8 rounded-3xl border border-gray-100 flex items-start gap-4">
               <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[#1152d4]">{policy.icon}</span>
+                <span className="material-symbols-outlined text-[var(--color-accent)]">{policy.icon}</span>
               </div>
               <div>
                 <h4 className="font-bold text-[#0B1F3A] mb-2">{policy.title}</h4>

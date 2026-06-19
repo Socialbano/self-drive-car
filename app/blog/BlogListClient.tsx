@@ -56,7 +56,7 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                      <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold text-[#1152d4]">
+                      <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold text-[var(--color-accent)]">
                         {article.category}
                       </div>
                       {article.locations && (
@@ -70,7 +70,7 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
                   <div className="p-6 md:p-8 flex flex-col flex-grow">
                     <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">{article.date}</p>
                     <Link href={`/blog/${article.slug}`}>
-                      <h2 className="text-xl font-bold text-[#0B1F3A] mb-3 group-hover:text-[#1152d4] transition-colors line-clamp-2">
+                      <h2 className="text-xl font-bold text-[#0B1F3A] mb-3 group-hover:text-[var(--color-accent)] transition-colors line-clamp-2">
                         {article.title}
                       </h2>
                     </Link>
@@ -92,7 +92,7 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
               <p className="text-gray-500 mt-2">Try adjusting your search, category, or location filters.</p>
               <button 
                 onClick={() => { setSearchQuery(''); setActiveCategory(null); setActiveLocationId(null); }}
-                className="mt-6 font-semibold text-[#1152d4]"
+                className="mt-6 font-semibold text-[var(--color-accent)]"
               >
                 Clear Filters
               </button>
@@ -127,9 +127,9 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
               <li>
                 <button 
                   onClick={() => setActiveLocationId(null)} 
-                  className={`w-full flex items-center justify-between group ${activeLocationId === null ? 'text-[#1152d4] font-bold' : 'text-gray-500 font-medium'}`}
+                  className={`w-full flex items-center justify-between group ${activeLocationId === null ? 'text-[var(--color-accent)] font-bold' : 'text-gray-500 font-medium'}`}
                 >
-                  <span className="group-hover:text-[#1152d4] transition-colors">All Cities</span>
+                  <span className="group-hover:text-[var(--color-accent)] transition-colors">All Cities</span>
                   <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg transition-colors">
                     {initialBlogs.length}
                   </span>
@@ -138,9 +138,9 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
               <li>
                 <button 
                   onClick={() => setActiveLocationId('global')} 
-                  className={`w-full flex items-center justify-between group ${activeLocationId === 'global' ? 'text-[#1152d4] font-bold' : 'text-gray-500 font-medium'}`}
+                  className={`w-full flex items-center justify-between group ${activeLocationId === 'global' ? 'text-[var(--color-accent)] font-bold' : 'text-gray-500 font-medium'}`}
                 >
-                  <span className="group-hover:text-[#1152d4] transition-colors">General / Global</span>
+                  <span className="group-hover:text-[var(--color-accent)] transition-colors">General / Global</span>
                   <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg transition-colors">
                     {initialBlogs.filter(p => !p.location_id).length}
                   </span>
@@ -152,10 +152,10 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
                   <li key={loc.id}>
                     <button 
                       onClick={() => setActiveLocationId(loc.id)}
-                      className={`w-full flex items-center justify-between group ${activeLocationId === loc.id ? 'text-[#1152d4] font-bold' : 'text-gray-500 font-medium'}`}
+                      className={`w-full flex items-center justify-between group ${activeLocationId === loc.id ? 'text-[var(--color-accent)] font-bold' : 'text-gray-500 font-medium'}`}
                     >
-                      <span className="group-hover:text-[#1152d4] transition-colors">{loc.name}</span>
-                      <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg group-hover:bg-[#1152d4]/10 group-hover:text-[#1152d4] transition-colors">
+                      <span className="group-hover:text-[var(--color-accent)] transition-colors">{loc.name}</span>
+                      <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg group-hover:bg-[var(--color-accent)]/10 group-hover:text-[var(--color-accent)] transition-colors">
                         {count}
                       </span>
                     </button>
@@ -175,9 +175,9 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
               <li>
                 <button 
                   onClick={() => setActiveCategory(null)} 
-                  className={`w-full flex items-center justify-between group ${!activeCategory ? 'text-[#1152d4] font-bold' : 'text-gray-500 font-medium'}`}
+                  className={`w-full flex items-center justify-between group ${!activeCategory ? 'text-[var(--color-accent)] font-bold' : 'text-gray-500 font-medium'}`}
                 >
-                  <span className="group-hover:text-[#1152d4] transition-colors">All Categories</span>
+                  <span className="group-hover:text-[var(--color-accent)] transition-colors">All Categories</span>
                   <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg transition-colors">{initialBlogs.length}</span>
                 </button>
               </li>
@@ -185,10 +185,10 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
                 <li key={i}>
                   <button 
                     onClick={() => setActiveCategory(cat.name)}
-                    className={`w-full flex items-center justify-between group ${activeCategory === cat.name ? 'text-[#1152d4] font-bold' : 'text-gray-500 font-medium'}`}
+                    className={`w-full flex items-center justify-between group ${activeCategory === cat.name ? 'text-[var(--color-accent)] font-bold' : 'text-gray-500 font-medium'}`}
                   >
-                    <span className="group-hover:text-[#1152d4] transition-colors">{cat.name}</span>
-                    <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg group-hover:bg-[#1152d4]/10 group-hover:text-[#1152d4] transition-colors">{cat.count}</span>
+                    <span className="group-hover:text-[var(--color-accent)] transition-colors">{cat.name}</span>
+                    <span className="bg-gray-50 text-gray-400 text-xs px-2 py-1 rounded-lg group-hover:bg-[var(--color-accent)]/10 group-hover:text-[var(--color-accent)] transition-colors">{cat.count}</span>
                   </button>
                 </li>
               ))}
@@ -210,7 +210,7 @@ export function BlogListClient({ initialBlogs = [], locations = [] }: BlogListCl
                     </div>
                     <div className="flex flex-col justify-center">
                       <Link href={`/blog/${article.slug}`}>
-                        <h4 className="text-sm font-bold text-[#0B1F3A] leading-tight mb-1 group-hover:text-[#1152d4] transition-colors line-clamp-2">{article.title}</h4>
+                        <h4 className="text-sm font-bold text-[#0B1F3A] leading-tight mb-1 group-hover:text-[var(--color-accent)] transition-colors line-clamp-2">{article.title}</h4>
                       </Link>
                       <p className="text-[10px] text-gray-400 font-semibold uppercase">{article.date}</p>
                     </div>

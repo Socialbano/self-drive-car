@@ -147,8 +147,8 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                   <p className="text-xs text-gray-500">Comprehensive cover</p>
                 </div>
               </div>
-              <div className="bg-[#1152d4]/10 border border-[#1152d4]/20 rounded-2xl p-4 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#1152d4]">clean_hands</span>
+              <div className="bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/20 rounded-2xl p-4 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[var(--color-accent)]">clean_hands</span>
                 <div>
                   <h4 className="font-bold text-[#0B1F3A] text-sm">Sanitized</h4>
                   <p className="text-xs text-gray-500">Before every trip</p>
@@ -167,7 +167,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
           {/* Right Column - Pricing & Booking */}
           <div className="space-y-6">
             <div className="bg-[#0B1F3A] rounded-3xl p-8 shadow-2xl relative overflow-hidden sticky top-32">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#1152d4] rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" style={{ backgroundColor: 'var(--color-accent)' }}></div>
               
               <div className="relative z-10">
                 <h1 className="text-3xl font-black text-white font-headline mb-2">{car.name}</h1>

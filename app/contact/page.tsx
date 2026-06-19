@@ -34,9 +34,8 @@ export default async function ContactPage() {
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
       <Navbar />
       
-      {/* Page Header */}
       <header className="bg-[#000615] relative overflow-hidden pt-32 pb-24 px-6 lg:px-8 border-b border-white/10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#1152d4] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: 'var(--color-primary)' }}></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#E89B10] rounded-full mix-blend-multiply filter blur-[100px] opacity-10 -translate-x-1/2 translate-y-1/2"></div>
         
         <div className="max-w-4xl mx-auto relative z-10 text-center">
@@ -68,7 +67,7 @@ export default async function ContactPage() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Address Card */}
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex gap-4">
-                   <div className="w-12 h-12 bg-[#0B1F3A]/5 text-[#1152d4] rounded-2xl flex items-center justify-center shrink-0">
+                   <div className="w-12 h-12 bg-[var(--color-accent)]/10 text-[var(--color-accent)] rounded-2xl flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined">map</span>
                    </div>
                    <div>
@@ -79,23 +78,23 @@ export default async function ContactPage() {
 
                 {/* Phone Card */}
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex gap-4">
-                   <div className="w-12 h-12 bg-[#0B1F3A]/5 text-[#1152d4] rounded-2xl flex items-center justify-center shrink-0">
+                   <div className="w-12 h-12 bg-[var(--color-accent)]/10 text-[var(--color-accent)] rounded-2xl flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined">call</span>
                    </div>
                    <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Call Us 24/7</h4>
-                      <a href={`tel:${phone}`} className="font-bold text-[#0B1F3A] hover:text-[#1152d4] transition-colors">{phoneDisplay}</a>
+                      <a href={`tel:${phone}`} className="font-bold text-[#0B1F3A] hover:text-[var(--color-accent)] transition-colors">{phoneDisplay}</a>
                    </div>
                 </div>
 
                 {/* Email Card */}
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex gap-4">
-                   <div className="w-12 h-12 bg-[#0B1F3A]/5 text-[#1152d4] rounded-2xl flex items-center justify-center shrink-0">
+                   <div className="w-12 h-12 bg-[var(--color-accent)]/10 text-[var(--color-accent)] rounded-2xl flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined">mail</span>
                    </div>
                    <div>
                       <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Email Us</h4>
-                      <a href={`mailto:${email}`} className="font-bold text-[#0B1F3A] hover:text-[#1152d4] transition-colors">{email}</a>
+                      <a href={`mailto:${email}`} className="font-bold text-[#0B1F3A] hover:text-[var(--color-accent)] transition-colors">{email}</a>
                    </div>
                 </div>
 
@@ -121,7 +120,7 @@ export default async function ContactPage() {
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                    <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-gray-100 shadow-xl flex items-center gap-3">
-                      <div className="w-3 h-3 bg-[#1152d4] rounded-full animate-ping"></div>
+                      <div className="w-3 h-3 bg-[var(--color-accent)] rounded-full animate-ping"></div>
                       <span className="font-bold text-[#0B1F3A]">{city}</span>
                    </div>
                 </div>

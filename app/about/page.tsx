@@ -22,12 +22,38 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AboutPage() {
   const settings = await getAdminSettings();
-  const testimonials = await getTestimonials();
-  
-  // Resolve Dynamic Text with database values or local fallback defaults
   const name = settings.business_name || BUSINESS.name;
   const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
   const whatsappMsg = settings.whatsapp_default_msg || 'Hi! I want to book a premium self drive car.';
+  const city = settings.business_city || BUSINESS.city;
+
+  const dbTestimonials = await getTestimonials();
+  const testimonials = dbTestimonials.length > 0 ? dbTestimonials : [
+    {
+      id: 'static-1',
+      customer_name: 'Rahul Sharma',
+      city: city,
+      review_text: "Best experience renting a Thar for my weekend trip to Mandu. The car was spotless and the process was super smooth. Highly recommended!",
+      rating: 5,
+      car_rented: 'Thar'
+    },
+    {
+      id: 'static-2',
+      customer_name: 'Ananya Jain',
+      city: city,
+      review_text: `No security deposit is a game changer. ${name} makes it so easy to get a car whenever you need one. Professional service.`,
+      rating: 5,
+      car_rented: 'Self Drive'
+    },
+    {
+      id: 'static-3',
+      customer_name: 'Vivek Gupta',
+      city: city,
+      review_text: "Very prompt response and clean cars. Used their Fortuner for a family event and it was perfect. Will definitely rent again.",
+      rating: 5,
+      car_rented: 'Fortuner'
+    }
+  ];
 
   const s = {
     heroTitle: settings.about_hero_title || ABOUT_DEFAULTS.about_hero_title,
@@ -138,8 +164,8 @@ export default async function AboutPage() {
                style={{ backgroundImage: 'radial-gradient(rgba(232, 155, 16, 0.03) 1px, transparent 0)', backgroundSize: '40px 40px' }}>
         
         {/* Background Glowing Blobs */}
-        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-[#E89B10] rounded-full blur-[150px] opacity-10 pointer-events-none"></div>
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#1152d4] rounded-full blur-[180px] opacity-10 pointer-events-none"></div>
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full blur-[150px] opacity-10 pointer-events-none" style={{ backgroundColor: 'var(--color-accent)' }}></div>
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full blur-[180px] opacity-10 pointer-events-none" style={{ backgroundColor: 'var(--color-primary)' }}></div>
         
         <div className="max-w-4xl mx-auto z-10 space-y-6">
           <nav className="flex justify-center mb-6 text-xs font-bold tracking-[0.25em] text-[#E89B10] uppercase">
@@ -372,10 +398,10 @@ export default async function AboutPage() {
 
       {/* Final CTA Section - Dark Blue Premium Background for Closure */}
       <section className="bg-white py-24 px-6 lg:px-8 relative z-10 flex justify-center">
-        <div className="max-w-5xl w-full bg-gradient-to-br from-[#0B1F3A] via-[#080E1A] to-[#1152d4] border border-white/10 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
+        <div className="max-w-5xl w-full bg-gradient-brand-cta border border-white/10 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
           {/* Accent decoration blobs */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#E89B10]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-5" style={{ backgroundColor: 'var(--color-accent)' }}></div>
           
           <div className="max-w-2xl mx-auto space-y-6 relative z-10">
             <h2 className="text-3xl md:text-5xl font-black text-white font-headline tracking-tight leading-tight">

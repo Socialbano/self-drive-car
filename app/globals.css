@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-primary: #0B1F3A;
+    --color-accent: #E89B10;
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -32,12 +37,17 @@
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #E89B10 0%, #FFD700 100%);
+    background-image: linear-gradient(135deg, var(--color-accent) 0%, #FFD700 100%);
   }
 
-  .gradient-text-blue {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #1152d4 0%, #5b9cff 100%);
+  .bg-gradient-brand-cta {
+    background: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 85%, var(--color-accent) 15%) 100%);
+  }
+
+  .bg-accent-glow {
+    background-color: var(--color-accent);
+    opacity: 0.2;
   }
 
   .section-padding {
@@ -95,10 +105,10 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B1F3A;
+  background: var(--color-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: #E89B10;
+  background: var(--color-accent);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -116,9 +126,57 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: #E89B10;
+  background: var(--color-accent);
   transition: width 0.3s ease;
 }
 .link-underline:hover::after {
   width: 100%;
 }
+
+/* Color Override System to make tailwind arbitrary classes dynamic */
+.bg-\[\#0b1f3a\], .bg-\[\#0B1F3A\] { background-color: var(--color-primary) !important; }
+.text-\[\#0b1f3a\], .text-\[\#0B1F3A\] { color: var(--color-primary) !important; }
+.border-\[\#0b1f3a\], .border-\[\#0B1F3A\] { border-color: var(--color-primary) !important; }
+.shadow-\[\#0b1f3a\], .shadow-\[\#0B1F3A\] { --tw-shadow-color: var(--color-primary) !important; }
+.ring-\[\#0b1f3a\], .ring-\[\#0B1F3A\] { --tw-ring-color: var(--color-primary) !important; }
+.focus\:ring-\[\#0b1f3a\]:focus, .focus\:ring-\[\#0B1F3A\]:focus { --tw-ring-color: var(--color-primary) !important; }
+
+/* Opacity variants for Primary */
+.bg-\[\#0b1f3a\]\/80, .bg-\[\#0B1F3A\]\/80 { background-color: color-mix(in srgb, var(--color-primary) 80%, transparent) !important; }
+.bg-\[\#0b1f3a\]\/90, .bg-\[\#0B1F3A\]\/90 { background-color: color-mix(in srgb, var(--color-primary) 90%, transparent) !important; }
+.bg-\[\#0b1f3a\]\/10, .bg-\[\#0B1F3A\]\/10 { background-color: color-mix(in srgb, var(--color-primary) 10%, transparent) !important; }
+.bg-\[\#0b1f3a\]\/5, .bg-\[\#0B1F3A\]\/5 { background-color: color-mix(in srgb, var(--color-primary) 5%, transparent) !important; }
+.border-\[\#0b1f3a\]\/20, .border-\[\#0B1F3A\]\/20 { border-color: color-mix(in srgb, var(--color-primary) 20%, transparent) !important; }
+.border-\[\#0b1f3a\]\/10, .border-\[\#0B1F3A\]\/10 { border-color: color-mix(in srgb, var(--color-primary) 10%, transparent) !important; }
+
+/* Hover states for Primary */
+.hover\:bg-\[\#0b1f3a\]\/90:hover, .hover\:bg-\[\#0B1F3A\]\/90:hover { background-color: color-mix(in srgb, var(--color-primary) 90%, transparent) !important; }
+.hover\:bg-\[\#0b1f3a\]:hover, .hover\:bg-\[\#0B1F3A\]:hover { background-color: var(--color-primary) !important; }
+.hover\:text-\[\#0b1f3a\]:hover, .hover\:text-\[\#0B1F3A\]:hover { color: var(--color-primary) !important; }
+
+/* Gradient states for Primary */
+.from-\[\#0b1f3a\], .from-\[\#0B1F3A\] { --tw-gradient-from: var(--color-primary) !important; }
+.to-\[\#0b1f3a\], .to-\[\#0B1F3A\] { --tw-gradient-to: var(--color-primary) !important; }
+
+/* Accent Gold (#e89b10) Overrides */
+.bg-\[\#e89b10\], .bg-\[\#E89B10\] { background-color: var(--color-accent) !important; }
+.text-\[\#e89b10\], .text-\[\#E89B10\] { color: var(--color-accent) !important; }
+.border-\[\#e89b10\], .border-\[\#E89B10\] { border-color: var(--color-accent) !important; }
+.shadow-\[\#e89b10\], .shadow-\[\#E89B10\] { --tw-shadow-color: var(--color-accent) !important; }
+.ring-\[\#e89b10\], .ring-\[\#E89B10\] { --tw-ring-color: var(--color-accent) !important; }
+.focus\:ring-\[\#e89b10\]:focus, .focus\:ring-\[\#E89B10\]:focus { --tw-ring-color: var(--color-accent) !important; }
+
+/* Opacity variants for Accent */
+.bg-\[\#e89b10\]\/10, .bg-\[\#E89B10\]\/10 { background-color: color-mix(in srgb, var(--color-accent) 10%, transparent) !important; }
+.bg-\[\#e89b10\]\/20, .bg-\[\#E89B10\]\/20 { background-color: color-mix(in srgb, var(--color-accent) 20%, transparent) !important; }
+.bg-\[\#e89b10\]\/5, .bg-\[\#E89B10\]\/5 { background-color: color-mix(in srgb, var(--color-accent) 5%, transparent) !important; }
+
+/* Hover states for Accent */
+.hover\:bg-\[\#e89b10\]\/90:hover, .hover\:bg-\[\#E89B10\]\/90:hover { background-color: color-mix(in srgb, var(--color-accent) 90%, transparent) !important; }
+.hover\:bg-\[\#e89b10\]:hover, .hover\:bg-\[\#E89B10\]:hover { background-color: var(--color-accent) !important; }
+.hover\:text-\[\#e89b10\]:hover, .hover\:text-\[\#E89B10\]:hover { color: var(--color-accent) !important; }
+.hover\:border-\[\#e89b10\]:hover, .hover\:border-\[\#E89B10\]:hover { border-color: var(--color-accent) !important; }
+
+/* Gradient states for Accent */
+.from-\[\#e89b10\], .from-\[\#E89B10\] { --tw-gradient-from: var(--color-accent) !important; }
+.to-\[\#e89b10\], .to-\[\#E89B10\] { --tw-gradient-to: var(--color-accent) !important; }

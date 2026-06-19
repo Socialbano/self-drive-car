@@ -15,10 +15,12 @@ const navLinks = [
   { name: 'Location Pages', href: '/admin/locations', icon: 'map' },
   { name: 'Blog Manager', href: '/admin/blog', icon: 'book' },
   { name: 'FAQ Manager', href: '/admin/faq', icon: 'help_center' },
+  { name: 'Testimonials', href: '/admin/testimonials', icon: 'rate_review' },
   { name: 'Pricing', href: '/admin/pricing', icon: 'payments' },
   { name: 'Hero Image', href: '/admin/hero', icon: 'wallpaper' },
   { name: 'Instagram Reels', href: '/admin/reels', icon: 'smart_display' },
   { name: 'Marquee Bar', href: '/admin/marquee', icon: 'campaign' },
+  { name: 'Special Offers', href: '/admin/special-offers', icon: 'local_offer' },
 ];
 
 export function AdminSidebar() {
@@ -76,9 +78,15 @@ export function AdminSidebar() {
     let lastName = 'Rental';
     const trimmedName = (settings?.name || '').trim();
     if (trimmedName) {
-      const nameParts = trimmedName.split(/\s+/);
-      firstName = nameParts[0] || '';
-      lastName = nameParts.slice(1).join(' ') || '';
+      if (trimmedName.includes('.')) {
+        const lastDotIndex = trimmedName.lastIndexOf('.');
+        firstName = trimmedName.substring(0, lastDotIndex);
+        lastName = trimmedName.substring(lastDotIndex + 1);
+      } else {
+        const nameParts = trimmedName.split(/\s+/);
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+      }
     }
 
     return (
@@ -86,7 +94,12 @@ export function AdminSidebar() {
         {/* Brand */}
         <div className="px-6 py-6 border-b border-white/10">
           <h1 className="text-xl font-black tracking-tight text-white uppercase">
-            {firstName}<span className="text-[#E89B10]">{lastName}</span>
+            {firstName}
+            {lastName && (
+              <span className="text-[#E89B10]">
+                {trimmedName.includes('.') ? '.' : ' '}{lastName}
+              </span>
+            )}
           </h1>
           <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1">Admin Console</p>
         </div>

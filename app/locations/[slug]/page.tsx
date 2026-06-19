@@ -139,7 +139,7 @@ export default async function LocationPage({ params }: PageProps) {
         <section className="py-20 bg-white border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="mb-12 text-center">
-              <span className="inline-block bg-[#1152d4]/10 text-[#1152d4] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+              <span className="inline-block bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
                 Local Insights
               </span>
               <h2 className="text-3xl md:text-4xl font-black text-[#0B1F3A] tracking-tight">
@@ -159,14 +159,14 @@ export default async function LocationPage({ params }: PageProps) {
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold text-[#1152d4]">
+                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold text-[var(--color-accent)]">
                       {article.category}
                     </div>
                   </Link>
                   <div className="p-6 flex flex-col flex-grow">
                     <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-2">{article.date}</p>
                     <Link href={`/blog/${article.slug}`}>
-                      <h3 className="text-lg font-bold text-[#0B1F3A] mb-3 group-hover:text-[#1152d4] transition-colors line-clamp-2">
+                      <h3 className="text-lg font-bold text-[#0B1F3A] mb-3 group-hover:text-[var(--color-accent)] transition-colors line-clamp-2">
                         {article.title}
                       </h3>
                     </Link>

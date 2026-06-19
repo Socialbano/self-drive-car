@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { BlogPost } from '../blog-data';
-import { whatsappLink } from '@/lib/constants';
+import { whatsappLink, BUSINESS } from '@/lib/constants';
 
 export const article3: BlogPost = {
   id: 3,
@@ -40,7 +40,7 @@ export const article3: BlogPost = {
       </p>
       <p className="mt-4">
         Explore standard rates on our 
-        <Link href="/pricing" className="text-[#1152d4] font-semibold hover:underline ml-1">Pricing page</Link>, but ensure you WhatsApp us directly to negotiate your specialized monthly bulk discount.
+        <Link href="/pricing" className="text-[#E89B10] font-semibold hover:underline ml-1">Pricing page</Link>, but ensure you WhatsApp us directly to negotiate your specialized monthly bulk discount.
       </p>
 
       <h2 className="text-2xl font-bold text-[#0B1F3A] mt-8 mb-4">Available Car Options</h2>
@@ -53,8 +53,8 @@ export const article3: BlogPost = {
         <li><strong>Hyundai Verna:</strong> Perfect for corporate executives who need to arrive at meetings in style.</li>
       </ol>
 
-      <div className="bg-[#1152d4]/5 border-l-4 border-[#1152d4] p-6 rounded-r-2xl my-8">
-        <h3 className="text-lg font-bold text-[#1152d4] mb-2">💡 Corporate Delivery Radius</h3>
+      <div className="bg-[#E89B10]/5 border-l-4 border-[#E89B10] p-6 rounded-r-2xl my-8">
+        <h3 className="text-lg font-bold text-[#E89B10] mb-2">💡 Corporate Delivery Radius</h3>
         <p className="text-sm">
           We offer specialized monthly drop-offs across major corporate zones including Airport Road, Vijay Nagar, and Bhanwar Kuan.
         </p>
@@ -67,7 +67,7 @@ export const article3: BlogPost = {
         </a>
       </div>
       <div className="flex gap-4 mt-3">
-        <a href="tel:+919999999999" className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
+        <a href={`tel:${BUSINESS.phone}`} className="bg-[#0B1F3A] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:scale-105 transition-all w-full text-center">
           Call Now for Instant Booking
         </a>
       </div>

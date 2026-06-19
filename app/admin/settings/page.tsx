@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { Eye, EyeOff, LockKeyhole, Building2, Phone, Mail, MapPin, Clock, MessageSquare, Map, ShieldCheck, Upload, Trash2, Sliders, FileText, Globe, BarChart3, Info } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, Building2, Phone, Mail, MapPin, Clock, MessageSquare, Map, ShieldCheck, Upload, Trash2, Sliders, FileText, Globe, BarChart3, Info, Gift } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { ABOUT_DEFAULTS } from '@/lib/about-defaults';
 
@@ -69,6 +69,8 @@ export default function AdminSettingsPage() {
     business_meta_pixel_id: '',
     business_site_url: '',
     business_instagram_url: '',
+    theme_primary_color: '',
+    theme_accent_color: '',
     
     // About Section
     about_hero_title: '',
@@ -143,6 +145,22 @@ export default function AdminSettingsPage() {
     about_safety_card6_desc: '',
     about_cta_title: '',
     about_cta_desc: '',
+
+    // Special Offers Section
+    offers_section_title: '',
+    offers_section_subtitle: '',
+    offer1_active: true,
+    offer1_title: '',
+    offer1_discount: '',
+    offer1_description: '',
+    offer1_btn_text: '',
+    offer1_whatsapp_msg: '',
+    offer2_active: true,
+    offer2_title: '',
+    offer2_discount: '',
+    offer2_description: '',
+    offer2_btn_text: '',
+    offer2_whatsapp_msg: '',
   });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -203,6 +221,8 @@ export default function AdminSettingsPage() {
             business_meta_pixel_id: data.business_meta_pixel_id || '',
             business_site_url: data.business_site_url || '',
             business_instagram_url: data.business_instagram_url || '',
+            theme_primary_color: data.theme_primary_color || '#0B1F3A',
+            theme_accent_color: data.theme_accent_color || '#E89B10',
             
             // About Section fallbacks
             about_hero_title: data.about_hero_title || ABOUT_DEFAULTS.about_hero_title,
@@ -277,6 +297,22 @@ export default function AdminSettingsPage() {
             about_safety_card6_desc: data.about_safety_card6_desc || ABOUT_DEFAULTS.about_safety_card6_desc,
             about_cta_title: data.about_cta_title || ABOUT_DEFAULTS.about_cta_title,
             about_cta_desc: data.about_cta_desc || ABOUT_DEFAULTS.about_cta_desc,
+
+            // Special Offers Section
+            offers_section_title: data.offers_section_title || 'Special Offers',
+            offers_section_subtitle: data.offers_section_subtitle || 'Take advantage of our exclusive deals and save on your next rental',
+            offer1_active: data.offer1_active !== undefined ? (data.offer1_active === 'true' || data.offer1_active === true) : true,
+            offer1_title: data.offer1_title || 'Weekend Discount',
+            offer1_discount: data.offer1_discount || '20% OFF',
+            offer1_description: data.offer1_description || 'Get 20% off on weekend rentals. Perfect for your short getaways and weekend adventures.',
+            offer1_btn_text: data.offer1_btn_text || 'Claim Offer',
+            offer1_whatsapp_msg: data.offer1_whatsapp_msg || 'Hi! I want to claim the 20% Weekend Discount for my car rental.',
+            offer2_active: data.offer2_active !== undefined ? (data.offer2_active === 'true' || data.offer2_active === true) : true,
+            offer2_title: data.offer2_title || 'First Booking Offer',
+            offer2_discount: data.offer2_discount || '15% OFF',
+            offer2_description: data.offer2_description || 'New users get a discount on their first ride. Start your journey with us and save today!',
+            offer2_btn_text: data.offer2_btn_text || 'Get Started',
+            offer2_whatsapp_msg: data.offer2_whatsapp_msg || 'Hi! I want to claim the 15% First Booking Offer for my car rental.',
           });
         }
       } catch (err: any) {
@@ -595,6 +631,7 @@ export default function AdminSettingsPage() {
               <Info size={16} />
               About Page
             </button>
+
             <button
               onClick={() => setActiveTab('security')}
               className={`px-5 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${
@@ -730,6 +767,75 @@ export default function AdminSettingsPage() {
                           Remove
                         </button>
                       )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Theme Styling Settings */}
+              <div className="p-6 border border-gray-200 rounded-2xl bg-gray-50/50 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-200/60 pb-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-[#0B1F3A]">Website Theme Colors</h4>
+                    <p className="text-xs text-gray-400">Choose custom colors to change the branding of your website dynamically.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setProfileData(prev => ({ ...prev, theme_primary_color: '#0B1F3A', theme_accent_color: '#E89B10' }))}
+                    className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 text-xs font-bold text-gray-600 transition-all"
+                  >
+                    Reset to Defaults
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Primary Color */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded-full border border-gray-200" style={{ backgroundColor: profileData.theme_primary_color || '#0B1F3A' }} />
+                      Primary Theme Color (Default Navy: #0B1F3A)
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        name="theme_primary_color"
+                        value={profileData.theme_primary_color || '#0B1F3A'}
+                        onChange={handleProfileChange}
+                        className="w-12 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                      />
+                      <input
+                        type="text"
+                        name="theme_primary_color"
+                        value={profileData.theme_primary_color || '#0B1F3A'}
+                        onChange={handleProfileChange}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] transition-all bg-white font-mono uppercase"
+                        placeholder="#0B1F3A"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Accent Color */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded-full border border-gray-200" style={{ backgroundColor: profileData.theme_accent_color || '#E89B10' }} />
+                      Accent / Highlight Color (Default Gold: #E89B10)
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        name="theme_accent_color"
+                        value={profileData.theme_accent_color || '#E89B10'}
+                        onChange={handleProfileChange}
+                        className="w-12 h-10 rounded-lg border border-gray-200 cursor-pointer p-0.5"
+                      />
+                      <input
+                        type="text"
+                        name="theme_accent_color"
+                        value={profileData.theme_accent_color || '#E89B10'}
+                        onChange={handleProfileChange}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E89B10] transition-all bg-white font-mono uppercase"
+                        placeholder="#E89B10"
+                      />
                     </div>
                   </div>
                 </div>

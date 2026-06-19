@@ -8,11 +8,11 @@ export function CTABanner() {
   return (
     <section className="py-24 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-        <div className="bg-gradient-to-br from-[#0B1F3A] to-[#1152d4] rounded-3xl p-8 md:p-16 text-center transform hover:scale-[1.01] transition-transform duration-500 shadow-2xl relative overflow-hidden">
+        <div className="bg-gradient-brand-cta rounded-3xl p-8 md:p-16 text-center transform hover:scale-[1.01] transition-transform duration-500 shadow-2xl relative overflow-hidden">
           
           {/* Abstract Shapes */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#E89B10]/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-glow rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
 
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-black text-white font-headline mb-6 tracking-tight">

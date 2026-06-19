@@ -160,7 +160,7 @@ export default async function SingleBlogPost({ params }: Props) {
       <div className="flex-grow max-w-4xl mx-auto px-6 lg:px-8 pb-20 w-full">
         {/* Render HTML content safely */}
         <article 
-          className="prose prose-lg max-w-none prose-h2:text-3xl prose-h2:font-black prose-h2:text-[#0B1F3A] prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#1152d4] prose-strong:text-[#0B1F3A]"
+          className="prose prose-lg max-w-none prose-h2:text-3xl prose-h2:font-black prose-h2:text-[#0B1F3A] prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[var(--color-accent)] prose-strong:text-[#0B1F3A]"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
@@ -180,9 +180,9 @@ export default async function SingleBlogPost({ params }: Props) {
         )}
 
         {/* Call to Action Book Now */}
-        <div className="mt-16 bg-gradient-to-br from-[#0B1F3A] to-[#1152d4] p-10 rounded-3xl relative overflow-hidden shadow-2xl text-center">
+        <div className="mt-16 bg-gradient-brand-cta p-10 rounded-3xl relative overflow-hidden shadow-2xl text-center">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#E89B10]/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent-glow rounded-full blur-2xl translate-y-1/2 -translate-x-1/4"></div>
             
             <div className="relative z-10 max-w-2xl mx-auto">
                 <span className="inline-block bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-1.5 rounded-full text-white/90 text-sm font-bold uppercase tracking-wider mb-6">

@@ -27,13 +27,14 @@ export default function BookingPopup() {
         setIsOpen(true);
         sessionStorage.setItem('skydeepPopupSeen', 'true');
         
-        // Auto close after 15 seconds
-        setTimeout(() => {
+        // Auto close after 25 seconds
+        const timer = setTimeout(() => {
           setIsOpen(false);
-        }, 15000);
+        }, 25000);
         
         // Remove listener once triggered
         window.removeEventListener('scroll', handleScroll);
+        return () => clearTimeout(timer);
       }
     };
 
@@ -53,7 +54,7 @@ export default function BookingPopup() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
 
           {/* Modal Container */}
@@ -62,120 +63,199 @@ export default function BookingPopup() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-[95vw] md:w-full max-w-[700px] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl z-10 flex flex-col"
+            className="relative w-[95vw] md:w-full max-w-[850px] max-h-[92vh] overflow-y-auto bg-white rounded-[24px] shadow-2xl z-10 flex flex-col md:flex-row overflow-hidden border border-gray-100"
           >
-            {/* Close Button Fixed Top Right Inside Container */}
-            <button
-              onClick={() => setIsOpen(false)}
-              aria-label="Close popup"
-              className="absolute top-4 right-4 z-[60] flex items-center justify-center w-10 h-10 rounded-full bg-white/20 hover:bg-white/90 text-white hover:text-gray-900 border border-white/20 backdrop-blur-md shadow-md transition-all duration-200"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {/* LEFT SIDE PANEL (Dark / Scorpio Image Background) */}
+            <div className="relative w-full md:w-[42%] bg-[#050B14] overflow-hidden flex flex-col justify-between p-6 md:p-8 shrink-0 min-h-[280px] md:min-h-auto z-0">
+              {/* Background Image of Scorpio-N */}
+              <div className="absolute inset-0 z-0">
+                <img
+                  src="/images/scorpio_n_popup.png"
+                  alt="Scorpio N Background"
+                  className="w-full h-full object-cover"
+                />
+                {/* Modern Dark Gradients */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/20 md:bg-gradient-to-r md:from-transparent md:to-slate-950/40" />
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/80" />
+              </div>
 
-            {/* Header Area */}
-            <div className="shrink-0 bg-gradient-to-r from-[#0B1F3A] to-[#1e3a8a] text-white p-6 md:p-8 text-center relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
-              <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
-              
-              <h3 className="text-2xl md:text-3xl font-black font-heading mb-3 flex items-center justify-center gap-3 relative z-10">
-                <span className="text-3xl">🚗</span> Need Help Booking Your Car?
-              </h3>
-              <p className="text-blue-100/90 text-sm md:text-base font-body max-w-lg mx-auto relative z-10 leading-relaxed">
-                Talk to our booking expert & get instant car availability in {settings.city || 'Indore'}.
-              </p>
+              {/* Slanted Divider Overlay on Desktop (md and up) */}
+              <div 
+                className="hidden md:block absolute top-0 bottom-0 right-0 w-16 bg-white z-10"
+                style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
+              />
+
+              {/* Left Top Badge */}
+              <div className="relative z-20 inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full px-3.5 py-1.5 text-[11px] font-bold text-white tracking-wide self-start shadow-sm select-none">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                Available Now
+              </div>
+
+              {/* Left Mid Text Stack */}
+              <div className="relative z-20 space-y-3 mt-auto md:mt-0 md:my-auto pt-16 md:pt-0">
+                <h3 className="text-3xl md:text-4xl lg:text-[40px] font-black text-white font-headline leading-[1.1] tracking-tight uppercase">
+                  Need Help <br />Booking Your <br />
+                  <span className="bg-gradient-to-r from-[#E89B10] to-[#FFD700] bg-clip-text text-transparent">Car?</span>
+                </h3>
+                <p className="text-white/70 text-xs md:text-sm leading-relaxed max-w-[280px]">
+                  Talk to our booking expert & get instant car availability in {settings.city || 'Ujjain'}.
+                </p>
+              </div>
+
+              {/* Left Bottom Trust Badge */}
+              <div className="relative z-20 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-3 md:p-4 flex items-center gap-3 mt-auto md:mt-8 max-w-[240px]">
+                <div className="w-9 h-9 rounded-xl bg-[#E89B10]/20 flex items-center justify-center text-[#E89B10] shrink-0">
+                  <span className="material-symbols-outlined text-lg">verified_user</span>
+                </div>
+                <div className="flex flex-col justify-center">
+                  <p className="text-white text-xs md:text-sm font-black leading-none">Trusted by 1500+</p>
+                  <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest mt-1">Happy Customers</p>
+                </div>
+              </div>
             </div>
 
-            {/* Body Area - Split Layout */}
-            <div className="flex-1 p-4 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8">
-              
-              {/* Left Section - CTA Focus */}
-              <div className="flex-1 flex flex-col gap-4">
-                <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-xs font-bold border border-green-200 shadow-sm self-center md:self-start">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-600"></span>
-                  </span>
-                  Available Now
+            {/* RIGHT SIDE PANEL (White / Form & CTAs) */}
+            <div className="relative flex-grow p-6 md:p-8 flex flex-col justify-between z-10 md:w-[58%] bg-white">
+              {/* Close Button Top Right */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900 transition-colors flex items-center justify-center shadow-sm"
+                aria-label="Close modal"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+
+              <div className="space-y-5 md:space-y-6">
+                {/* Header Title */}
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black text-[#0B1F3A] tracking-tight uppercase">
+                    Connect With Us
+                  </h3>
+                  <p className="text-gray-400 text-xs font-semibold tracking-wide mt-1 leading-none">
+                    We are available 24/7 to assist you
+                  </p>
+                  <div className="w-12 h-1 bg-[#E89B10] rounded-full mt-3" />
                 </div>
-                
-                <a 
+
+                {/* Call Button */}
+                <a
                   href={`tel:${settings.phone}`}
-                  className="group flex flex-col items-center justify-center bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl py-4 transition-all shadow-lg hover:shadow-xl w-full"
+                  className="group flex items-center gap-4 bg-gradient-to-r from-[#16a34a] to-[#15803d] hover:from-[#15803d] hover:to-[#166534] text-white rounded-2xl p-4 transition-all shadow-md hover:shadow-lg w-full text-left"
                 >
-                  <span className="font-bold text-lg md:text-xl flex items-center gap-2 mb-1">
-                    <svg className="w-6 h-6 animate-[pulse_1.5s_ease-in-out_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    Call Now
-                  </span>
-                  <span className="text-2xl md:text-3xl font-black tracking-tight group-hover:text-green-50">{settings.phone}</span>
+                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#15803d] shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-200">
+                    <span className="material-symbols-outlined text-2xl font-black animate-pulse">call</span>
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <span className="text-white/80 text-[10px] font-extrabold uppercase tracking-wider">Call Now</span>
+                    <span className="text-white text-lg md:text-2xl font-black tracking-tight">{settings.phoneDisplay || settings.phone}</span>
+                  </div>
                 </a>
 
-                <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-bold uppercase tracking-widest">or</span>
-                  <div className="flex-grow border-t border-gray-200"></div>
+                {/* OR Divider */}
+                <div className="relative flex items-center py-0.5">
+                  <div className="flex-grow border-t border-gray-150"></div>
+                  <span className="flex-shrink-0 mx-4 text-gray-400 text-[10px] font-extrabold uppercase tracking-widest">or</span>
+                  <div className="flex-grow border-t border-gray-150"></div>
                 </div>
 
-                <a 
-                  href={whatsappLink(`Hi ${settings.name}! I saw the popup on your website and need help booking a car.`, settings.whatsapp)}
+                {/* WhatsApp Button */}
+                <a
+                  href={whatsappLink(`Hi ${settings.name}! I need help booking a self-drive car in ${settings.city}.`, settings.whatsapp)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full border-2 border-[#25D366] text-[#16a34a] bg-white hover:bg-[#25D366] hover:text-white rounded-xl py-3 border-solid font-bold transition-all shadow-sm hover:shadow-md text-[16px] group"
+                  className="flex items-center justify-center gap-2.5 w-full border-2 border-green-500 text-[#15803d] bg-white hover:bg-green-500/5 rounded-2xl py-3.5 font-bold transition-all shadow-sm text-sm md:text-base group"
                 >
-                  <svg className="w-6 h-6 text-[#25D366] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-green-500 fill-current" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
                   Book on WhatsApp
                 </a>
-              </div>
 
-              {/* Decorative Divider hidden on mobile, visible on desktop */}
-              <div className="hidden md:block w-[1px] bg-gray-100 my-4"></div>
+                {/* Why Choose Us Grid Box */}
+                <div className="bg-[#F4F7FC]/80 border border-[#E4ECF8] rounded-2xl p-5 relative overflow-hidden">
+                  {/* Subtle support avatar watermark line-art */}
+                  <div className="absolute bottom-0 right-0 w-24 h-24 text-gray-200/35 pointer-events-none z-0">
+                    <svg className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1.25" viewBox="0 0 100 100">
+                      <path d="M 30,50 A 20,20 0 0,1 70,50" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="13" fill="none" />
+                      <path d="M 42,48 L 58,48" strokeLinecap="round" />
+                      <rect x="27" y="44" width="6" height="12" rx="2" fill="currentColor" />
+                      <rect x="67" y="44" width="6" height="12" rx="2" fill="currentColor" />
+                      <path d="M 67,52 L 60,62 L 54,62" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M 32,78 C 32,70 38,64 50,64 C 62,64 68,70 68,78" />
+                    </svg>
+                  </div>
+                  
+                  <h4 className="text-[#0B1F3A]/90 font-extrabold text-[10px] uppercase tracking-widest mb-4 z-10 relative">
+                    Why Choose {settings.name || 'DriveKro.IN'}?
+                  </h4>
 
-              {/* Right Section - Value Proposition */}
-              <div className="flex-1 flex flex-col justify-center pt-2 md:pt-0">
-                <h4 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 border-b border-gray-100 pb-3 flex items-center md:items-start text-center md:text-left justify-center md:justify-start">
-                  Why {settings.name || 'Us'}?
-                </h4>
-                
-                <ul className="space-y-4 mb-6">
-                  <li className="flex items-center gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  <div className="grid grid-cols-2 gap-4 relative z-10">
+                    {/* Item 1 */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-[#E89B10]/15 flex items-center justify-center text-[#E89B10] shrink-0">
+                        <span className="material-symbols-outlined text-[18px] font-bold">bolt</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#0B1F3A]">Instant Booking</span>
+                        <span className="text-[9px] text-gray-400 font-semibold leading-none mt-1">Get instant availability</span>
+                      </div>
                     </div>
-                    <span className="font-semibold text-gray-700 text-base md:text-lg">Instant Booking</span>
-                  </li>
-                  <li className="flex items-center gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    </div>
-                    <span className="font-semibold text-gray-700 text-base md:text-lg">Low Security Deposit</span>
-                  </li>
-                  <li className="flex items-center gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    </div>
-                    <span className="font-semibold text-gray-700 text-base md:text-lg">24/7 Support</span>
-                  </li>
-                  <li className="flex items-center gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <span className="font-semibold text-gray-700 text-base md:text-lg">Verified Cars</span>
-                  </li>
-                </ul>
 
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 text-center shadow-sm">
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Cars starting from</p>
-                  <p className="text-[#0B1F3A] font-black text-2xl md:text-3xl font-heading mt-1">₹1,200 <span className="text-sm font-medium text-gray-500">/ 12 hrs</span></p>
+                    {/* Item 2 */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0">
+                        <span className="material-symbols-outlined text-[18px] font-bold">security</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#0B1F3A]">Low Security Deposit</span>
+                        <span className="text-[9px] text-gray-400 font-semibold leading-none mt-1">No hidden charges</span>
+                      </div>
+                    </div>
+
+                    {/* Item 3 */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-600 shrink-0">
+                        <span className="material-symbols-outlined text-[18px] font-bold">support_agent</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#0B1F3A]">24/7 Support</span>
+                        <span className="text-[9px] text-gray-400 font-semibold leading-none mt-1">We're here anytime</span>
+                      </div>
+                    </div>
+
+                    {/* Item 4 */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+                        <span className="material-symbols-outlined text-[18px] font-bold">verified</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#0B1F3A]">Verified Cars</span>
+                        <span className="text-[9px] text-gray-400 font-semibold leading-none mt-1">Well maintained cars</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cars Starting From Card */}
+                <div className="bg-[#F4F7FC]/80 border border-[#E4ECF8] p-4 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                  <div className="flex flex-col">
+                    <span className="text-gray-400 text-[9px] font-extrabold tracking-wider uppercase">Cars Starting From</span>
+                    <span className="text-[#0B1F3A] font-black text-2xl md:text-3xl font-headline mt-1 flex items-baseline">
+                      ₹1,200 <span className="text-xs font-bold text-gray-400 ml-1">/ 12 hrs</span>
+                    </span>
+                  </div>
+                  <div className="w-28 h-12 relative select-none">
+                    <img 
+                      src="/images/white_car_starting.png" 
+                      alt="Starting Car"
+                      className="absolute right-0 bottom-[-6px] h-16 w-auto object-contain"
+                    />
+                  </div>
                 </div>
               </div>
-
             </div>
+
           </motion.div>
         </div>
       )}

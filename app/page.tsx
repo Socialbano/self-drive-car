@@ -5,6 +5,7 @@ import { WhyChooseUs } from '@/components/home/WhyChooseUs';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { InstagramReels } from '@/components/home/InstagramReels';
 import { Testimonials } from '@/components/home/Testimonials';
+import { SpecialOffers } from '@/components/home/SpecialOffers';
 import { CTABanner } from '@/components/home/CTABanner';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -16,7 +17,7 @@ export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
 import type { Metadata } from 'next';
-import { getAdminSettings } from '@/lib/supabase/queries';
+import { getAdminSettings, getTestimonials } from '@/lib/supabase/queries';
 import { BUSINESS } from '@/lib/constants';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,7 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function Home() {
+export default async function Home() {
+  const testimonials = await getTestimonials();
+
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
@@ -42,10 +45,12 @@ export default function Home() {
       <WhyChooseUs />
       <HowItWorks />
       <InstagramReels />
-      <Testimonials />
+      <Testimonials initialTestimonials={testimonials} />
+      <SpecialOffers />
       <CTABanner />
       <Footer />
       <WhatsAppFloat />
     </main>
   );
 }
+

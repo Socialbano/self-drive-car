@@ -34,6 +34,8 @@ export function Navbar() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isCarDetailPage = pathname?.startsWith('/cars/') && pathname !== '/cars';
+  const isNavbarWhite = scrolled || isCarDetailPage;
   const [locDropdownOpen, setLocDropdownOpen] = useState(false);
   const [mobileLocOpen, setMobileLocOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -49,9 +51,15 @@ export function Navbar() {
   let lastName = 'Rental';
   const trimmedName = settings.name.trim();
   if (trimmedName) {
-    const nameParts = trimmedName.split(/\s+/);
-    firstName = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
+    if (trimmedName.includes('.')) {
+      const lastDotIndex = trimmedName.lastIndexOf('.');
+      firstName = trimmedName.substring(0, lastDotIndex);
+      lastName = trimmedName.substring(lastDotIndex + 1);
+    } else {
+      const nameParts = trimmedName.split(/\s+/);
+      firstName = nameParts[0] || '';
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
   }
 
   useEffect(() => {
@@ -95,10 +103,13 @@ export function Navbar() {
   return (
     <>
       <nav
-        className={`sticky top-0 w-full z-50 transition-all duration-500 ${scrolled
-          ? 'bg-white/90 backdrop-blur-xl shadow-[0_4px_30px_rgba(11,31,58,0.08)]'
-          : 'bg-white/60 backdrop-blur-md'
-          }`}
+        className={`w-full z-50 transition-all duration-500 ${
+          isCarDetailPage
+            ? 'sticky top-0 bg-white/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(11,31,58,0.08)] border-b border-gray-100'
+            : scrolled
+            ? 'fixed top-0 bg-white/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(11,31,58,0.08)] border-b border-gray-100'
+            : 'absolute top-0 bg-black/20 backdrop-blur-[3px] border-b border-white/5'
+        }`}
       >
         <div className="flex justify-between items-center px-6 lg:px-8 py-3.5 max-w-7xl mx-auto">
           {/* Logo */}
@@ -127,10 +138,15 @@ export function Navbar() {
 
             {/* Logo Text Stack */}
             <div className="flex flex-col leading-none pt-0.5 justify-center">
-              <span className="text-[19px] md:text-[22px] font-black tracking-[0.02em] text-[#0f172a] font-headline mb-1 transition-colors duration-300">
-                {firstName} <span className="bg-gradient-to-br from-[#E89B10] to-[#c7820a] bg-clip-text text-transparent group-hover:from-[#0f172a] group-hover:to-[#0f172a] transition-all duration-300">{lastName}</span>
+              <span className={`text-[19px] md:text-[22px] font-black tracking-[0.02em] font-headline mb-1 transition-colors duration-300 ${isNavbarWhite ? 'text-[#0B1F3A]' : 'text-white'}`}>
+                {firstName}
+                {lastName && (
+                  <span className="bg-gradient-to-br from-[#E89B10] to-[#c7820a] bg-clip-text text-transparent group-hover:from-white group-hover:to-white transition-all duration-300">
+                    {trimmedName.includes('.') ? '.' : ' '}{lastName}
+                  </span>
+                )}
               </span>
-              <span className="text-[9px] md:text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.18em] transition-colors duration-300 group-hover:text-slate-500">
+              <span className={`text-[9px] md:text-[10.5px] font-bold uppercase tracking-[0.18em] transition-colors duration-300 ${isNavbarWhite ? 'text-slate-400 group-hover:text-slate-500' : 'text-white/60 group-hover:text-white'}`}>
                 {settings.subtitle || 'Car Rental Services'}
               </span>
             </div>
@@ -143,8 +159,12 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`relative px-4 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 ${isActive(link.href)
-                  ? 'text-[#0B1F3A] bg-[#0B1F3A]/5'
-                  : 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
+                  ? isNavbarWhite
+                    ? 'text-[#0B1F3A] bg-[#0B1F3A]/5 font-bold'
+                    : 'text-[#E89B10] bg-white/10 font-bold'
+                  : isNavbarWhite
+                    ? 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
               >
                 {link.label}
@@ -164,8 +184,12 @@ export function Navbar() {
               <button
                 onClick={() => setLocDropdownOpen(!locDropdownOpen)}
                 className={`relative px-4 py-2 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 flex items-center gap-1.5 ${isLocationActive
-                  ? 'text-[#0B1F3A] bg-[#0B1F3A]/5'
-                  : 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
+                  ? isNavbarWhite
+                    ? 'text-[#0B1F3A] bg-[#0B1F3A]/5'
+                    : 'text-[#E89B10] bg-white/10'
+                  : isNavbarWhite
+                    ? 'text-[#0B1F3A]/70 hover:text-[#0B1F3A] hover:bg-[#0B1F3A]/5'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
               >
                 Locations
@@ -231,10 +255,13 @@ export function Navbar() {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-4">
             <a
               href={`tel:${settings.phone}`}
-              className="flex items-center gap-2 text-sm font-semibold text-[#0B1F3A]/70 hover:text-[#0B1F3A] transition-colors"
+              className={`flex items-center gap-2 text-sm font-bold transition-colors ${isNavbarWhite
+                ? 'text-[#0B1F3A]/75 hover:text-[#0b1f3a]'
+                : 'text-white/80 hover:text-white'
+                }`}
             >
               <span className="material-symbols-outlined text-lg">call</span>
               {settings.phoneDisplay}
@@ -243,7 +270,10 @@ export function Navbar() {
               href={whatsappLink(WHATSAPP_MESSAGES.hero)}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[#0B1F3A] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-[#0B1F3A]/90 transition-all duration-300 hover:shadow-lg hover:shadow-[#0B1F3A]/20 active:scale-95"
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg active:scale-95 ${isNavbarWhite
+                ? 'bg-[#0B1F3A] text-white hover:bg-[#0B1F3A]/90 hover:shadow-[#0B1F3A]/20'
+                : 'bg-[#E89B10] text-[#0B1F3A] hover:bg-[#d48c0b] hover:shadow-[#E89B10]/20'
+                }`}
             >
               Book Now
             </a>
@@ -252,21 +282,24 @@ export function Navbar() {
           {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl hover:bg-[#0B1F3A]/5 transition-colors"
+            className={`lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${isNavbarWhite
+              ? 'hover:bg-[#0B1F3A]/5'
+              : 'hover:bg-white/10'
+              }`}
             aria-label="Toggle menu"
           >
             <div className="flex flex-col gap-1.5 w-5">
               <span
-                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-2' : ''
-                  }`}
+                className={`h-0.5 rounded-full transition-all duration-300 ${isNavbarWhite ? 'bg-[#0B1F3A]' : 'bg-white'
+                  } ${mobileOpen ? 'rotate-45 translate-y-2' : ''}`}
               />
               <span
-                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''
-                  }`}
+                className={`h-0.5 rounded-full transition-all duration-300 ${isNavbarWhite ? 'bg-[#0B1F3A]' : 'bg-white'
+                  } ${mobileOpen ? 'opacity-0' : ''}`}
               />
               <span
-                className={`h-0.5 bg-[#0B1F3A] rounded-full transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-2' : ''
-                  }`}
+                className={`h-0.5 rounded-full transition-all duration-300 ${isNavbarWhite ? 'bg-[#0B1F3A]' : 'bg-white'
+                  } ${mobileOpen ? '-rotate-45 -translate-y-2' : ''}`}
               />
             </div>
           </button>
