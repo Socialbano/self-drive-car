@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS public.admin_settings CASCADE;
 DROP TABLE IF EXISTS public.marquee_messages CASCADE;
 DROP TABLE IF EXISTS public.instagram_reels CASCADE;
 DROP TABLE IF EXISTS public.locations CASCADE;
+DROP TABLE IF EXISTS public.blogs CASCADE;
 
 -- 2. CREATE public.cars TABLE
 CREATE TABLE public.cars (
@@ -209,31 +210,31 @@ ALTER TABLE public.marquee_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.instagram_reels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY;
 
--- 1. Create full access policies for public/anonymous users (Admin panel compatibility)
-CREATE POLICY "anon_full_cars" ON public.cars FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_car_images" ON public.car_images FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_leads" ON public.leads FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_faqs" ON public.faqs FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_testimonials" ON public.testimonials FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_admin_settings" ON public.admin_settings FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_invoices" ON public.invoices FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_agreements" ON public.agreements FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_marquee_messages" ON public.marquee_messages FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_instagram_reels" ON public.instagram_reels FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_full_locations" ON public.locations FOR ALL TO anon USING (true) WITH CHECK (true);
+-- 1. Secure policies for public/anonymous users (Read-only for public tables, Insert-only for leads, no access to sensitive data)
+CREATE POLICY "anon_read_active_cars" ON public.cars FOR SELECT TO anon USING (is_active = true);
+CREATE POLICY "anon_read_car_images" ON public.car_images FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_insert_leads" ON public.leads FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon_read_active_faqs" ON public.faqs FOR SELECT TO anon USING (is_active = true);
+CREATE POLICY "anon_read_approved_testimonials" ON public.testimonials FOR SELECT TO anon USING (is_approved = true);
+CREATE POLICY "anon_read_settings" ON public.admin_settings FOR SELECT TO anon USING (true);
+CREATE POLICY "anon_read_active_marquee" ON public.marquee_messages FOR SELECT TO anon USING (is_active = true);
+CREATE POLICY "anon_read_active_reels" ON public.instagram_reels FOR SELECT TO anon USING (is_active = true);
+CREATE POLICY "anon_read_active_locations" ON public.locations FOR SELECT TO anon USING (is_active = true);
 
--- 2. Create full access policies for authenticated users
-CREATE POLICY "authenticated_full_cars" ON public.cars FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_car_images" ON public.car_images FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_leads" ON public.leads FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_faqs" ON public.faqs FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_testimonials" ON public.testimonials FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_admin_settings" ON public.admin_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_invoices" ON public.invoices FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_agreements" ON public.agreements FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_marquee_messages" ON public.marquee_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_instagram_reels" ON public.instagram_reels FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "authenticated_full_locations" ON public.locations FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- Note: No anonymous policies are created for public.invoices and public.agreements to protect customer data.
+
+-- 2. Full access policies for authenticated users (Admin Panel)
+CREATE POLICY "auth_manage_cars" ON public.cars FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_car_images" ON public.car_images FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_leads" ON public.leads FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_faqs" ON public.faqs FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_testimonials" ON public.testimonials FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_settings" ON public.admin_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_invoices" ON public.invoices FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_agreements" ON public.agreements FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_marquee" ON public.marquee_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_reels" ON public.instagram_reels FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "auth_manage_locations" ON public.locations FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- =========================================================================
 -- SEED INITIAL DATA
@@ -488,13 +489,41 @@ ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
 
 -- Policies
 DROP POLICY IF EXISTS "Allow public read blogs" ON public.blogs;
-CREATE POLICY "Allow public read blogs" ON public.blogs FOR SELECT TO anon USING (true);
-
 DROP POLICY IF EXISTS "Allow admin full access blogs" ON public.blogs;
-CREATE POLICY "Allow admin full access blogs" ON public.blogs FOR ALL TO authenticated USING (true) WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Allow anon full access blogs" ON public.blogs;
-CREATE POLICY "Allow anon full access blogs" ON public.blogs FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "anon_read_blogs" ON public.blogs;
+DROP POLICY IF EXISTS "auth_manage_blogs" ON public.blogs;
+
+CREATE POLICY "anon_read_blogs" ON public.blogs FOR SELECT TO anon USING (true);
+CREATE POLICY "auth_manage_blogs" ON public.blogs FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Database Indexes for Performance Optimization
+CREATE INDEX IF NOT EXISTS idx_cars_slug ON public.cars(slug);
+CREATE INDEX IF NOT EXISTS idx_cars_active_featured ON public.cars(is_active, is_featured);
+CREATE INDEX IF NOT EXISTS idx_cars_display_order ON public.cars(display_order);
+
+CREATE INDEX IF NOT EXISTS idx_leads_status ON public.leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_created_at ON public.leads(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_faqs_active_order ON public.faqs(is_active, display_order);
+
+CREATE INDEX IF NOT EXISTS idx_testimonials_approved ON public.testimonials(is_approved);
+CREATE INDEX IF NOT EXISTS idx_testimonials_order ON public.testimonials(display_order);
+
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON public.invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_created ON public.invoices(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_agreements_created ON public.agreements(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_blogs_slug ON public.blogs(slug);
+CREATE INDEX IF NOT EXISTS idx_blogs_location ON public.blogs(location_id);
+CREATE INDEX IF NOT EXISTS idx_blogs_created ON public.blogs(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_locations_slug ON public.locations(slug);
+CREATE INDEX IF NOT EXISTS idx_locations_active_order ON public.locations(is_active, display_order);
+
+CREATE INDEX IF NOT EXISTS idx_marquee_active ON public.marquee_messages(is_active, priority);
+CREATE INDEX IF NOT EXISTS idx_reels_active ON public.instagram_reels(is_active, priority);
 
 -- Reload Schema Cache
 NOTIFY pgrst, 'reload schema';
