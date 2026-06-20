@@ -87,7 +87,7 @@ export default async function PricingPage() {
   
   const hatchbacks = cars.filter(c => c.car_type === 'hatchback');
   const sedans = cars.filter(c => c.car_type === 'sedan');
-  const suvs = cars.filter(c => c.car_type === 'suv' || c.car_type === 'luxury');
+  const suvs = cars.filter(c => c.car_type === 'suv' || c.car_type === 'luxury' || c.car_type === 'muv');
 
   const policies = [
     {

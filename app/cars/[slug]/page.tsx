@@ -239,6 +239,79 @@ export default async function CarDetailPage({ params }: { params: { slug: string
             </div>
           </div>
         </div>
+
+        {/* Similar Cars Section */}
+        {similarCars && similarCars.length > 0 && (
+          <div className="mt-20 pt-12 border-t border-gray-150">
+            <h3 className="text-2xl font-black text-[#0B1F3A] mb-8 font-headline">Similar Cars</h3>
+            <div className="flex overflow-x-auto pb-4 gap-6 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-x-visible md:pb-0">
+              {similarCars.map((simCar) => (
+                <div 
+                  key={simCar.id} 
+                  className="min-w-[280px] md:min-w-0 bg-white rounded-3xl border border-gray-100 p-4 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 snap-start"
+                >
+                  {/* Image Container */}
+                  <div className="bg-[#F8F9FA] rounded-2xl aspect-[1.6] relative flex items-center justify-center overflow-hidden mb-4">
+                    {/* Yellow Logo Badge */}
+                    <div className="absolute top-3 left-3 w-8 h-8 rounded-lg bg-[#E89B10] flex items-center justify-center text-white shadow-sm z-10">
+                      <span className="material-symbols-outlined text-base">directions_car</span>
+                    </div>
+                    {simCar.is_featured && (
+                      <span className="absolute top-3 right-3 bg-[#0B1F3A] text-white px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider z-10 shadow-sm">
+                        Featured
+                      </span>
+                    )}
+                    <img 
+                      src={simCar.image_url || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80'} 
+                      alt={`${simCar.name} self drive rental`}
+                      className="w-4/5 h-4/5 object-contain transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                  
+                  {/* Title */}
+                  <h4 className="text-base font-bold text-[#0B1F3A] mb-3 leading-tight truncate px-1">
+                    {simCar.name}
+                  </h4>
+                  
+                  {/* Specifications */}
+                  <div className="space-y-2.5 border-b border-gray-100 pb-4 mb-4 px-1">
+                    {/* Gear Type */}
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[#FF4500] text-[18px] font-bold">motion_photos_on</span>
+                        <span>Gear Type</span>
+                      </div>
+                      <span className="font-bold text-[#0B1F3A] capitalize">{simCar.transmission}</span>
+                    </div>
+                    
+                    {/* Fuel Type */}
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[#FF4500] text-[18px] font-bold">local_gas_station</span>
+                        <span>Fuel Type</span>
+                      </div>
+                      <span className="font-bold text-[#0B1F3A] capitalize">{simCar.fuel_type}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Price & Action */}
+                  <div className="flex items-center justify-between mt-auto px-1">
+                    <span className="text-[#0B1F3A] font-black text-lg">
+                      ₹{simCar.price_24hr?.toLocaleString()}<span className="text-[10px] text-gray-400 font-normal">/day</span>
+                    </span>
+                    
+                    <Link 
+                      href={`/cars/${simCar.slug}`}
+                      className="w-10 h-10 rounded-full bg-[#FF4500] hover:bg-[#E03E00] flex items-center justify-center text-white transition-all shadow-sm active:scale-95 hover:rotate-45"
+                    >
+                      <span className="material-symbols-outlined text-sm font-black">arrow_outward</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <Footer />

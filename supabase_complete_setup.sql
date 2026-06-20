@@ -22,7 +22,7 @@ CREATE TABLE public.cars (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     slug VARCHAR(255) UNIQUE NOT NULL,
-    car_type VARCHAR(50) CHECK (car_type IN ('hatchback', 'sedan', 'suv', 'luxury', 'electric')),
+    car_type VARCHAR(50) CHECK (car_type IN ('hatchback', 'sedan', 'suv', 'luxury', 'electric', 'muv')),
     fuel_type VARCHAR(50) CHECK (fuel_type IN ('petrol', 'diesel', 'cng', 'electric')),
     transmission VARCHAR(50) CHECK (transmission IN ('manual', 'automatic')),
     seats INTEGER NOT NULL DEFAULT 5,

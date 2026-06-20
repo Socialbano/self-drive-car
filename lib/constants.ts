@@ -11,7 +11,7 @@ export const BUSINESS = {
   email: '',
 } as const;
 
-export const CAR_TYPES = ['hatchback', 'sedan', 'suv', 'luxury', 'electric'] as const;
+export const CAR_TYPES = ['hatchback', 'sedan', 'suv', 'luxury', 'electric', 'muv'] as const;
 export const FUEL_TYPES = ['petrol', 'diesel', 'cng', 'electric'] as const;
 export const TRANSMISSIONS = ['manual', 'automatic'] as const;
 export const LEAD_STATUSES = ['new', 'contacted', 'booked', 'closed'] as const;
