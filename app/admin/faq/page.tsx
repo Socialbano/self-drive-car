@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase/client';
 import { HelpCircle, Plus, Trash2, Edit2, Sliders, Check, X, ShieldAlert } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
+import { sanitizeInput, sanitizeHTML } from '@/lib/client-auth';
+
 interface DBFAQ {
   id: string;
   question: string;
@@ -86,11 +88,11 @@ export default function AdminFAQPage() {
     setSaving(true);
 
     const payload = {
-      question: formQuestion.trim(),
-      answer: formAnswer.trim(),
-      category: formCategory.trim(),
-      display_order: formDisplayOrder,
-      is_active: formActive,
+      question: sanitizeInput(formQuestion),
+      answer: sanitizeHTML(formAnswer),
+      category: sanitizeInput(formCategory),
+      display_order: Number(formDisplayOrder) || 0,
+      is_active: !!formActive,
     };
 
     try {
@@ -290,9 +292,22 @@ export default function AdminFAQPage() {
         </div>
 
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-400 text-xs font-semibold">Loading questions...</span>
+          <div className="p-8 space-y-4 animate-pulse">
+            {[...Array(5)].map((_, idx) => (
+              <div key={idx} className="flex items-center gap-6 py-4 border-b border-gray-100">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-100 rounded w-1/2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/3" />
+                </div>
+                <div className="w-24 h-5 bg-gray-100 rounded" />
+                <div className="w-12 h-4 bg-gray-100 rounded text-center" />
+                <div className="w-16 h-6 bg-gray-100 rounded-full" />
+                <div className="flex gap-2 text-right justify-end w-16">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : faqs.length === 0 ? (
           <div className="py-24 text-center">

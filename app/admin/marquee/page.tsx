@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import type { MarqueeMessage } from '@/types';
 
+import { sanitizeInput } from '@/lib/client-auth';
+
 export default function AdminMarqueePage() {
   const [messages, setMessages] = useState<MarqueeMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,11 +61,11 @@ export default function AdminMarqueePage() {
     setSaving(true);
 
     const payload = {
-      text: formText.trim(),
+      text: sanitizeInput(formText),
       icon: formIcon,
-      link: formLink.trim() || null,
-      priority: formPriority,
-      is_active: formActive,
+      link: sanitizeInput(formLink) || null,
+      priority: Number(formPriority) || 0,
+      is_active: !!formActive,
       updated_at: new Date().toISOString(),
     };
 

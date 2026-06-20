@@ -133,10 +133,32 @@ export default function AdminSpecialOffersPage() {
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="p-16 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-              <span className="text-gray-500 text-sm font-medium">Fetching settings...</span>
+          <div className="p-8 space-y-6 animate-pulse">
+            <div className="p-6 border border-gray-100 rounded-2xl bg-gray-50/30 space-y-4">
+              <div className="h-5 bg-gray-100 rounded w-1/4 mb-2" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-24" />
+                  <div className="h-10 bg-gray-100 rounded w-full" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-32" />
+                  <div className="h-10 bg-gray-100 rounded w-full" />
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-2xl bg-gray-50/30 space-y-4">
+              <div className="h-5 bg-gray-100 rounded w-1/3 mb-2" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-24" />
+                  <div className="h-10 bg-gray-100 rounded w-full" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-32" />
+                  <div className="h-10 bg-gray-100 rounded w-full" />
+                </div>
+              </div>
             </div>
           </div>
         ) : (

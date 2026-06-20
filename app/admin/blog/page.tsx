@@ -6,6 +6,8 @@ import { useSettings } from '@/components/SettingsProvider';
 import { BookOpen, Plus, Trash2, Edit2, Check, X, HelpCircle, MapPin, Calendar, Tag, Globe, MessageSquare } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
+import { sanitizeInput, sanitizeHTML } from '@/lib/client-auth';
+
 interface DBLocation {
   id: string;
   name: string;
@@ -39,6 +41,7 @@ export default function AdminBlogPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Form State
   const [editId, setEditId] = useState<string | null>(null);
@@ -156,17 +159,22 @@ export default function AdminBlogPage() {
     const finalCategory = formIsCustomCategory ? formCustomCategory.trim() : formCategory;
     const finalLocationId = formLocationId === 'global' ? null : formLocationId;
 
+    const sanitizedFAQs = formFAQs.map(faq => ({
+      question: sanitizeInput(faq.question),
+      answer: sanitizeHTML(faq.answer)
+    }));
+
     const payload = {
-      title: formTitle.trim(),
-      slug: formSlug.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-'),
-      meta_description: formMetaDesc.trim() || formExcerpt.trim() || formTitle.trim(),
-      excerpt: formExcerpt.trim() || formTitle.trim(),
-      date: formDate.trim(),
-      category: finalCategory || 'Comprehensive Guides',
-      image: formImage.trim() || '/images/blog/default.jpg',
-      content: formContent,
+      title: sanitizeInput(formTitle),
+      slug: sanitizeInput(formSlug).toLowerCase().replace(/[^a-z0-9-_]/g, '-'),
+      meta_description: sanitizeInput(formMetaDesc || formExcerpt || formTitle),
+      excerpt: sanitizeInput(formExcerpt || formTitle),
+      date: sanitizeInput(formDate),
+      category: sanitizeInput(finalCategory) || 'Comprehensive Guides',
+      image: sanitizeInput(formImage) || '/images/blog/default.jpg',
+      content: sanitizeHTML(formContent),
       location_id: finalLocationId,
-      faqs: formFAQs,
+      faqs: sanitizedFAQs,
       updated_at: new Date().toISOString(),
     };
 
@@ -197,7 +205,6 @@ export default function AdminBlogPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to permanently delete this blog post?')) return;
     try {
       const { error } = await supabase
         .from('blogs')
@@ -518,9 +525,23 @@ export default function AdminBlogPage() {
         </div>
 
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-400 text-xs font-semibold">Loading blogs from database...</span>
+          <div className="p-8 space-y-4 animate-pulse">
+            {[...Array(5)].map((_, idx) => (
+              <div key={idx} className="flex items-center gap-6 py-4 border-b border-gray-100">
+                <div className="w-12 h-10 bg-gray-100 rounded-lg shrink-0" />
+                <div className="flex-grow space-y-2">
+                  <div className="h-4 bg-gray-100 rounded w-1/3" />
+                  <div className="h-3 bg-gray-100 rounded w-1/4" />
+                </div>
+                <div className="w-[15%] h-5 bg-gray-100 rounded" />
+                <div className="w-[15%] h-5 bg-gray-100 rounded" />
+                <div className="w-[15%] h-4 bg-gray-100 rounded" />
+                <div className="flex gap-2 text-right justify-end w-16">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : blogs.length === 0 ? (
           <div className="py-24 text-center">
@@ -600,7 +621,7 @@ export default function AdminBlogPage() {
                         <Edit2 size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(blog.id)}
+                        onClick={() => setDeleteId(blog.id)}
                         className="inline-flex w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 items-center justify-center transition-colors"
                         title="Delete Article"
                       >
@@ -614,6 +635,39 @@ export default function AdminBlogPage() {
           </div>
         )}
       </div>
+      {/* Custom Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full border border-gray-100 shadow-2xl scale-in duration-200 flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <Trash2 size={24} />
+            </div>
+            <h3 className="text-lg font-bold text-[#0B1F3A]">Delete Article?</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+              Are you sure you want to permanently delete this blog post article? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 w-full mt-6">
+              <button
+                onClick={() => {
+                  const id = deleteId;
+                  setDeleteId(null);
+                  handleDelete(id);
+                }}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-all"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteId(null)}
+                className="flex-1 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all bg-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

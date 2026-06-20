@@ -5,6 +5,20 @@ import { useParams } from 'next/navigation';
 import { getAgreementById } from '@/lib/supabase/queries';
 import { DocumentHeader } from '@/components/DocumentHeader';
 
+function maskAadhaar(value?: string | null): string {
+  if (!value) return '';
+  const cleaned = value.replace(/\s|-/g, '');
+  if (cleaned.length < 4) return '****';
+  return `XXXX-XXXX-${cleaned.slice(-4)}`;
+}
+
+function maskDrivingLicense(value?: string | null): string {
+  if (!value) return '';
+  const cleaned = value.replace(/\s/g, '');
+  if (cleaned.length < 4) return '****';
+  return `${cleaned.slice(0, 2)}${'*'.repeat(Math.max(cleaned.length - 6, 4))}${cleaned.slice(-4)}`;
+}
+
 export default function PublicAgreementViewer() {
   const { id } = useParams();
   const [agreement, setAgreement] = useState<any>(null);
@@ -55,7 +69,7 @@ export default function PublicAgreementViewer() {
            Save as PDF
          </button>
       </div>
-
+ 
       {/* Styled A4 Container */}
       <div className="w-full max-w-[800px] bg-white text-black shadow-2xl p-8 md:p-14 print:shadow-none print:w-[100%] print:max-w-none print:p-0">
         
@@ -65,7 +79,7 @@ export default function PublicAgreementViewer() {
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-200 uppercase mt-4">Car Rental Agreement</h2>
           }
         />
-
+ 
         {/* AGREEMENT META */}
         <div className="flex justify-between items-center mb-8 text-sm">
            <div>
@@ -77,7 +91,7 @@ export default function PublicAgreementViewer() {
               <span className="font-bold text-gray-900">{new Date(agreement.created_at).toLocaleDateString('en-GB')}</span>
            </div>
         </div>
-
+ 
         {/* DETAILS GRID */}
         <div className="grid grid-cols-2 gap-8 mb-10">
            {/* Customer */}
@@ -90,13 +104,13 @@ export default function PublicAgreementViewer() {
                  <p><span className="font-bold inline-block w-24 align-top">Address:</span> <span className="inline-block w-40 leading-snug">{agreement.address}</span></p>
               </div>
            </div>
-
+ 
            {/* KYC Details */}
            <div className="space-y-4">
               <h2 className="text-sm font-black uppercase text-gray-400 border-b border-gray-200 pb-2">Verified Documents</h2>
               <div className="text-sm space-y-2">
-                 <p><span className="font-bold inline-block w-32">Driving License:</span> <span className="uppercase">{agreement.driving_license}</span></p>
-                 <p><span className="font-bold inline-block w-32">Aadhaar (ID):</span> <span className="uppercase">{agreement.aadhaar_number}</span></p>
+                 <p><span className="font-bold inline-block w-32">Driving License:</span> <span className="uppercase">{maskDrivingLicense(agreement.driving_license)}</span></p>
+                 <p><span className="font-bold inline-block w-32">Aadhaar (ID):</span> <span className="uppercase">{maskAadhaar(agreement.aadhaar_number)}</span></p>
               </div>
            </div>
         </div>

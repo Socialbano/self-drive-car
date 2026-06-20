@@ -76,10 +76,65 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-400 text-sm font-medium">Loading dashboard...</span>
+      <div className="space-y-8 animate-pulse">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <div className="h-8 bg-gray-100 rounded w-48 mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-36" />
+          </div>
+          <div className="h-10 bg-gray-100 rounded w-24" />
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="space-y-2 flex-grow">
+                  <div className="h-3 bg-gray-100 rounded w-2/3" />
+                  <div className="h-8 bg-gray-100 rounded w-1/3" />
+                </div>
+                <div className="w-10 h-10 bg-gray-100 rounded-xl" />
+              </div>
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-xl" />
+              <div className="space-y-2 flex-grow">
+                <div className="h-4 bg-gray-100 rounded w-1/3" />
+                <div className="h-3 bg-gray-100 rounded w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex justify-between">
+            <div className="h-5 bg-gray-100 rounded w-28" />
+            <div className="h-4 bg-gray-100 rounded w-16" />
+          </div>
+          <div className="p-6 space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex justify-between items-center py-2">
+                <div className="flex items-center gap-3 flex-grow">
+                  <div className="w-9 h-9 bg-gray-100 rounded-full" />
+                  <div className="space-y-1.5 flex-grow">
+                    <div className="h-4 bg-gray-100 rounded w-1/4" />
+                    <div className="h-3 bg-gray-100 rounded w-1/6" />
+                  </div>
+                </div>
+                <div className="w-20 h-5 bg-gray-100 rounded-full" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

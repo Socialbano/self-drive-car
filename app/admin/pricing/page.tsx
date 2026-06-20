@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase/client';
 import { bulkUpdatePricing } from '@/lib/supabase/queries';
 import toast from 'react-hot-toast';
 import type { Car } from '@/types';
+import { authPost } from '@/lib/client-auth';
 
 // Fixed UUID for the special offer marquee message — do not change
 const OFFER_BANNER_ID = '00000000-0000-0000-0000-000000000001';
@@ -75,10 +76,10 @@ export default function AdminPricingPage() {
 
   const triggerRevalidation = async (carSlug?: string) => {
     try {
-      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/' }) });
-      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/cars' }) });
+      await authPost('/api/revalidate', { path: '/' });
+      await authPost('/api/revalidate', { path: '/cars' });
       if (carSlug) {
-        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: `/cars/${carSlug}` }) });
+        await authPost('/api/revalidate', { path: `/cars/${carSlug}` });
       }
     } catch (e) {
       console.error('Revalidation error:', e);
@@ -193,16 +194,7 @@ export default function AdminPricingPage() {
     { key: 'extra_km_rate',   label: 'Extra KM (₹)',prefix: '₹', required: false },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-400 text-sm font-medium">Loading pricing data...</span>
-        </div>
-      </div>
-    );
-  }
+  // Top-level loader removed
 
   return (
     <div>
@@ -328,7 +320,26 @@ export default function AdminPricingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {cars.map(car => (
+              {loading ? (
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4 sticky left-0 bg-white z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-8 bg-gray-100 rounded-lg shrink-0" />
+                        <div className="space-y-1">
+                          <div className="h-4 bg-gray-100 rounded w-24" />
+                          <div className="h-3 bg-gray-100 rounded w-16" />
+                        </div>
+                      </div>
+                    </td>
+                    {pricingFields.map(f => (
+                      <td key={f.key} className="px-2 py-3 text-center">
+                        <div className="h-6 bg-gray-100 rounded w-16 mx-auto" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : cars.map(car => (
                 <tr key={car.id} className="hover:bg-gray-50/30 transition-colors">
                   <td className="px-6 py-4 sticky left-0 bg-white z-10">
                     <div className="flex items-center gap-3">

@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import type { InstagramReel } from '@/types';
 
+import { sanitizeInput } from '@/lib/client-auth';
+
 export default function AdminReelsPage() {
   const [reels, setReels] = useState<InstagramReel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,10 +64,10 @@ export default function AdminReelsPage() {
     
     setSaving(true);
     const payload = {
-      reel_url: formUrl.trim(),
-      thumbnail: formThumbnail.trim() || null,
-      priority: formPriority,
-      is_active: formActive,
+      reel_url: sanitizeInput(formUrl),
+      thumbnail: sanitizeInput(formThumbnail) || null,
+      priority: Number(formPriority) || 0,
+      is_active: !!formActive,
     };
 
     if (editId) {

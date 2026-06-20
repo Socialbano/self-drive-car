@@ -6,6 +6,8 @@ import { useSettings } from '@/components/SettingsProvider';
 import { MapPin, Plus, Trash2, Edit2, Sliders, Check, X, ShieldAlert } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
+import { sanitizeInput } from '@/lib/client-auth';
+
 interface DBLocation {
   id: string;
   name: string;
@@ -31,6 +33,7 @@ export default function AdminLocationsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Form State
   const [editId, setEditId] = useState<string | null>(null);
@@ -124,21 +127,21 @@ export default function AdminLocationsPage() {
     setSaving(true);
 
     const payload = {
-      name: formName.trim(),
-      slug: formSlug.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-'),
+      name: sanitizeInput(formName),
+      slug: sanitizeInput(formSlug).toLowerCase().replace(/[^a-z0-9-_]/g, '-'),
       category: formCategory,
-      title: formTitle.trim() || null,
-      description: formDescription.trim() || null,
-      street_address: formStreetAddress.trim() || null,
-      hero_image: formHeroImage.trim() || null,
-      icon_name: formIconName.trim(),
-      badge_text: formBadgeText.trim() || null,
-      heading_prefix: formHeadingPrefix.trim() || null,
-      heading_highlight: formHeadingHighlight.trim() || null,
-      hero_description: formHeroDescription.trim() || null,
-      whatsapp_msg: formWhatsappMsg.trim() || null,
-      display_order: formDisplayOrder,
-      is_active: formActive,
+      title: sanitizeInput(formTitle) || null,
+      description: sanitizeInput(formDescription) || null,
+      street_address: sanitizeInput(formStreetAddress) || null,
+      hero_image: sanitizeInput(formHeroImage) || null,
+      icon_name: sanitizeInput(formIconName),
+      badge_text: sanitizeInput(formBadgeText) || null,
+      heading_prefix: sanitizeInput(formHeadingPrefix) || null,
+      heading_highlight: sanitizeInput(formHeadingHighlight) || null,
+      hero_description: sanitizeInput(formHeroDescription) || null,
+      whatsapp_msg: sanitizeInput(formWhatsappMsg) || null,
+      display_order: Number(formDisplayOrder) || 0,
+      is_active: !!formActive,
       updated_at: new Date().toISOString(),
     };
 
@@ -169,7 +172,6 @@ export default function AdminLocationsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to permanently delete this location? The route /locations/[slug] will no longer resolve.')) return;
     try {
       const { error } = await supabase
         .from('locations')
@@ -472,9 +474,22 @@ export default function AdminLocationsPage() {
         </div>
 
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-400 text-xs font-semibold">Loading landing pages...</span>
+          <div className="p-8 space-y-4 animate-pulse">
+            {[...Array(5)].map((_, idx) => (
+              <div key={idx} className="flex items-center gap-6 py-4 border-b border-gray-100">
+                <div className="flex-grow space-y-2">
+                  <div className="h-4 bg-gray-100 rounded w-1/4" />
+                  <div className="h-3 bg-gray-100 rounded w-1/3" />
+                </div>
+                <div className="w-[15%] h-5 bg-gray-100 rounded" />
+                <div className="w-[10%] h-4 bg-gray-100 rounded" />
+                <div className="w-[15%] h-6 bg-gray-100 rounded-full" />
+                <div className="flex gap-2 text-right justify-end w-16">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : locations.length === 0 ? (
           <div className="py-24 text-center">
@@ -544,7 +559,7 @@ export default function AdminLocationsPage() {
                         <Edit2 size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(loc.id)}
+                        onClick={() => setDeleteId(loc.id)}
                         className="inline-flex w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 items-center justify-center transition-colors"
                         title="Delete Location Page"
                       >
@@ -570,6 +585,39 @@ export default function AdminLocationsPage() {
           </p>
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full border border-gray-100 shadow-2xl scale-in duration-200 flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <Trash2 size={24} />
+            </div>
+            <h3 className="text-lg font-bold text-[#0B1F3A]">Delete Location Page?</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+              Are you sure you want to permanently delete this location page? The route /locations/[slug] will no longer resolve.
+            </p>
+            <div className="flex gap-3 w-full mt-6">
+              <button
+                onClick={() => {
+                  const id = deleteId;
+                  setDeleteId(null);
+                  handleDelete(id);
+                }}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-all"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteId(null)}
+                className="flex-1 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all bg-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

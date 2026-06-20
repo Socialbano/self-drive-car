@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, Check, AlertCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { getAuthHeaders } from '@/lib/client-auth';
 
 export default function AdminHeroPage() {
   const router = useRouter();
@@ -53,8 +54,10 @@ export default function AdminHeroPage() {
       const formData = new FormData();
       formData.append('file', file);
 
+      const authHeaders = await getAuthHeaders();
       const res = await fetch('/api/upload-hero', {
         method: 'POST',
+        headers: { ...authHeaders },
         body: formData,
       });
 

@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { 
+  authenticateRequest, 
+  unauthorizedResponse, 
+  badRequestResponse, 
+  serverErrorResponse,
+  sanitizeString,
+  isRateLimited,
+  getClientIP
+} from '@/lib/auth-helpers';
 
 // ─── Use service-role or anon key ───────────────────────────────────────────
 function getSupabaseAdmin() {
@@ -35,29 +44,48 @@ export async function GET() {
   }
 }
 
-// ─── POST /api/hero-settings ────────────────────────────────────────────────
+// ─── POST /api/hero-settings (Protected) ────────────────────────────────────
 export async function POST(req: Request) {
   try {
-    const { heroImage } = await req.json();
+    // Rate limiting
+    const clientIP = getClientIP(req);
+    if (isRateLimited(`hero-settings:${clientIP}`, 10, 60000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
 
-    if (!heroImage) {
-      return NextResponse.json({ error: 'Hero image path is required' }, { status: 400 });
+    // Authentication required
+    const user = await authenticateRequest(req);
+    if (!user) {
+      return unauthorizedResponse();
+    }
+
+    const body = await req.json();
+    const heroImage = body?.heroImage;
+
+    if (!heroImage || typeof heroImage !== 'string') {
+      return badRequestResponse('Hero image path is required');
+    }
+
+    // Sanitize - only allow valid URL patterns
+    const sanitizedUrl = sanitizeString(heroImage);
+    if (!sanitizedUrl.startsWith('/') && !sanitizedUrl.startsWith('https://')) {
+      return badRequestResponse('Invalid hero image URL');
     }
 
     const supabase = getSupabaseAdmin();
 
     const { error } = await supabase
       .from('admin_settings')
-      .upsert({ key: 'hero_image_url', value: heroImage }, { onConflict: 'key' });
+      .upsert({ key: 'hero_image_url', value: sanitizedUrl }, { onConflict: 'key' });
 
     if (error) {
       console.error('[hero-settings] POST error:', error);
-      return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
+      return serverErrorResponse('Failed to update settings');
     }
 
-    return NextResponse.json({ success: true, heroImage });
+    return NextResponse.json({ success: true, heroImage: sanitizedUrl });
   } catch (error) {
     console.error('[hero-settings] POST error:', error);
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return badRequestResponse('Invalid request body');
   }
 }

@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { authPost } from '@/lib/client-auth';
 
 interface SortableRowProps {
   car: Car;
@@ -142,6 +143,7 @@ export default function AdminCarsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchCars = async () => {
     setLoading(true);
@@ -248,19 +250,21 @@ export default function AdminCarsPage() {
 
   const triggerRevalidation = async () => {
     try {
-      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/' }) });
-      await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/cars' }) });
+      await authPost('/api/revalidate', { path: '/' });
+      await authPost('/api/revalidate', { path: '/cars' });
     } catch (e) {
       console.error('Revalidation error:', e);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
-      await supabase.from('cars').delete().eq('id', id);
-      await triggerRevalidation();
-      fetchCars();
-    }
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async (id: string) => {
+    await supabase.from('cars').delete().eq('id', id);
+    await triggerRevalidation();
+    fetchCars();
   };
 
   const toggleFeatured = async (car: Car) => {
@@ -275,16 +279,7 @@ export default function AdminCarsPage() {
     await triggerRevalidation();
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-400 text-sm font-medium">Loading fleet...</span>
-        </div>
-      </div>
-    );
-  }
+  // Top-level loading removed to allow skeletons in table
 
   return (
     <div>
@@ -362,55 +357,116 @@ export default function AdminCarsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 relative">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-                modifiers={[restrictToVerticalAxis]}
-              >
-                <SortableContext
-                  items={filteredCars.map(c => c.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {filteredCars.map((car, index) => (
-                    <SortableCarRow
-                      key={car.id}
-                      car={car}
-                      index={index}
-                      handleDelete={handleDelete}
-                      toggleFeatured={toggleFeatured}
-                      toggleActive={toggleActive}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-              {filteredCars.length === 0 && cars.length > 0 && (
+              {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
-                    <span className="material-symbols-outlined text-5xl text-gray-300 mb-4 block">search_off</span>
-                    <p className="text-gray-500 font-medium">No vehicles match &quot;{search}&quot;</p>
-                    <button onClick={() => setSearch('')} className="text-sm font-semibold text-[#1152d4] hover:text-[#E89B10] mt-2 transition-colors">
-                      Clear search
-                    </button>
+                  <td colSpan={7} className="px-6 py-4">
+                    <div className="space-y-4 animate-pulse">
+                      {[...Array(5)].map((_, idx) => (
+                        <div key={idx} className="flex items-center gap-6 py-4 border-b border-gray-100">
+                          <div className="w-16 h-12 bg-gray-100 rounded-lg shrink-0" />
+                          <div className="flex-grow space-y-2">
+                            <div className="h-4 bg-gray-100 rounded w-1/3" />
+                            <div className="h-3 bg-gray-100 rounded w-1/4" />
+                          </div>
+                          <div className="w-[15%] h-5 bg-gray-100 rounded" />
+                          <div className="w-[15%] h-5 bg-gray-100 rounded" />
+                          <div className="w-[10%] h-5 bg-gray-100 rounded" />
+                          <div className="w-[10%] h-6 bg-gray-100 rounded-full" />
+                          <div className="flex gap-2 text-right justify-end w-16">
+                            <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                            <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </td>
                 </tr>
+              ) : (
+                <>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                    modifiers={[restrictToVerticalAxis]}
+                  >
+                    <SortableContext
+                      items={filteredCars.map(c => c.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {filteredCars.map((car, index) => (
+                        <SortableCarRow
+                          key={car.id}
+                          car={car}
+                          index={index}
+                          handleDelete={handleDelete}
+                          toggleFeatured={toggleFeatured}
+                          toggleActive={toggleActive}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                  {filteredCars.length === 0 && cars.length > 0 && (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center">
+                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-4 block">search_off</span>
+                        <p className="text-gray-500 font-medium">No vehicles match &quot;{search}&quot;</p>
+                        <button onClick={() => setSearch('')} className="text-sm font-semibold text-[#1152d4] hover:text-[#E89B10] mt-2 transition-colors">
+                          Clear search
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+                  {cars.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-16 text-center">
+                        <span className="material-symbols-outlined text-5xl text-gray-300 mb-4 block">directions_car</span>
+                        <p className="text-gray-500 font-medium mb-4">No cars in fleet yet</p>
+                        <Link href="/admin/cars/edit" className="text-sm font-bold text-[#E89B10] hover:text-[#d08c0e]">
+                          + Add your first vehicle
+                        </Link>
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
-              {cars.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-16 text-center">
-                    <span className="material-symbols-outlined text-5xl text-gray-300 mb-4 block">directions_car</span>
-                    <p className="text-gray-500 font-medium mb-4">No cars in fleet yet</p>
-                    <Link href="/admin/cars/edit" className="text-sm font-bold text-[#E89B10] hover:text-[#d08c0e]">
-                      + Add your first vehicle
-                    </Link>
-                  </td>
-                </tr>
-              )}
-
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full border border-gray-100 shadow-2xl scale-in duration-200 flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined text-2xl">delete</span>
+            </div>
+            <h3 className="text-lg font-bold text-[#0B1F3A]">Delete Vehicle?</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+              Are you sure you want to permanently delete this vehicle from the fleet? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 w-full mt-6">
+              <button
+                onClick={() => {
+                  const id = deleteId;
+                  setDeleteId(null);
+                  confirmDelete(id);
+                }}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-all"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteId(null)}
+                className="flex-1 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all bg-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

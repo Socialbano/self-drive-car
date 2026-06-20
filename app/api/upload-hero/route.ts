@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import {
+  authenticateRequest,
+  unauthorizedResponse,
+  badRequestResponse,
+  serverErrorResponse,
+  isRateLimited,
+  getClientIP
+} from '@/lib/auth-helpers';
+
+// Allowed MIME types
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Use service-role key for server-side storage access
 function getSupabaseAdmin() {
@@ -8,7 +20,6 @@ function getSupabaseAdmin() {
   
   if (!key) {
     console.error('[Upload-Hero] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.');
-    // Fallback to anon key but log warning
   }
   
   return createClient(url, key || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
@@ -16,30 +27,52 @@ function getSupabaseAdmin() {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting — max 5 uploads per minute
+    const clientIP = getClientIP(req);
+    if (isRateLimited(`upload-hero:${clientIP}`, 5, 60000)) {
+      return NextResponse.json({ error: 'Too many upload requests. Try again later.' }, { status: 429 });
+    }
+
+    // Authentication required
+    const user = await authenticateRequest(req);
+    if (!user) {
+      return unauthorizedResponse();
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) {
       console.error('[Upload-Hero] No file in request');
-      return NextResponse.json({ error: 'No file received.' }, { status: 400 });
+      return badRequestResponse('No file received.');
     }
 
-    // Validation
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type.' }, { status: 400 });
+    // Validate MIME type
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return badRequestResponse(`Invalid file type "${file.type}". Allowed: JPG, PNG, WEBP.`);
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return badRequestResponse(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum: 5MB.`);
+    }
+
+    // Additional MIME validation: check magic bytes
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    if (!isValidImageMagicBytes(bytes)) {
+      return badRequestResponse('File content does not match an image. Upload rejected.');
     }
 
     const supabase = getSupabaseAdmin();
-    const arrayBuffer = await file.arrayBuffer();
     
-    // Constant path
+    // Generate safe filename (no user-controlled paths)
     const extension = file.type.split('/')[1] || 'webp';
     const storagePath = `hero-image.${extension}`;
 
-    console.log(`[Upload-Hero] Attempting to upload ${file.name} to bucket "hero-images" at path "${storagePath}"...`);
+    console.log(`[Upload-Hero] User ${user.email} uploading to "${storagePath}" (${(file.size / 1024).toFixed(0)}KB)`);
 
-    // 1. Upload/Upsert to Supabase Storage
+    // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('hero-images')
       .upload(storagePath, arrayBuffer, {
@@ -50,20 +83,17 @@ export async function POST(req: NextRequest) {
 
     if (uploadError) {
       console.error('[Upload-Hero] Supabase Storage Error:', uploadError);
-      return NextResponse.json({ 
-        error: 'Failed to upload to storage.',
-        details: uploadError.message 
-      }, { status: 500 });
+      return serverErrorResponse('Failed to upload to storage.');
     }
 
     console.log('[Upload-Hero] Upload successful:', uploadData);
 
-    // 2. Get Public URL
+    // Get Public URL
     const { data: { publicUrl } } = supabase.storage
       .from('hero-images')
       .getPublicUrl(storagePath);
 
-    // 3. Update admin_settings table
+    // Update admin_settings table
     const { error: dbError } = await supabase
       .from('admin_settings')
       .upsert({ key: 'hero_image_url', value: publicUrl }, { onConflict: 'key' });
@@ -80,6 +110,26 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('[Upload-Hero] Runtime Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    return serverErrorResponse('Internal Server Error');
   }
+}
+
+/**
+ * Validate image file by checking magic bytes (file signature).
+ * Prevents disguised executables from being uploaded.
+ */
+function isValidImageMagicBytes(bytes: Uint8Array): boolean {
+  if (bytes.length < 4) return false;
+
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return true;
+
+  // PNG: 89 50 4E 47
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return true;
+
+  // WebP: RIFF....WEBP
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+      bytes.length > 11 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return true;
+
+  return false;
 }

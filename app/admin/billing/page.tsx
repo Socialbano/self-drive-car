@@ -33,13 +33,7 @@ export default function BillingDashboard() {
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  // Top-level loader removed
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
@@ -118,7 +112,33 @@ export default function BillingDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {invoices.length === 0 ? (
+              {loading ? (
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-5">
+                      <div className="h-4 bg-gray-100 rounded w-2/3 mb-1.5" />
+                      <div className="h-3 bg-gray-100 rounded w-1/3" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-4 bg-gray-100 rounded w-20" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-4 bg-gray-100 rounded w-24" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-5 bg-gray-100 rounded-full w-16" />
+                    </td>
+                    <td className="px-6 py-5 text-right">
+                      <div className="flex justify-end gap-2">
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : invoices.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-400 text-sm">
                     No invoices generated yet.

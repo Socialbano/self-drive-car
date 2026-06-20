@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import { CarForm, DEFAULT_FORM_DATA } from '@/components/admin/CarForm';
 import type { CarFormData } from '@/components/admin/CarForm';
 import toast from 'react-hot-toast';
+import { authPost } from '@/lib/client-auth';
 
 function EditCarPageContent() {
   const searchParams = useSearchParams();
@@ -88,9 +89,9 @@ function EditCarPageContent() {
 
       // Revalidate frontend paths
       try {
-        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/' }) });
-        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/cars' }) });
-        await fetch('/api/revalidate', { method: 'POST', body: JSON.stringify({ path: '/admin/cars' }) });
+        await authPost('/api/revalidate', { path: '/' });
+        await authPost('/api/revalidate', { path: '/cars' });
+        await authPost('/api/revalidate', { path: '/admin/cars' });
       } catch (err) {
         console.error('Failed to trigger revalidation:', err);
       }

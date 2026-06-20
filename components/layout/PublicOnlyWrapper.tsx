@@ -2,8 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import { MarqueeBar } from '@/components/layout/MarqueeBar';
-import BookingPopup from '@/components/BookingPopup';
+import dynamic from 'next/dynamic';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+
+const BookingPopup = dynamic(() => import('@/components/BookingPopup'), {
+  ssr: false,
+});
 
 /**
  * Renders MarqueeBar, BookingPopup and MobileBottomNav only on public (non-admin/non-document) pages.

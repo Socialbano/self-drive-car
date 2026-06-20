@@ -10,20 +10,14 @@ import { ABOUT_DEFAULTS } from '@/lib/about-defaults';
 export default function AdminSettingsPage() {
   const router = useRouter();
   
-  // Tab State
-  const [activeTab, setActiveTab] = useState<'profile' | 'hero' | 'seo' | 'about' | 'security'>('profile');
+  // Tab State - default to security to avoid information disclosure before auth checks complete
+  const [activeTab, setActiveTab] = useState<'profile' | 'hero' | 'seo' | 'about' | 'security'>('security');
   
   // Auth State
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const superAdminEmail = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || 'developer@socialbano.in';
   const isSuperAdmin = userEmail === superAdminEmail;
-
-  useEffect(() => {
-    if (userEmail && !isSuperAdmin && activeTab !== 'security') {
-      setActiveTab('security');
-    }
-  }, [activeTab, userEmail, isSuperAdmin]);
   
   // Password State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -176,149 +170,156 @@ export default function AdminSettingsPage() {
         router.push('/admin/login');
         return;
       }
-      setUserEmail(session.user.email || null);
+      const email = session.user.email || null;
+      setUserEmail(email);
       
-      // Load business settings
-      try {
-        const res = await fetch(`/api/settings?t=${Date.now()}`, {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to load profile settings');
-        const data = await res.json();
+      if (email === superAdminEmail) {
+        setActiveTab('profile');
         
-        if (data && Object.keys(data).length > 0) {
-          setProfileData({
-            business_name: data.business_name || '',
-            business_email: data.business_email || '',
-            business_phone: data.business_phone || '',
-            business_whatsapp: data.business_whatsapp || '',
-            business_address: data.business_address || '',
-            business_city: data.business_city || '',
-            business_state: data.business_state || '',
-            business_pincode: data.business_pincode || '',
-            business_hours: data.business_hours || '',
-            whatsapp_default_msg: data.whatsapp_default_msg || '',
-            maps_embed_url: data.maps_embed_url || '',
-            business_logo_url: data.business_logo_url || '',
-            business_upi_qr_url: data.business_upi_qr_url || '',
-            business_subtitle: data.business_subtitle || '',
-            hero_tagline: data.hero_tagline || '',
-            hero_title_p1: data.hero_title_p1 || '',
-            hero_title_p2: data.hero_title_p2 || '',
-            hero_description: data.hero_description || '',
-            hero_stat1_value: data.hero_stat1_value || '',
-            hero_stat1_label: data.hero_stat1_label || '',
-            hero_stat2_value: data.hero_stat2_value || '',
-            hero_stat2_label: data.hero_stat2_label || '',
-            business_reg_no: data.business_reg_no || '',
-            business_udyam_no: data.business_udyam_no || '',
-            business_gst_no: data.business_gst_no || '',
-            business_seo_title: data.business_seo_title || '',
-            business_seo_description: data.business_seo_description || '',
-            business_seo_keywords: data.business_seo_keywords || '',
-            business_google_site_verification: data.business_google_site_verification || '',
-            business_google_analytics_id: data.business_google_analytics_id || '',
-            business_meta_pixel_id: data.business_meta_pixel_id || '',
-            business_site_url: data.business_site_url || '',
-            business_instagram_url: data.business_instagram_url || '',
-            theme_primary_color: data.theme_primary_color || '#0B1F3A',
-            theme_accent_color: data.theme_accent_color || '#E89B10',
-            
-            // About Section fallbacks
-            about_hero_title: data.about_hero_title || ABOUT_DEFAULTS.about_hero_title,
-            about_hero_subtitle: data.about_hero_subtitle || ABOUT_DEFAULTS.about_hero_subtitle,
-            about_stat_trips: data.about_stat_trips || ABOUT_DEFAULTS.about_stat_trips,
-            about_stat_trips_label: data.about_stat_trips_label || ABOUT_DEFAULTS.about_stat_trips_label,
-            about_stat_customers: data.about_stat_customers || ABOUT_DEFAULTS.about_stat_customers,
-            about_stat_customers_label: data.about_stat_customers_label || ABOUT_DEFAULTS.about_stat_customers_label,
-            about_stat_vehicles: data.about_stat_vehicles || ABOUT_DEFAULTS.about_stat_vehicles,
-            about_stat_vehicles_label: data.about_stat_vehicles_label || ABOUT_DEFAULTS.about_stat_vehicles_label,
-            about_stat_cities: data.about_stat_cities || ABOUT_DEFAULTS.about_stat_cities,
-            about_stat_cities_label: data.about_stat_cities_label || ABOUT_DEFAULTS.about_stat_cities_label,
-            about_intro_title: data.about_intro_title || ABOUT_DEFAULTS.about_intro_title,
-            about_intro_desc: data.about_intro_desc || ABOUT_DEFAULTS.about_intro_desc,
-            about_intro_location_text: data.about_intro_location_text || ABOUT_DEFAULTS.about_intro_location_text,
-            about_founder_name: data.about_founder_name || ABOUT_DEFAULTS.about_founder_name,
-            about_founder_title: data.about_founder_title || ABOUT_DEFAULTS.about_founder_title,
-            about_founder_story: data.about_founder_story || ABOUT_DEFAULTS.about_founder_story,
-            about_founder_quote: data.about_founder_quote || ABOUT_DEFAULTS.about_founder_quote,
-            about_founder_avatar_url: data.about_founder_avatar_url || ABOUT_DEFAULTS.about_founder_avatar_url,
-            about_card1_title: data.about_card1_title || ABOUT_DEFAULTS.about_card1_title,
-            about_card1_desc: data.about_card1_desc || ABOUT_DEFAULTS.about_card1_desc,
-            about_card1_icon: data.about_card1_icon || ABOUT_DEFAULTS.about_card1_icon,
-            about_card2_title: data.about_card2_title || ABOUT_DEFAULTS.about_card2_title,
-            about_card2_desc: data.about_card2_desc || ABOUT_DEFAULTS.about_card2_desc,
-            about_card2_icon: data.about_card2_icon || ABOUT_DEFAULTS.about_card2_icon,
-            about_card3_title: data.about_card3_title || ABOUT_DEFAULTS.about_card3_title,
-            about_card3_desc: data.about_card3_desc || ABOUT_DEFAULTS.about_card3_desc,
-            about_card3_icon: data.about_card3_icon || ABOUT_DEFAULTS.about_card3_icon,
-            about_card4_title: data.about_card4_title || ABOUT_DEFAULTS.about_card4_title,
-            about_card4_desc: data.about_card4_desc || ABOUT_DEFAULTS.about_card4_desc,
-            about_card4_icon: data.about_card4_icon || ABOUT_DEFAULTS.about_card4_icon,
-            about_card5_title: data.about_card5_title || ABOUT_DEFAULTS.about_card5_title,
-            about_card5_desc: data.about_card5_desc || ABOUT_DEFAULTS.about_card5_desc,
-            about_card5_icon: data.about_card5_icon || ABOUT_DEFAULTS.about_card5_icon,
-            about_card6_title: data.about_card6_title || ABOUT_DEFAULTS.about_card6_title,
-            about_card6_desc: data.about_card6_desc || ABOUT_DEFAULTS.about_card6_desc,
-            about_card6_icon: data.about_card6_icon || ABOUT_DEFAULTS.about_card6_icon,
-            about_why_card1_title: data.about_why_card1_title || ABOUT_DEFAULTS.about_why_card1_title,
-            about_why_card1_desc: data.about_why_card1_desc || ABOUT_DEFAULTS.about_why_card1_desc,
-            about_why_card2_title: data.about_why_card2_title || ABOUT_DEFAULTS.about_why_card2_title,
-            about_why_card2_desc: data.about_why_card2_desc || ABOUT_DEFAULTS.about_why_card2_desc,
-            about_why_card3_title: data.about_why_card3_title || ABOUT_DEFAULTS.about_why_card3_title,
-            about_why_card3_desc: data.about_why_card3_desc || ABOUT_DEFAULTS.about_why_card3_desc,
-            about_why_card4_title: data.about_why_card4_title || ABOUT_DEFAULTS.about_why_card4_title,
-            about_why_card4_desc: data.about_why_card4_desc || ABOUT_DEFAULTS.about_why_card4_desc,
-            about_why_card5_title: data.about_why_card5_title || ABOUT_DEFAULTS.about_why_card5_title,
-            about_why_card5_desc: data.about_why_card5_desc || ABOUT_DEFAULTS.about_why_card5_desc,
-            about_why_card6_title: data.about_why_card6_title || ABOUT_DEFAULTS.about_why_card6_title,
-            about_why_card6_desc: data.about_why_card6_desc || ABOUT_DEFAULTS.about_why_card6_desc,
-            about_step1_title: data.about_step1_title || ABOUT_DEFAULTS.about_step1_title,
-            about_step1_desc: data.about_step1_desc || ABOUT_DEFAULTS.about_step1_desc,
-            about_step2_title: data.about_step2_title || ABOUT_DEFAULTS.about_step2_title,
-            about_step2_desc: data.about_step2_desc || ABOUT_DEFAULTS.about_step2_desc,
-            about_step3_title: data.about_step3_title || ABOUT_DEFAULTS.about_step3_title,
-            about_step3_desc: data.about_step3_desc || ABOUT_DEFAULTS.about_step3_desc,
-            about_step4_title: data.about_step4_title || ABOUT_DEFAULTS.about_step4_title,
-            about_step4_desc: data.about_step4_desc || ABOUT_DEFAULTS.about_step4_desc,
-            about_step5_title: data.about_step5_title || ABOUT_DEFAULTS.about_step5_title,
-            about_step5_desc: data.about_step5_desc || ABOUT_DEFAULTS.about_step5_desc,
-            about_safety_card1_title: data.about_safety_card1_title || ABOUT_DEFAULTS.about_safety_card1_title,
-            about_safety_card1_desc: data.about_safety_card1_desc || ABOUT_DEFAULTS.about_safety_card1_desc,
-            about_safety_card2_title: data.about_safety_card2_title || ABOUT_DEFAULTS.about_safety_card2_title,
-            about_safety_card2_desc: data.about_safety_card2_desc || ABOUT_DEFAULTS.about_safety_card2_desc,
-            about_safety_card3_title: data.about_safety_card3_title || ABOUT_DEFAULTS.about_safety_card3_title,
-            about_safety_card3_desc: data.about_safety_card3_desc || ABOUT_DEFAULTS.about_safety_card3_desc,
-            about_safety_card4_title: data.about_safety_card4_title || ABOUT_DEFAULTS.about_safety_card4_title,
-            about_safety_card4_desc: data.about_safety_card4_desc || ABOUT_DEFAULTS.about_safety_card4_desc,
-            about_safety_card5_title: data.about_safety_card5_title || ABOUT_DEFAULTS.about_safety_card5_title,
-            about_safety_card5_desc: data.about_safety_card5_desc || ABOUT_DEFAULTS.about_safety_card5_desc,
-            about_safety_card6_title: data.about_safety_card6_title || ABOUT_DEFAULTS.about_safety_card6_title,
-            about_safety_card6_desc: data.about_safety_card6_desc || ABOUT_DEFAULTS.about_safety_card6_desc,
-            about_cta_title: data.about_cta_title || ABOUT_DEFAULTS.about_cta_title,
-            about_cta_desc: data.about_cta_desc || ABOUT_DEFAULTS.about_cta_desc,
-
-            // Special Offers Section
-            offers_section_title: data.offers_section_title || 'Special Offers',
-            offers_section_subtitle: data.offers_section_subtitle || 'Take advantage of our exclusive deals and save on your next rental',
-            offer1_active: data.offer1_active !== undefined ? (data.offer1_active === 'true' || data.offer1_active === true) : true,
-            offer1_title: data.offer1_title || 'Weekend Discount',
-            offer1_discount: data.offer1_discount || '20% OFF',
-            offer1_description: data.offer1_description || 'Get 20% off on weekend rentals. Perfect for your short getaways and weekend adventures.',
-            offer1_btn_text: data.offer1_btn_text || 'Claim Offer',
-            offer1_whatsapp_msg: data.offer1_whatsapp_msg || 'Hi! I want to claim the 20% Weekend Discount for my car rental.',
-            offer2_active: data.offer2_active !== undefined ? (data.offer2_active === 'true' || data.offer2_active === true) : true,
-            offer2_title: data.offer2_title || 'First Booking Offer',
-            offer2_discount: data.offer2_discount || '15% OFF',
-            offer2_description: data.offer2_description || 'New users get a discount on their first ride. Start your journey with us and save today!',
-            offer2_btn_text: data.offer2_btn_text || 'Get Started',
-            offer2_whatsapp_msg: data.offer2_whatsapp_msg || 'Hi! I want to claim the 15% First Booking Offer for my car rental.',
+        // Load business settings
+        try {
+          const res = await fetch(`/api/settings?t=${Date.now()}`, {
+            cache: 'no-store'
           });
+          if (!res.ok) throw new Error('Failed to load profile settings');
+          const data = await res.json();
+          
+          if (data && Object.keys(data).length > 0) {
+            setProfileData({
+              business_name: data.business_name || '',
+              business_email: data.business_email || '',
+              business_phone: data.business_phone || '',
+              business_whatsapp: data.business_whatsapp || '',
+              business_address: data.business_address || '',
+              business_city: data.business_city || '',
+              business_state: data.business_state || '',
+              business_pincode: data.business_pincode || '',
+              business_hours: data.business_hours || '',
+              whatsapp_default_msg: data.whatsapp_default_msg || '',
+              maps_embed_url: data.maps_embed_url || '',
+              business_logo_url: data.business_logo_url || '',
+              business_upi_qr_url: data.business_upi_qr_url || '',
+              business_subtitle: data.business_subtitle || '',
+              hero_tagline: data.hero_tagline || '',
+              hero_title_p1: data.hero_title_p1 || '',
+              hero_title_p2: data.hero_title_p2 || '',
+              hero_description: data.hero_description || '',
+              hero_stat1_value: data.hero_stat1_value || '',
+              hero_stat1_label: data.hero_stat1_label || '',
+              hero_stat2_value: data.hero_stat2_value || '',
+              hero_stat2_label: data.hero_stat2_label || '',
+              business_reg_no: data.business_reg_no || '',
+              business_udyam_no: data.business_udyam_no || '',
+              business_gst_no: data.business_gst_no || '',
+              business_seo_title: data.business_seo_title || '',
+              business_seo_description: data.business_seo_description || '',
+              business_seo_keywords: data.business_seo_keywords || '',
+              business_google_site_verification: data.business_google_site_verification || '',
+              business_google_analytics_id: data.business_google_analytics_id || '',
+              business_meta_pixel_id: data.business_meta_pixel_id || '',
+              business_site_url: data.business_site_url || '',
+              business_instagram_url: data.business_instagram_url || '',
+              theme_primary_color: data.theme_primary_color || '#0B1F3A',
+              theme_accent_color: data.theme_accent_color || '#E89B10',
+              
+              // About Section fallbacks
+              about_hero_title: data.about_hero_title || ABOUT_DEFAULTS.about_hero_title,
+              about_hero_subtitle: data.about_hero_subtitle || ABOUT_DEFAULTS.about_hero_subtitle,
+              about_stat_trips: data.about_stat_trips || ABOUT_DEFAULTS.about_stat_trips,
+              about_stat_trips_label: data.about_stat_trips_label || ABOUT_DEFAULTS.about_stat_trips_label,
+              about_stat_customers: data.about_stat_customers || ABOUT_DEFAULTS.about_stat_customers,
+              about_stat_customers_label: data.about_stat_customers_label || ABOUT_DEFAULTS.about_stat_customers_label,
+              about_stat_vehicles: data.about_stat_vehicles || ABOUT_DEFAULTS.about_stat_vehicles,
+              about_stat_vehicles_label: data.about_stat_vehicles_label || ABOUT_DEFAULTS.about_stat_vehicles_label,
+              about_stat_cities: data.about_stat_cities || ABOUT_DEFAULTS.about_stat_cities,
+              about_stat_cities_label: data.about_stat_cities_label || ABOUT_DEFAULTS.about_stat_cities_label,
+              about_intro_title: data.about_intro_title || ABOUT_DEFAULTS.about_intro_title,
+              about_intro_desc: data.about_intro_desc || ABOUT_DEFAULTS.about_intro_desc,
+              about_intro_location_text: data.about_intro_location_text || ABOUT_DEFAULTS.about_intro_location_text,
+              about_founder_name: data.about_founder_name || ABOUT_DEFAULTS.about_founder_name,
+              about_founder_title: data.about_founder_title || ABOUT_DEFAULTS.about_founder_title,
+              about_founder_story: data.about_founder_story || ABOUT_DEFAULTS.about_founder_story,
+              about_founder_quote: data.about_founder_quote || ABOUT_DEFAULTS.about_founder_quote,
+              about_founder_avatar_url: data.about_founder_avatar_url || ABOUT_DEFAULTS.about_founder_avatar_url,
+              about_card1_title: data.about_card1_title || ABOUT_DEFAULTS.about_card1_title,
+              about_card1_desc: data.about_card1_desc || ABOUT_DEFAULTS.about_card1_desc,
+              about_card1_icon: data.about_card1_icon || ABOUT_DEFAULTS.about_card1_icon,
+              about_card2_title: data.about_card2_title || ABOUT_DEFAULTS.about_card2_title,
+              about_card2_desc: data.about_card2_desc || ABOUT_DEFAULTS.about_card2_desc,
+              about_card2_icon: data.about_card2_icon || ABOUT_DEFAULTS.about_card2_icon,
+              about_card3_title: data.about_card3_title || ABOUT_DEFAULTS.about_card3_title,
+              about_card3_desc: data.about_card3_desc || ABOUT_DEFAULTS.about_card3_desc,
+              about_card3_icon: data.about_card3_icon || ABOUT_DEFAULTS.about_card3_icon,
+              about_card4_title: data.about_card4_title || ABOUT_DEFAULTS.about_card4_title,
+              about_card4_desc: data.about_card4_desc || ABOUT_DEFAULTS.about_card4_desc,
+              about_card4_icon: data.about_card4_icon || ABOUT_DEFAULTS.about_card4_icon,
+              about_card5_title: data.about_card5_title || ABOUT_DEFAULTS.about_card5_title,
+              about_card5_desc: data.about_card5_desc || ABOUT_DEFAULTS.about_card5_desc,
+              about_card5_icon: data.about_card5_icon || ABOUT_DEFAULTS.about_card5_icon,
+              about_card6_title: data.about_card6_title || ABOUT_DEFAULTS.about_card6_title,
+              about_card6_desc: data.about_card6_desc || ABOUT_DEFAULTS.about_card6_desc,
+              about_card6_icon: data.about_card6_icon || ABOUT_DEFAULTS.about_card6_icon,
+              about_why_card1_title: data.about_why_card1_title || ABOUT_DEFAULTS.about_why_card1_title,
+              about_why_card1_desc: data.about_why_card1_desc || ABOUT_DEFAULTS.about_why_card1_desc,
+              about_why_card2_title: data.about_why_card2_title || ABOUT_DEFAULTS.about_why_card2_title,
+              about_why_card2_desc: data.about_why_card2_desc || ABOUT_DEFAULTS.about_why_card2_desc,
+              about_why_card3_title: data.about_why_card3_title || ABOUT_DEFAULTS.about_why_card3_title,
+              about_why_card3_desc: data.about_why_card3_desc || ABOUT_DEFAULTS.about_why_card3_desc,
+              about_why_card4_title: data.about_why_card4_title || ABOUT_DEFAULTS.about_why_card4_title,
+              about_why_card4_desc: data.about_why_card4_desc || ABOUT_DEFAULTS.about_why_card4_desc,
+              about_why_card5_title: data.about_why_card5_title || ABOUT_DEFAULTS.about_why_card5_title,
+              about_why_card5_desc: data.about_why_card5_desc || ABOUT_DEFAULTS.about_why_card5_desc,
+              about_why_card6_title: data.about_why_card6_title || ABOUT_DEFAULTS.about_why_card6_title,
+              about_why_card6_desc: data.about_why_card6_desc || ABOUT_DEFAULTS.about_why_card6_desc,
+              about_step1_title: data.about_step1_title || ABOUT_DEFAULTS.about_step1_title,
+              about_step1_desc: data.about_step1_desc || ABOUT_DEFAULTS.about_step1_desc,
+              about_step2_title: data.about_step2_title || ABOUT_DEFAULTS.about_step2_title,
+              about_step2_desc: data.about_step2_desc || ABOUT_DEFAULTS.about_step2_desc,
+              about_step3_title: data.about_step3_title || ABOUT_DEFAULTS.about_step3_title,
+              about_step3_desc: data.about_step3_desc || ABOUT_DEFAULTS.about_step3_desc,
+              about_step4_title: data.about_step4_title || ABOUT_DEFAULTS.about_step4_title,
+              about_step4_desc: data.about_step4_desc || ABOUT_DEFAULTS.about_step4_desc,
+              about_step5_title: data.about_step5_title || ABOUT_DEFAULTS.about_step5_title,
+              about_step5_desc: data.about_step5_desc || ABOUT_DEFAULTS.about_step5_desc,
+              about_safety_card1_title: data.about_safety_card1_title || ABOUT_DEFAULTS.about_safety_card1_title,
+              about_safety_card1_desc: data.about_safety_card1_desc || ABOUT_DEFAULTS.about_safety_card1_desc,
+              about_safety_card2_title: data.about_safety_card2_title || ABOUT_DEFAULTS.about_safety_card2_title,
+              about_safety_card2_desc: data.about_safety_card2_desc || ABOUT_DEFAULTS.about_safety_card2_desc,
+              about_safety_card3_title: data.about_safety_card3_title || ABOUT_DEFAULTS.about_safety_card3_title,
+              about_safety_card3_desc: data.about_safety_card3_desc || ABOUT_DEFAULTS.about_safety_card3_desc,
+              about_safety_card4_title: data.about_safety_card4_title || ABOUT_DEFAULTS.about_safety_card4_title,
+              about_safety_card4_desc: data.about_safety_card4_desc || ABOUT_DEFAULTS.about_safety_card4_desc,
+              about_safety_card5_title: data.about_safety_card5_title || ABOUT_DEFAULTS.about_safety_card5_title,
+              about_safety_card5_desc: data.about_safety_card5_desc || ABOUT_DEFAULTS.about_safety_card5_desc,
+              about_safety_card6_title: data.about_safety_card6_title || ABOUT_DEFAULTS.about_safety_card6_title,
+              about_safety_card6_desc: data.about_safety_card6_desc || ABOUT_DEFAULTS.about_safety_card6_desc,
+              about_cta_title: data.about_cta_title || ABOUT_DEFAULTS.about_cta_title,
+              about_cta_desc: data.about_cta_desc || ABOUT_DEFAULTS.about_cta_desc,
+
+              // Special Offers Section
+              offers_section_title: data.offers_section_title || 'Special Offers',
+              offers_section_subtitle: data.offers_section_subtitle || 'Take advantage of our exclusive deals and save on your next rental',
+              offer1_active: data.offer1_active !== undefined ? (data.offer1_active === 'true' || data.offer1_active === true) : true,
+              offer1_title: data.offer1_title || 'Weekend Discount',
+              offer1_discount: data.offer1_discount || '20% OFF',
+              offer1_description: data.offer1_description || 'Get 20% off on weekend rentals. Perfect for your short getaways and weekend adventures.',
+              offer1_btn_text: data.offer1_btn_text || 'Claim Offer',
+              offer1_whatsapp_msg: data.offer1_whatsapp_msg || 'Hi! I want to claim the 20% Weekend Discount for my car rental.',
+              offer2_active: data.offer2_active !== undefined ? (data.offer2_active === 'true' || data.offer2_active === true) : true,
+              offer2_title: data.offer2_title || 'First Booking Offer',
+              offer2_discount: data.offer2_discount || '15% OFF',
+              offer2_description: data.offer2_description || 'New users get a discount on their first ride. Start your journey with us and save today!',
+              offer2_btn_text: data.offer2_btn_text || 'Get Started',
+              offer2_whatsapp_msg: data.offer2_whatsapp_msg || 'Hi! I want to claim the 15% First Booking Offer for my car rental.',
+            });
+          }
+        } catch (err: any) {
+          toast.error('Error fetching business settings');
+          console.error(err);
+        } finally {
+          setLoadingProfile(false);
         }
-      } catch (err: any) {
-        toast.error('Error fetching business settings');
-        console.error(err);
-      } finally {
+      } else {
         setLoadingProfile(false);
       }
     };

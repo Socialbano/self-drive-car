@@ -28,8 +28,8 @@ CREATE POLICY "Authenticated Hero Manage" ON storage.objects
   USING (bucket_id = 'hero-images')
   WITH CHECK (bucket_id = 'hero-images');
 
+-- ⚠️ SECURITY: Anon users should NOT have upload/delete access to storage.
+-- They already have SELECT (view) access via the "Public Access" policy above.
+-- The upload-hero API uses service_role key for server-side uploads.
+-- If you previously had an "Anon Hero Manage" policy, it has been removed.
 DROP POLICY IF EXISTS "Anon Hero Manage" ON storage.objects;
-CREATE POLICY "Anon Hero Manage" ON storage.objects
-  FOR ALL TO anon
-  USING (bucket_id = 'hero-images')
-  WITH CHECK (bucket_id = 'hero-images');

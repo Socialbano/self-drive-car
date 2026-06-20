@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase/client';
 import { MessageSquare, Plus, Trash2, Edit2, Sliders, Check, X, ShieldAlert, Star } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
+import { sanitizeInput } from '@/lib/client-auth';
+
 interface DBTestimonial {
   id: string;
   customer_name: string;
@@ -90,16 +92,23 @@ export default function AdminTestimonialsPage() {
       toast.error('Customer Name, City and Review Text are required fields.');
       return;
     }
+
+    const ratingInt = Math.floor(Number(formRating));
+    if (isNaN(ratingInt) || ratingInt < 1 || ratingInt > 5) {
+      toast.error('Rating must be an integer between 1 and 5.');
+      return;
+    }
+
     setSaving(true);
 
     const payload = {
-      customer_name: formCustomerName.trim(),
-      city: formCity.trim(),
-      rating: formRating,
-      review_text: formReviewText.trim(),
-      car_rented: formCarRented.trim() || null,
-      display_order: formDisplayOrder,
-      is_approved: formApproved,
+      customer_name: sanitizeInput(formCustomerName),
+      city: sanitizeInput(formCity),
+      rating: ratingInt,
+      review_text: sanitizeInput(formReviewText),
+      car_rented: sanitizeInput(formCarRented) || null,
+      display_order: Number(formDisplayOrder) || 0,
+      is_approved: !!formApproved,
     };
 
     try {
@@ -329,9 +338,26 @@ export default function AdminTestimonialsPage() {
         </div>
 
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-400 text-xs font-semibold">Loading reviews...</span>
+          <div className="p-8 space-y-4 animate-pulse">
+            {[...Array(5)].map((_, idx) => (
+              <div key={idx} className="flex items-center gap-6 py-4 border-b border-gray-100">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-100 rounded w-1/3" />
+                  <div className="h-3 bg-gray-100 rounded w-1/4" />
+                </div>
+                <div className="w-[15%] space-y-2">
+                  <div className="h-4 bg-gray-100 rounded w-1/2" />
+                  <div className="h-3 bg-gray-100 rounded w-2/3" />
+                </div>
+                <div className="w-[15%] h-5 bg-gray-100 rounded" />
+                <div className="w-[25%] h-4 bg-gray-100 rounded w-5/6" />
+                <div className="w-12 h-6 bg-gray-100 rounded-full" />
+                <div className="flex gap-2 text-right justify-end w-16">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : testimonials.length === 0 ? (
           <div className="py-24 text-center">

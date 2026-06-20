@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getAdminSettings, updateAdminSettings } from '@/lib/supabase/queries';
-import { createClient } from '@supabase/supabase-js';
+import {
+  authenticateRequest,
+  isSuperAdmin,
+  unauthorizedResponse,
+  forbiddenResponse,
+  serverErrorResponse,
+  sanitizeObject,
+  isRateLimited,
+  getClientIP
+} from '@/lib/auth-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,30 +30,36 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    // Authenticate client user session via JWT token in Authorization header
-    const authHeader = req.headers.get('Authorization');
-    const token = authHeader ? authHeader.replace('Bearer ', '') : null;
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
+    // Rate limiting
+    const clientIP = getClientIP(req);
+    if (isRateLimited(`settings:${clientIP}`, 15, 60000)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
-    
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    // getUser validates the JWT token against Supabase auth server
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized: Invalid session token' }, { status: 401 });
+
+    // Authentication required
+    const user = await authenticateRequest(req);
+    if (!user) {
+      return unauthorizedResponse();
     }
 
     const body = await req.json();
-    const success = await updateAdminSettings(body);
+    
+    if (!body || typeof body !== 'object' || Object.keys(body).length === 0) {
+      return NextResponse.json({ error: 'Request body is empty or invalid' }, { status: 400 });
+    }
+
+    // Only super admin can modify settings
+    if (!isSuperAdmin(user.email)) {
+      return forbiddenResponse('Only super admin can modify settings');
+    }
+
+    // Sanitize all string values
+    const sanitizedBody = sanitizeObject(body);
+
+    const success = await updateAdminSettings(sanitizedBody);
     
     if (!success) {
-      return NextResponse.json({ error: 'Failed to update settings in database' }, { status: 500 });
+      return serverErrorResponse('Failed to update settings in database');
     }
     
     return NextResponse.json({ success: true });

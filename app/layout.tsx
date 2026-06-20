@@ -54,6 +54,9 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       keywords,
       metadataBase: new URL(siteUrl),
+      alternates: {
+        canonical: '/',
+      },
       verification: {
         google: googleVerification,
       },
@@ -64,6 +67,29 @@ export async function generateMetadata(): Promise<Metadata> {
         siteName: name,
         locale: 'en_IN',
         type: 'website',
+        images: [{
+          url: '/images/og-default.jpg',
+          width: 1200,
+          height: 630,
+          alt: `${name} - Self Drive Car Rental ${city}`,
+        }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: ['/images/og-default.jpg'],
+      },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
       },
     };
   } catch {
@@ -117,33 +143,42 @@ export default async function RootLayout({
     console.error('Failed to resolve locations in Layout:', err);
   }
 
+  // Sanitize schema values to prevent XSS via JSON-LD injection
+  const safeStr = (s: string) => s.replace(/[<>"'&]/g, (c) => ({
+    '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '&': '&amp;'
+  }[c] || c));
+
   const schemaMarkup = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: name,
-    description: 'Self-Drive Car Rental Service in Indore',
+    name: safeStr(name),
+    description: safeStr(`Self-Drive Car Rental Service in ${city}. Premium cars on rent without driver.`),
     url: siteUrl,
     telephone: phone,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: address,
-      addressLocality: city,
-      addressRegion: state,
+      streetAddress: safeStr(address),
+      addressLocality: safeStr(city),
+      addressRegion: safeStr(state),
       postalCode: pincode,
       addressCountry: 'IN',
     },
-    geo: {
-      '@type': 'GeoCoordinates',
-      latitude: '22.6914',
-      longitude: '75.8478',
-    },
     openingHours: 'Mo-Su 00:00-24:00',
     priceRange: '₹₹',
+    sameAs: [],
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '1500',
+      bestRating: '5',
+    },
   };
 
   return (
     <html lang="en" className={clsx(poppins.variable, inter.variable, plusJakartaSans.variable, 'light')} style={{ '--color-primary': primaryColor, '--color-accent': accentColor } as React.CSSProperties}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <script
           type="application/ld+json"

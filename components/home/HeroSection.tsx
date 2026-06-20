@@ -70,6 +70,7 @@ export function HeroSection() {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
 
     if (!pickupLocation || !pickupDate || !pickupTime || !returnDate || !returnTime || !whatsappNumber) {
       toast.error('Please fill in all the required fields.');

@@ -100,12 +100,30 @@ export default function AgreementsPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {loading ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-gray-400">
-                    <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-[#0B1F3A] rounded-full animate-spin mb-2" />
-                    <p>Loading agreements...</p>
-                  </td>
-                </tr>
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-gray-100 rounded w-2/3 mb-1" />
+                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-5 bg-gray-100 rounded-full w-24" />
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-gray-100 rounded w-4/5" />
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-gray-100 rounded w-1/2" />
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex justify-end gap-2">
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-gray-400">

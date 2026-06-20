@@ -19,6 +19,7 @@ export default function LeadsPage() {
   const [dateTo, setDateTo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -117,15 +118,8 @@ export default function LeadsPage() {
 
   const statusCount = (status: string) => leads.filter(l => l.status === status).length;
 
-  if (!mounted || isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-[3px] border-[#0B1F3A] border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-400 text-sm font-medium">Loading leads...</span>
-        </div>
-      </div>
-    );
+  if (!mounted) {
+    return null;
   }
 
   return (
@@ -251,7 +245,41 @@ export default function LeadsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {paginatedLeads.map((lead) => (
+              {isLoading ? (
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gray-100 shrink-0" />
+                        <div className="space-y-1.5 flex-1">
+                          <div className="h-4 bg-gray-100 rounded w-24" />
+                          <div className="h-3 bg-gray-100 rounded w-20" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-5 bg-gray-100 rounded-full w-16" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-100 rounded w-16" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-7 bg-gray-100 rounded-lg w-20" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-100 rounded w-12" />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <div className="w-8 h-8 bg-gray-100 rounded-full" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-full" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-full" />
+                        <div className="w-8 h-8 bg-gray-100 rounded-full" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : paginatedLeads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-gray-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -316,7 +344,7 @@ export default function LeadsPage() {
                         <span className="material-symbols-outlined text-lg">visibility</span>
                       </button>
                       <button
-                        onClick={() => { if (confirm('Delete this lead?')) removeLead(lead.id); }}
+                        onClick={() => setDeleteId(lead.id)}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                         title="Delete"
                       >
@@ -407,6 +435,39 @@ export default function LeadsPage() {
           onStatusChange={handleStatusChange}
         />
       )}
+      {/* Custom Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full border border-gray-100 shadow-2xl scale-in duration-200 flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined text-2xl">delete</span>
+            </div>
+            <h3 className="text-lg font-bold text-[#0B1F3A]">Delete Lead?</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+              Are you sure you want to permanently delete this lead? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 w-full mt-6">
+              <button
+                onClick={async () => {
+                  const id = deleteId;
+                  setDeleteId(null);
+                  await removeLead(id);
+                }}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-all"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteId(null)}
+                className="flex-1 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all bg-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
