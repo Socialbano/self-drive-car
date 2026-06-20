@@ -278,7 +278,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     {/* Gear Type */}
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#FF4500] text-[18px] font-bold">motion_photos_on</span>
+                        <span className="material-symbols-outlined text-[#E89B10] text-[18px] font-bold">motion_photos_on</span>
                         <span>Gear Type</span>
                       </div>
                       <span className="font-bold text-[#0B1F3A] capitalize">{simCar.transmission}</span>
@@ -287,7 +287,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     {/* Fuel Type */}
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#FF4500] text-[18px] font-bold">local_gas_station</span>
+                        <span className="material-symbols-outlined text-[#E89B10] text-[18px] font-bold">local_gas_station</span>
                         <span>Fuel Type</span>
                       </div>
                       <span className="font-bold text-[#0B1F3A] capitalize">{simCar.fuel_type}</span>
@@ -302,7 +302,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     
                     <Link 
                       href={`/cars/${simCar.slug}`}
-                      className="w-10 h-10 rounded-full bg-[#FF4500] hover:bg-[#E03E00] flex items-center justify-center text-white transition-all shadow-sm active:scale-95 hover:rotate-45"
+                      className="w-10 h-10 rounded-full bg-[#E89B10] hover:bg-[#0B1F3A] flex items-center justify-center text-[#0B1F3A] hover:text-white transition-all shadow-sm active:scale-95 hover:rotate-45"
                     >
                       <span className="material-symbols-outlined text-sm font-black">arrow_outward</span>
                     </Link>

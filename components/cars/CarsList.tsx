@@ -113,7 +113,7 @@ export function CarsList({ initialCars }: CarsListProps) {
             >
               <span className="material-symbols-outlined">filter_list</span>
               {hasActiveAdvancedFilters && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#FF4500] rounded-full border-2 border-white flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#E89B10] rounded-full border-2 border-white flex items-center justify-center">
                   <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                 </span>
               )}
@@ -126,7 +126,7 @@ export function CarsList({ initialCars }: CarsListProps) {
           <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-4 shadow-lg animate-fade-in transition-all duration-300">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-6">
               <h4 className="font-bold text-[#0B1F3A] flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#FF4500]">tune</span>
+                <span className="material-symbols-outlined text-[#E89B10]">tune</span>
                 Advanced Filters
               </h4>
               {hasActiveAdvancedFilters && (
@@ -154,7 +154,7 @@ export function CarsList({ initialCars }: CarsListProps) {
                     step="100"
                     value={maxPrice === 0 ? maxAvailablePrice : maxPrice} 
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
-                    className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#FF4500]"
+                    className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#E89B10]"
                   />
                   <div className="flex justify-between text-[10px] text-gray-400 font-bold mt-2">
                     <span>₹500</span>
