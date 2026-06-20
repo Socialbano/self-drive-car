@@ -23,7 +23,7 @@ export const LOCATION_GROUPS: LocationGroup[] = [
       { name: 'Vijay Nagar', slug: 'vijay-nagar' },
       { name: 'Bhanwar Kuan', slug: 'bhanwar-kuan' },
       { name: 'Airport', slug: 'airport' },
-      { name: 'Ashok Nagar', slug: 'ashok-nagar' },
+      { name: 'Narmada Vihar', slug: 'narmada-vihar' },
     ],
   },
 ];

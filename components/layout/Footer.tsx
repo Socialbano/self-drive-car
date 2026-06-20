@@ -6,7 +6,7 @@ import { useSettings } from '@/components/SettingsProvider';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  const { settings } = useSettings();
+  const { settings, locations } = useSettings();
 
   // Dynamic whatsapp Link helper
   const whatsappLink = (message: string) => {
@@ -91,9 +91,17 @@ export function Footer() {
           <div>
             <h4 className="text-white font-bold mb-6 tracking-widest text-xs uppercase">Explore & Support</h4>
             <ul className="space-y-4">
-              <li><Link href="/locations/goa" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> Goa Location</Link></li>
-              <li><Link href="/locations/jaipur" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> Jaipur Location</Link></li>
-              <li><Link href="/locations/ashok-nagar" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> Ashok Nagar</Link></li>
+              {locations.map((loc) => (
+                <li key={loc.id}>
+                  <Link 
+                    href={`/locations/${loc.slug}`} 
+                    className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span>
+                    {loc.category === 'city' ? `${loc.name} Location` : loc.name}
+                  </Link>
+                </li>
+              ))}
               <li><Link href="/faq" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> FAQs</Link></li>
               <li><Link href="/terms" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> Terms & Conditions</Link></li>
             </ul>
@@ -137,8 +145,8 @@ export function Footer() {
             </p>
           </div>
           <div className="flex gap-6">
-             <Link href="/terms" className="text-white/40 hover:text-white text-xs font-medium transition-colors">Privacy Policy</Link>
-             <Link href="/terms" className="text-white/40 hover:text-white text-xs font-medium transition-colors">Rental Terms</Link>
+             <Link href="/privacy-policy" className="text-white/40 hover:text-white text-xs font-medium transition-colors">Privacy Policy</Link>
+             <Link href="/rental-terms" className="text-white/40 hover:text-white text-xs font-medium transition-colors">Rental Terms</Link>
           </div>
         </div>
       </div>
