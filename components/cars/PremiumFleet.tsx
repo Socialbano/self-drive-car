@@ -25,7 +25,7 @@ function FeaturedCarCard({ car, locationName }: { car: Car, locationName?: strin
   return (
     <div className="group bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(11,31,58,0.12)] hover:-translate-y-1 border border-gray-100">
       {/* Image */}
-      <div className="relative h-56 overflow-hidden">
+      <Link href={safeSlug !== '#' ? `/cars/${safeSlug}` : '#'} className="relative block h-56 overflow-hidden">
         <img
           alt={carName}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -36,7 +36,7 @@ function FeaturedCarCard({ car, locationName }: { car: Car, locationName?: strin
         <div className="absolute top-3 right-3 bg-[#0B1F3A]/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-semibold capitalize">
           {carType}
         </div>
-      </div>
+      </Link>
 
       {/* Info */}
       <div className="p-6">
@@ -79,7 +79,7 @@ function FeaturedCarCard({ car, locationName }: { car: Car, locationName?: strin
             className="flex-1 bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all active:scale-95"
           >
             <span className="material-symbols-outlined text-base">chat</span>
-            WhatsApp
+            Book Now
           </a>
           <Link
             href={safeSlug !== '#' ? `/cars/${safeSlug}` : '#'}

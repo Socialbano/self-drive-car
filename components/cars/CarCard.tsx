@@ -98,7 +98,7 @@ export function CarCard({ car }: CarCardProps) {
               className="w-full text-sm font-semibold h-11 shadow-sm"
               leftIcon={<MessageCircle className="w-4 h-4" />}
             >
-              WhatsApp
+              Book Now
             </Button>
           </div>
         </div>
