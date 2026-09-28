@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getFeaturedCars, getCars } from '@/lib/supabase/queries';
 import { whatsappLink } from '@/lib/constants';
+import { normalizeCarSpecs } from '@/lib/car-utils';
 import type { Car } from '@/types';
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600';
@@ -11,7 +12,8 @@ interface PremiumFleetProps {
   locationName?: string;
 }
 
-function FeaturedCarCard({ car, locationName }: { car: Car, locationName?: string }) {
+function FeaturedCarCard({ car: rawCar, locationName }: { car: Car; locationName?: string }) {
+  const car = normalizeCarSpecs(rawCar);
   const safeSlug = car.slug || '#';
   const carName = car.name || 'Vehicle';
   const carType = car.car_type || 'car';
@@ -23,72 +25,74 @@ function FeaturedCarCard({ car, locationName }: { car: Car, locationName?: strin
     : `Hi! I want to book the ${carName}. Is it available?`;
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(11,31,58,0.12)] hover:-translate-y-1 border border-gray-100">
-      {/* Image */}
-      <Link href={safeSlug !== '#' ? `/cars/${safeSlug}` : '#'} className="relative block h-56 overflow-hidden">
-        <img
-          alt={carName}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          src={car.image_url || PLACEHOLDER_IMG}
-        />
+    <div className="group bg-white rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(11,31,58,0.12)] hover:-translate-y-1 border border-gray-100 flex flex-col justify-between">
+      <div>
+        {/* Image */}
+        <Link href={safeSlug !== '#' ? `/cars/${safeSlug}` : '#'} className="relative block h-56 overflow-hidden">
+          <img
+            alt={`${carName} self drive rental`}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            src={car.image_url || PLACEHOLDER_IMG}
+          />
 
-        {/* Type Badge */}
-        <div className="absolute top-3 right-3 bg-[#0B1F3A]/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-semibold capitalize">
-          {carType}
-        </div>
-      </Link>
+          {/* Type Badge */}
+          <div className="absolute top-3 right-3 bg-[#0B1F3A]/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider">
+            {carType}
+          </div>
+        </Link>
 
-      {/* Info */}
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-bold text-[#0B1F3A]">{carName}</h3>
-          <div className="text-right flex flex-col gap-0.5 mt-[-4px]">
-             <div className="flex items-baseline justify-end gap-1">
-               <span className="text-sm font-semibold text-[#0B1F3A]">₹{car.price_12hr?.toLocaleString() ?? 0}</span>
-               <span className="text-[10px] text-gray-500">/ 12 hrs</span>
-             </div>
-             <div className="flex items-baseline justify-end gap-1">
-               <span className="text-xl font-black text-[#E89B10]">₹{car.price_24hr?.toLocaleString() ?? 0}</span>
-               <span className="text-xs text-gray-400">/ 24 hrs</span>
-             </div>
+        {/* Info */}
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-lg font-bold text-[#0B1F3A]">{carName}</h3>
+            <div className="text-right flex flex-col gap-0.5 mt-[-4px]">
+               <div className="flex items-baseline justify-end gap-1">
+                 <span className="text-sm font-semibold text-[#0B1F3A]">₹{car.price_12hr?.toLocaleString() ?? 0}</span>
+                 <span className="text-[10px] text-gray-500">/ 12 hrs</span>
+               </div>
+               <div className="flex items-baseline justify-end gap-1">
+                 <span className="text-xl font-black text-[#E89B10]">₹{car.price_24hr?.toLocaleString() ?? 0}</span>
+                 <span className="text-xs text-gray-400">/ 24 hrs</span>
+               </div>
+            </div>
+          </div>
+
+          {/* Specs */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            <div className="flex flex-col items-center p-2.5 bg-gray-50 rounded-xl">
+              <span className="material-symbols-outlined text-sm mb-1 text-gray-500">airline_seat_recline_extra</span>
+              <span className="text-[10px] font-bold uppercase text-gray-400">{car.seats} Seats</span>
+            </div>
+            <div className="flex flex-col items-center p-2.5 bg-gray-50 rounded-xl">
+              <span className="material-symbols-outlined text-sm mb-1 text-gray-500">settings</span>
+              <span className="text-[10px] font-bold uppercase text-gray-400">{transmission === 'automatic' ? 'Auto' : 'Manual'}</span>
+            </div>
+            <div className="flex flex-col items-center p-2.5 bg-gray-50 rounded-xl">
+              <span className="material-symbols-outlined text-sm mb-1 text-gray-500">local_gas_station</span>
+              <span className="text-[10px] font-bold uppercase text-gray-400 capitalize">{fuelType}</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Specs */}
-        <div className="grid grid-cols-3 gap-2 mb-6">
-          <div className="flex flex-col items-center p-2.5 bg-gray-50 rounded-xl">
-            <span className="material-symbols-outlined text-sm mb-1 text-gray-500">airline_seat_recline_extra</span>
-            <span className="text-[10px] font-bold uppercase text-gray-400">{car.seats} Seats</span>
-          </div>
-          <div className="flex flex-col items-center p-2.5 bg-gray-50 rounded-xl">
-            <span className="material-symbols-outlined text-sm mb-1 text-gray-500">settings</span>
-            <span className="text-[10px] font-bold uppercase text-gray-400">{transmission === 'automatic' ? 'Auto' : 'Manual'}</span>
-          </div>
-          <div className="flex flex-col items-center p-2.5 bg-gray-50 rounded-xl">
-            <span className="material-symbols-outlined text-sm mb-1 text-gray-500">local_gas_station</span>
-            <span className="text-[10px] font-bold uppercase text-gray-400 capitalize">{fuelType}</span>
-          </div>
-        </div>
-
-        {/* CTAs */}
-        <div className="flex gap-2">
-          <a
-            href={whatsappLink(whatsappMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all active:scale-95"
-          >
-            <span className="material-symbols-outlined text-base">chat</span>
-            Book Now
-          </a>
-          <Link
-            href={safeSlug !== '#' ? `/cars/${safeSlug}` : '#'}
-            className="flex-1 bg-[#0B1F3A] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0B1F3A]/90 transition-all active:scale-95"
-          >
-            <span className="material-symbols-outlined text-base">visibility</span>
-            View Details
-          </Link>
-        </div>
+      {/* CTAs */}
+      <div className="p-6 pt-0 flex gap-2">
+        <a
+          href={whatsappLink(whatsappMessage)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all active:scale-95"
+        >
+          <span className="material-symbols-outlined text-base">chat</span>
+          Book Now
+        </a>
+        <Link
+          href={safeSlug !== '#' ? `/cars/${safeSlug}` : '#'}
+          className="flex-1 bg-[#0B1F3A] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0B1F3A]/90 transition-all active:scale-95"
+        >
+          <span className="material-symbols-outlined text-base">visibility</span>
+          View Details
+        </Link>
       </div>
     </div>
   );

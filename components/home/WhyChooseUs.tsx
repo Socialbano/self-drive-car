@@ -40,7 +40,7 @@ export function WhyChooseUs() {
     const cardWidth = container.firstElementChild 
       ? (container.firstElementChild as HTMLElement).offsetWidth 
       : 280;
-    const gap = 16; // gap-4 is 16px
+    const gap = 16;
     const index = Math.round(scrollLeft / (cardWidth + gap));
     if (index >= 0 && index < features.length) {
       setActiveIdx(index);
@@ -48,7 +48,7 @@ export function WhyChooseUs() {
   };
 
   return (
-    <section className="section-padding bg-white">
+    <section className="section-padding bg-white overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: `
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -70,8 +70,8 @@ export function WhyChooseUs() {
           </p>
         </div>
 
-        {/* Mobile View: Horizontal Scrollable Carousel Cards (Compact & Smooth) */}
-        <div className="md:hidden">
+        {/* Mobile View: Horizontal Scrollable Carousel Cards (Hidden from crawlers to prevent DOM text duplication) */}
+        <div className="md:hidden" aria-hidden="true">
           <div 
             onScroll={handleScroll}
             className="flex overflow-x-auto gap-4 snap-x snap-mandatory no-scrollbar pb-4 px-1"
@@ -105,7 +105,7 @@ export function WhyChooseUs() {
           </div>
         </div>
 
-        {/* Desktop Feature Grid (Hidden on mobile) */}
+        {/* Desktop & Main Content Grid */}
         <div className="hidden md:grid grid-cols-2 gap-6">
           {features.map((feature, i) => (
             <div
@@ -126,4 +126,3 @@ export function WhyChooseUs() {
     </section>
   );
 }
-

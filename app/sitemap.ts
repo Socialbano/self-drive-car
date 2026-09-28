@@ -1,9 +1,21 @@
 import { MetadataRoute } from 'next';
 import { getCars, getBlogs, getActiveLocations, getAdminSettings } from '@/lib/supabase/queries';
+import { siteConfig } from '@/config/site';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const settings = await getAdminSettings();
-  const URL = (settings?.business_site_url || 'https://selfdrivecarrental.in').replace(/\/$/, '');
+  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || siteConfig.urls.siteUrl;
+
+  try {
+    const settings = await getAdminSettings();
+    if (settings?.business_site_url) {
+      siteUrl = settings.business_site_url;
+    }
+  } catch (e) {
+    // Fallback to siteConfig
+  }
+
+  const URL = siteUrl.replace(/\/$/, '');
+
   // Base static routes
   const baseRoutes = [
     '',
@@ -20,9 +32,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '' ? 1.0 : 0.8,
   }));
 
-  // Dynamic location pages
-  const activeLocations = await getActiveLocations();
-  const locations = (activeLocations || []).map((location) => ({
+  // Dynamic location pages (fallback to siteConfig.locations if DB empty)
+  let activeLocations = await getActiveLocations();
+  if (!activeLocations || activeLocations.length === 0) {
+    activeLocations = siteConfig.locations as any;
+  }
+
+  const locations = (activeLocations || []).map((location: any) => ({
     url: `${URL}/locations/${location.slug}`,
     lastModified: new Date().toISOString(),
     changeFrequency: 'weekly' as const,

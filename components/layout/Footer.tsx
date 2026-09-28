@@ -1,22 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { whatsappLink as staticWhatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
+import { WHATSAPP_MESSAGES } from '@/lib/constants';
 import { useSettings } from '@/components/SettingsProvider';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const { settings, locations } = useSettings();
 
-  // Dynamic whatsapp Link helper
   const whatsappLink = (message: string) => {
     return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(message)}`;
   };
 
   // Split logo name dynamically
-  let firstName = 'Car';
-  let lastName = 'Rental';
-  const trimmedName = settings.name.trim();
+  let firstName = 'Drive';
+  let lastName = 'Kro.IN';
+  const trimmedName = (settings.name || 'DriveKro.IN').trim();
   if (trimmedName) {
     if (trimmedName.includes('.')) {
       const lastDotIndex = trimmedName.lastIndexOf('.');
@@ -28,6 +27,14 @@ export function Footer() {
       lastName = nameParts.slice(1).join(' ') || '';
     }
   }
+
+  // Social URLs list (Only keep links that are valid and non-empty)
+  const socialLinks = [
+    { name: 'Instagram', url: settings.instagramUrl, icon: 'photo_camera' },
+    { name: 'Facebook', url: settings.facebookUrl, icon: 'thumb_up' },
+    { name: 'Twitter', url: settings.twitterUrl, icon: 'public' },
+    { name: 'YouTube', url: settings.youtubeUrl, icon: 'play_circle' },
+  ].filter((item) => Boolean(item.url && item.url.trim() !== '' && item.url !== '#'));
 
   return (
     <footer className="bg-[#000615] w-full pt-20 pb-8 border-t border-white/10 relative overflow-hidden">
@@ -60,19 +67,26 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed">
-              {settings.city}'s leading self-drive car rental provider since 2019. We believe in providing mobility with absolute freedom, premium quality, and zero hidden costs.
+              {settings.city}'s leading self-drive car rental provider since {settings.foundingYear || '2019'}. We believe in providing mobility with absolute freedom, premium quality, and zero hidden costs.
             </p>
-            <div className="flex gap-4 pt-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-[#1152d4] hover:border-transparent transition-all">
-                <span className="material-symbols-outlined text-[20px]">public</span>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-[#1152d4] hover:border-transparent transition-all">
-                <span className="material-symbols-outlined text-[20px]">thumb_up</span>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-[#1152d4] hover:border-transparent transition-all">
-                <span className="material-symbols-outlined text-[20px]">photo_camera</span>
-              </a>
-            </div>
+            
+            {/* Social Icons (Only renders active social links from config) */}
+            {socialLinks.length > 0 && (
+              <div className="flex gap-4 pt-2">
+                {socialLinks.map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.name}
+                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-[#E89B10] hover:border-transparent transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -89,21 +103,21 @@ export function Footer() {
 
           {/* Locations & Support */}
           <div>
-            <h4 className="text-white font-bold mb-6 tracking-widest text-xs uppercase">Explore & Support</h4>
-            <ul className="space-y-4">
-              {locations.map((loc) => (
+            <h4 className="text-white font-bold mb-6 tracking-widest text-xs uppercase">Explore Locations</h4>
+            <ul className="space-y-3.5">
+              {locations.slice(0, 7).map((loc) => (
                 <li key={loc.id}>
                   <Link 
                     href={`/locations/${loc.slug}`} 
-                    className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"
+                    className="text-white/60 hover:text-[#E89B10] text-xs font-semibold transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span>
-                    {loc.category === 'city' ? `${loc.name} Location` : loc.name}
+                    {loc.category === 'city' ? `${loc.name} (City)` : loc.name}
                   </Link>
                 </li>
               ))}
-              <li><Link href="/faq" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> FAQs</Link></li>
-              <li><Link href="/terms" className="text-white/60 hover:text-[#E89B10] text-sm transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> Terms & Conditions</Link></li>
+              <li><Link href="/faq" className="text-white/60 hover:text-[#E89B10] text-xs font-semibold transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> FAQs</Link></li>
+              <li><Link href="/terms" className="text-white/60 hover:text-[#E89B10] text-xs font-semibold transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-[#E89B10]/0 group-hover:bg-[#E89B10] transition-colors"></span> Terms & Conditions</Link></li>
             </ul>
           </div>
 
@@ -121,7 +135,7 @@ export function Footer() {
               </li>
               <li className="flex gap-4 items-center">
                 <span className="material-symbols-outlined text-[#25D366] shrink-0 text-[20px]">chat</span>
-                <a href={whatsappLink(WHATSAPP_MESSAGES.footer)} target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-[#25D366] text-sm transition-colors">WhatsApp Us</a>
+                <a href={whatsappLink(WHATSAPP_MESSAGES.footer(settings.name))} target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-[#25D366] text-sm transition-colors">WhatsApp Us</a>
               </li>
               <li className="flex gap-4 mt-6">
                 <div className="w-full bg-white/5 border border-white/10 rounded-xl p-4">
@@ -138,7 +152,7 @@ export function Footer() {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="space-y-1 text-center md:text-left">
             <p className="text-white/40 text-xs font-medium">
-              © {currentYear} {settings.name}. All rights reserved. {settings.heroTitleP1} {settings.heroTitleP2}.
+              © {currentYear} {settings.name}. All rights reserved. Self Drive Car Rental Service.
             </p>
             <p className="text-white/30 text-[10px] font-medium">
               Developed by <a href="https://socialbano.in" target="_blank" rel="noopener noreferrer" className="hover:text-[#E89B10] transition-colors">Social Bano Technologies Pvt. Ltd.</a>

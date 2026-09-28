@@ -10,6 +10,7 @@ import { PublicOnlyWrapper } from '@/components/layout/PublicOnlyWrapper';
 import { SettingsProvider } from '@/components/SettingsProvider';
 import { mapDatabaseSettings } from '@/lib/settings-utils';
 import { getAdminSettings, getActiveLocations } from '@/lib/supabase/queries';
+import { siteConfig } from '@/config/site';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -33,29 +34,30 @@ const inter = Inter({
   display: 'swap',
 });
 
-// Dynamic metadata generation based on active database configuration
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const settings = await getAdminSettings();
-    const name = settings.business_name || BUSINESS.name;
-    const phone = settings.business_phone || BUSINESS.phone;
+    const name = settings.business_name || siteConfig.brand.name;
+    const phone = settings.business_phone || siteConfig.contact.phone;
     const phoneDisplay = phone.replace(/^\+91/, '');
-    const city = settings.business_city || BUSINESS.city;
+    const city = settings.business_city || siteConfig.contact.city;
     
-    // Dynamic values from DB if configured, otherwise fallback to auto-generated strings
     const title = settings.business_seo_title || `${name} | Self Drive Car Rental ${city}`;
     const description = settings.business_seo_description || `Rent self drive cars in ${city} from ${name}. Hatchback, Sedan, SUV available. Call or WhatsApp ${phoneDisplay}.`;
-    const keywords = settings.business_seo_keywords || undefined;
+    const keywords = settings.business_seo_keywords || 'self drive car rental, car rental without driver, ujjain self drive, indore car rental';
     const googleVerification = settings.business_google_site_verification || undefined;
-    const siteUrl = settings.business_site_url || 'https://selfdrivecarrental.in';
     
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+    const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+    const isDemo = siteConfig.urls.isDemo;
+
     return {
       title,
       description,
       keywords,
-      metadataBase: new URL(siteUrl),
+      metadataBase: new URL(cleanSiteUrl),
       alternates: {
-        canonical: '/',
+        canonical: cleanSiteUrl,
       },
       verification: {
         google: googleVerification,
@@ -63,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
       openGraph: {
         title,
         description,
-        url: siteUrl,
+        url: cleanSiteUrl,
         siteName: name,
         locale: 'en_IN',
         type: 'website',
@@ -80,7 +82,10 @@ export async function generateMetadata(): Promise<Metadata> {
         description,
         images: ['/images/og-default.jpg'],
       },
-      robots: {
+      robots: isDemo ? {
+        index: false,
+        follow: false,
+      } : {
         index: true,
         follow: true,
         googleBot: {
@@ -93,9 +98,12 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     };
   } catch {
+    const siteUrl = siteConfig.urls.siteUrl;
     return {
-      title: `${BUSINESS.name} | Self Drive Car Rental ${BUSINESS.city}`,
-      description: `Rent self drive cars in ${BUSINESS.city} from ${BUSINESS.name}. Hatchback, Sedan, SUV available.`,
+      title: `${siteConfig.brand.name} | Self Drive Car Rental ${siteConfig.contact.city}`,
+      description: `Rent self drive cars in ${siteConfig.contact.city} from ${siteConfig.brand.name}. Hatchback, Sedan, SUV available.`,
+      metadataBase: new URL(siteUrl),
+      alternates: { canonical: siteUrl },
     };
   }
 }
@@ -105,13 +113,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let name: string = BUSINESS.name;
-  let phone: string = BUSINESS.phone;
-  let address: string = BUSINESS.address;
-  let city: string = BUSINESS.city;
-  let state: string = BUSINESS.state;
-  let pincode: string = BUSINESS.pincode;
-  let siteUrl: string = 'https://selfdrivecarrental.in';
+  let name: string = siteConfig.brand.name;
+  let phone: string = siteConfig.contact.phone;
+  let address: string = siteConfig.contact.address;
+  let city: string = siteConfig.contact.city;
+  let state: string = siteConfig.contact.state;
+  let pincode: string = siteConfig.contact.pincode;
+  let siteUrl: string = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || siteConfig.urls.siteUrl;
+  let googleRating: number = siteConfig.trustMetrics.googleRating;
+  let googleReviewCount: number = siteConfig.trustMetrics.googleReviewCount;
 
   let initialSettingsData: any = undefined;
   let initialLocationsData: any = undefined;
@@ -123,15 +133,17 @@ export default async function RootLayout({
     if (rawSettings && Object.keys(rawSettings).length > 0) {
       initialSettingsData = mapDatabaseSettings(rawSettings);
       
-      name = rawSettings.business_name || name;
-      phone = rawSettings.business_phone || phone;
-      address = rawSettings.business_address || address;
-      city = rawSettings.business_city || city;
-      state = rawSettings.business_state || state;
-      pincode = rawSettings.business_pincode || pincode;
-      siteUrl = rawSettings.business_site_url || siteUrl;
-      primaryColor = rawSettings.theme_primary_color || primaryColor;
-      accentColor = rawSettings.theme_accent_color || accentColor;
+      name = initialSettingsData.name || name;
+      phone = initialSettingsData.phone || phone;
+      address = initialSettingsData.address || address;
+      city = initialSettingsData.city || city;
+      state = initialSettingsData.state || state;
+      pincode = initialSettingsData.pincode || pincode;
+      siteUrl = initialSettingsData.siteUrl || siteUrl;
+      primaryColor = initialSettingsData.themePrimaryColor || primaryColor;
+      accentColor = initialSettingsData.themeAccentColor || accentColor;
+      googleRating = initialSettingsData.googleRating || googleRating;
+      googleReviewCount = initialSettingsData.googleReviewCount || googleReviewCount;
     }
   } catch (err) {
     console.error('Failed to resolve settings in Layout:', err);
@@ -143,17 +155,16 @@ export default async function RootLayout({
     console.error('Failed to resolve locations in Layout:', err);
   }
 
-  // Sanitize schema values to prevent XSS via JSON-LD injection
   const safeStr = (s: string) => s.replace(/[<>"'&]/g, (c) => ({
     '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '&': '&amp;'
   }[c] || c));
 
-  const schemaMarkup = {
+  const schemaMarkup: Record<string, any> = {
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
+    '@type': 'AutoRental',
     name: safeStr(name),
-    description: safeStr(`Self-Drive Car Rental Service in ${city}. Premium cars on rent without driver.`),
-    url: siteUrl,
+    description: safeStr(`Self-Drive Car Rental Service in ${city}. Premium cars on rent without driver with zero security deposit.`),
+    url: siteUrl.replace(/\/$/, ''),
     telephone: phone,
     address: {
       '@type': 'PostalAddress',
@@ -165,14 +176,17 @@ export default async function RootLayout({
     },
     openingHours: 'Mo-Su 00:00-24:00',
     priceRange: '₹₹',
-    sameAs: [],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '1500',
-      bestRating: '5',
-    },
   };
+
+  // Only include aggregateRating if real rating is set in config
+  if (googleRating > 0 && googleReviewCount > 0) {
+    schemaMarkup.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: googleRating.toString(),
+      reviewCount: googleReviewCount.toString(),
+      bestRating: '5',
+    };
+  }
 
   return (
     <html lang="en" className={clsx(poppins.variable, inter.variable, plusJakartaSans.variable, 'light')} style={{ '--color-primary': primaryColor, '--color-accent': accentColor } as React.CSSProperties}>

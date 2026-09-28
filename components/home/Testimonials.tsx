@@ -6,13 +6,21 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import { useSettings } from '@/components/SettingsProvider';
+import { TestimonialCard } from '@/components/ui/TestimonialCard';
 import type { Testimonial as DBTestimonial } from '@/types';
 
 interface TestimonialsProps {
   initialTestimonials?: DBTestimonial[];
 }
 
-import { TestimonialCard } from '@/components/ui/TestimonialCard';
+function formatName(rawName: string): string {
+  if (!rawName) return 'Verified Customer';
+  return rawName
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export function Testimonials({ initialTestimonials }: TestimonialsProps) {
   const { settings } = useSettings();
@@ -20,25 +28,25 @@ export function Testimonials({ initialTestimonials }: TestimonialsProps) {
   const staticTestimonials = [
     {
       name: 'Rahul Sharma',
-      role: 'Business Owner',
-      quote: "Best experience renting a Thar for my weekend trip to Mandu. The car was spotless and the process was super smooth. Highly recommended!",
+      role: `Customer (${settings.city})`,
+      quote: `Best experience renting a Thar for my trip. The car was spotless and the process was super smooth. Highly recommended!`,
       rating: 5,
     },
     {
       name: 'Ananya Jain',
-      role: 'Tech Lead',
+      role: `Customer (${settings.city})`,
       quote: `No security deposit is a game changer. ${settings.name} makes it so easy to get a car whenever you need one. Professional service.`,
       rating: 5,
     },
     {
       name: 'Vivek Gupta',
-      role: 'Photography Enthusiast',
-      quote: "Very prompt response and clean cars. Used their Fortuner for a family event and it was perfect. Will definitely rent again.",
+      role: `Customer (${settings.city})`,
+      quote: `Very prompt response and clean cars. Used their Fortuner for a family event and it was perfect. Will definitely rent again.`,
       rating: 5,
     },
     {
       name: 'Priya Mishra',
-      role: 'Frequent Traveler',
+      role: `Frequent Traveler`,
       quote: `Transformed my regular ${settings.city} trips. The cars are always in pristine condition. Their 24/7 support is actually 24/7.`,
       rating: 5,
     }
@@ -46,13 +54,12 @@ export function Testimonials({ initialTestimonials }: TestimonialsProps) {
 
   const testimonials = initialTestimonials && initialTestimonials.length > 0
     ? initialTestimonials.map(t => ({
-        name: t.customer_name,
-        role: t.car_rented ? `${t.car_rented} (${t.city})` : t.city || 'Verified Customer',
-        quote: t.review_text,
+        name: formatName(t.customer_name),
+        role: t.car_rented ? `${t.car_rented} (${formatName(t.city || settings.city)})` : formatName(t.city || settings.city),
+        quote: t.review_text ? (t.review_text.charAt(0).toUpperCase() + t.review_text.slice(1)) : 'Great service!',
         rating: t.rating || 5,
       }))
     : staticTestimonials;
-
 
   return (
     <section className="section-padding bg-[#f9f9f9] overflow-hidden">
@@ -66,7 +73,7 @@ export function Testimonials({ initialTestimonials }: TestimonialsProps) {
 
         <div className="relative">
           {/* Decorative quote marks */}
-          <span className="absolute -top-10 -left-6 text-9xl text-[var(--color-primary)]/5 font-serif leading-none z-0">
+          <span className="absolute -top-10 -left-6 text-9xl text-[#0B1F3A]/5 font-serif leading-none z-0 pointer-events-none select-none">
             "
           </span>
 

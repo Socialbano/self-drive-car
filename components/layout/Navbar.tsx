@@ -267,7 +267,7 @@ export function Navbar() {
               {settings.phoneDisplay}
             </a>
             <a
-              href={whatsappLink(WHATSAPP_MESSAGES.hero)}
+              href={whatsappLink(WHATSAPP_MESSAGES.hero(settings.name))}
               target="_blank"
               rel="noopener noreferrer"
               className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg active:scale-95 ${isNavbarWhite
@@ -404,7 +404,7 @@ export function Navbar() {
               Call {settings.phoneDisplay}
             </a>
             <a
-              href={whatsappLink(WHATSAPP_MESSAGES.hero)}
+              href={whatsappLink(WHATSAPP_MESSAGES.hero(settings.name))}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#25D366] text-white text-sm font-bold hover:opacity-90 transition-all"

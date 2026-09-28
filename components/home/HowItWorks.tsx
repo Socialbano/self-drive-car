@@ -15,7 +15,7 @@ export function HowItWorks() {
     },
     {
       number: '02',
-      title: 'Book on whatsapp',
+      title: 'Book on WhatsApp',
       description: 'Verify your details, select your dates, and confirm your booking via WhatsApp or our portal.',
       icon: 'touch_app',
     },
@@ -38,7 +38,7 @@ export function HowItWorks() {
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [activeStep, steps.length]);
+  }, [steps.length]);
 
   const changeStep = (index: number) => {
     if (index === activeStep) return;
@@ -67,13 +67,11 @@ export function HowItWorks() {
           </p>
         </div>
 
-        {/* Mobile View Steps (Interactive Timeline Tabs - Compact & Animated) */}
-        <div className="md:hidden">
+        {/* Mobile View Steps (Hidden from crawlers to prevent DOM duplicate indexing) */}
+        <div className="md:hidden" aria-hidden="true">
           {/* Progress Timeline Tracker */}
           <div className="relative flex justify-between items-center max-w-[260px] mx-auto mb-8">
-            {/* Background line */}
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/10 -translate-y-1/2 z-0"></div>
-            {/* Active connecting line */}
             <div 
               className="absolute top-1/2 left-0 h-0.5 bg-[#E89B10] -translate-y-1/2 z-0 transition-all duration-500 ease-out"
               style={{ width: `${(activeStep / (steps.length - 1)) * 100}%` }}
@@ -104,7 +102,6 @@ export function HowItWorks() {
           {/* Interactive Card */}
           <div className="bg-[#000615]/50 backdrop-blur-md border border-white/10 rounded-2xl p-6 text-center shadow-2xl relative overflow-hidden min-h-[220px] flex flex-col justify-center">
             <div className={`transition-all duration-300 transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-2' : 'opacity-100 scale-100 translate-y-0'}`}>
-              {/* Icon Bubble */}
               <div className="w-14 h-14 mx-auto bg-[#0B1F3A] border border-white/10 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-[#0B1F3A]/30">
                 <span className="material-symbols-outlined text-3xl text-[#E89B10]">
                   {steps[activeStep].icon}
@@ -132,14 +129,12 @@ export function HowItWorks() {
           </div>
         </div>
 
-        {/* Desktop Steps (Hidden on mobile) */}
+        {/* Desktop Steps Grid */}
         <div className="hidden md:grid grid-cols-3 gap-12 relative">
-          {/* Connecting Line (Desktop) */}
           <div className="absolute top-[44px] left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
           {steps.map((step, i) => (
             <div key={i} className="relative text-center group">
-              {/* Number/Icon Bubble */}
               <div className="w-24 h-24 mx-auto bg-[#000615] border border-white/10 rounded-2xl flex items-center justify-center relative mb-8 group-hover:-translate-y-2 transition-transform duration-500 shadow-xl">
                 <span className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#E89B10] text-[#000615] font-black flex items-center justify-center text-sm shadow-lg">
                   {step.number}
@@ -160,4 +155,3 @@ export function HowItWorks() {
     </section>
   );
 }
-

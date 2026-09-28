@@ -6,17 +6,33 @@ import { getAdminSettings, getTestimonials } from '@/lib/supabase/queries';
 import { ABOUT_DEFAULTS } from '@/lib/about-defaults';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { TestimonialCard } from '@/components/ui/TestimonialCard';
+import { siteConfig } from '@/config/site';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getAdminSettings();
   const name = settings.business_name || BUSINESS.name;
   const city = settings.business_city || BUSINESS.city;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+  const isDemo = siteConfig.urls.isDemo;
+
+  const title = `About Us | Premium Self-Drive Rental | ${name}`;
+  const description = `Discover how ${name} is transforming self-drive rentals in ${city} with a curated luxury fleet, zero security deposit, and verified vehicles.`;
+
   return {
-    title: `About Us | Premium Self-Drive Rental | ${name}`,
-    description: `Discover how ${name} is transforming self-drive rentals in ${city} with a curated luxury fleet, zero security deposit, and verified vehicles.`,
+    title,
+    description,
     alternates: {
-      canonical: '/about',
+      canonical: `${cleanSiteUrl}/about`,
+    },
+    robots: isDemo ? { index: false, follow: false } : undefined,
+    openGraph: {
+      title,
+      description,
+      url: `${cleanSiteUrl}/about`,
+      siteName: name,
+      type: 'website',
     },
   };
 }
@@ -25,8 +41,11 @@ export default async function AboutPage() {
   const settings = await getAdminSettings();
   const name = settings.business_name || BUSINESS.name;
   const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
-  const whatsappMsg = settings.whatsapp_default_msg || 'Hi! I want to book a premium self drive car.';
+  const whatsappMsg = settings.whatsapp_default_msg || `Hi ${name}! I want to book a premium self drive car.`;
   const city = settings.business_city || BUSINESS.city;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
 
   const dbTestimonials = await getTestimonials();
   const testimonials = dbTestimonials.length > 0 ? dbTestimonials : [
@@ -34,7 +53,7 @@ export default async function AboutPage() {
       id: 'static-1',
       customer_name: 'Rahul Sharma',
       city: city,
-      review_text: "Best experience renting a Thar for my weekend trip to Mandu. The car was spotless and the process was super smooth. Highly recommended!",
+      review_text: "Best experience renting a Thar for my trip. The car was spotless and the process was super smooth. Highly recommended!",
       rating: 5,
       car_rented: 'Thar'
     },
@@ -60,18 +79,18 @@ export default async function AboutPage() {
     heroTitle: settings.about_hero_title || ABOUT_DEFAULTS.about_hero_title,
     heroSubtitle: settings.about_hero_subtitle || ABOUT_DEFAULTS.about_hero_subtitle,
     
-    statTrips: settings.about_stat_trips || ABOUT_DEFAULTS.about_stat_trips,
-    statTripsLabel: settings.about_stat_trips_label || ABOUT_DEFAULTS.about_stat_trips_label,
-    statCustomers: settings.about_stat_customers || ABOUT_DEFAULTS.about_stat_customers,
-    statCustomersLabel: settings.about_stat_customers_label || ABOUT_DEFAULTS.about_stat_customers_label,
-    statVehicles: settings.about_stat_vehicles || ABOUT_DEFAULTS.about_stat_vehicles,
-    statVehiclesLabel: settings.about_stat_vehicles_label || ABOUT_DEFAULTS.about_stat_vehicles_label,
-    statCities: settings.about_stat_cities || ABOUT_DEFAULTS.about_stat_cities,
-    statCitiesLabel: settings.about_stat_cities_label || ABOUT_DEFAULTS.about_stat_cities_label,
+    statTrips: settings.about_stat_trips || '1,500+',
+    statTripsLabel: settings.about_stat_trips_label || 'Trips Completed',
+    statCustomers: settings.about_stat_customers || `${siteConfig.trustMetrics.customersCount}+`,
+    statCustomersLabel: settings.about_stat_customers_label || siteConfig.trustMetrics.customersLabel,
+    statVehicles: settings.about_stat_vehicles || `${siteConfig.trustMetrics.carsCount}+`,
+    statVehiclesLabel: settings.about_stat_vehicles_label || siteConfig.trustMetrics.carsLabel,
+    statCities: settings.about_stat_cities || '3+',
+    statCitiesLabel: settings.about_stat_cities_label || 'Cities Served',
 
     introTitle: settings.about_intro_title || ABOUT_DEFAULTS.about_intro_title,
     introDesc: settings.about_intro_desc || ABOUT_DEFAULTS.about_intro_desc,
-    introLocationText: settings.about_intro_location_text || ABOUT_DEFAULTS.about_intro_location_text,
+    introLocationText: settings.about_intro_location_text || `Proudly serving ${city} and surrounding cities with zero security deposit rentals.`,
 
     card1Title: settings.about_card1_title || ABOUT_DEFAULTS.about_card1_title,
     card1Desc: settings.about_card1_desc || ABOUT_DEFAULTS.about_card1_desc,
@@ -102,7 +121,7 @@ export default async function AboutPage() {
     whyCard1Desc: settings.about_why_card1_desc || ABOUT_DEFAULTS.about_why_card1_desc,
     whyCard2Title: settings.about_why_card2_title || ABOUT_DEFAULTS.about_why_card2_title,
     whyCard2Desc: settings.about_why_card2_desc || ABOUT_DEFAULTS.about_why_card2_desc,
-    whyCard3Title: settings.about_why_card3_title || ABOUT_DEFAULTS.about_why_card3_title,
+    whyCard3Title: settings.about_why_card3_title || ABOUT_DEFAULTS.about_why_card3_desc,
     whyCard3Desc: settings.about_why_card3_desc || ABOUT_DEFAULTS.about_why_card3_desc,
     whyCard4Title: settings.about_why_card4_title || ABOUT_DEFAULTS.about_why_card4_title,
     whyCard4Desc: settings.about_why_card4_desc || ABOUT_DEFAULTS.about_why_card4_desc,
@@ -156,11 +175,24 @@ export default async function AboutPage() {
     return founderName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${cleanSiteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: 'About Us', item: `${cleanSiteUrl}/about` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-white text-gray-900 flex flex-col relative overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Navbar />
 
-      {/* Premium Hero Section - Dark Navy Background for High Impact Contrast */}
+      {/* Premium Hero Section */}
       <section className="relative pt-40 pb-28 px-6 lg:px-8 bg-[#050B14] text-white flex flex-col items-center justify-center text-center overflow-hidden"
                style={{ backgroundImage: 'radial-gradient(rgba(232, 155, 16, 0.03) 1px, transparent 0)', backgroundSize: '40px 40px' }}>
         
@@ -172,7 +204,7 @@ export default async function AboutPage() {
           <nav className="flex justify-center mb-6 text-xs font-bold tracking-[0.25em] text-[#E89B10] uppercase">
             <span>Home</span>
             <span className="mx-3 text-white/30">•</span>
-            <span className="text-white/70">About Us</span>
+            <span className="text-white">About Us</span>
           </nav>
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black font-headline tracking-tight text-white leading-[1.1]">
@@ -262,7 +294,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Founder / Owner Section - Clean Light Gray Background */}
+      {/* Founder / Owner Section */}
       <section className="bg-gray-50 py-24 px-6 lg:px-8 relative z-10 border-b border-gray-100">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
@@ -271,8 +303,6 @@ export default async function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-sm">
-            
-            {/* Founder Avatar */}
             <div className="lg:col-span-4 flex justify-center">
               <div className="relative w-44 h-44 md:w-52 md:h-52 rounded-full overflow-hidden border-[4px] border-gray-100 flex items-center justify-center bg-gray-50 shadow-md">
                 {s.founderAvatarUrl ? (
@@ -283,7 +313,6 @@ export default async function AboutPage() {
               </div>
             </div>
 
-            {/* Founder Details */}
             <div className="lg:col-span-8 space-y-6">
               <div>
                 <h3 className="text-2xl md:text-3xl font-black text-[#0B1F3A] font-headline">{s.founderName}</h3>
@@ -293,7 +322,6 @@ export default async function AboutPage() {
                 {s.founderStory}
               </p>
               
-              {/* Quote Card */}
               <div className="border-l-[3px] border-[#E89B10] pl-5 py-2.5 bg-gray-50 rounded-r-xl">
                 <p className="text-gray-800 italic text-sm md:text-base leading-relaxed">
                   “{s.founderQuote}”
@@ -304,7 +332,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Why Choose Us Section (Bento Grid) - White Background */}
+      {/* Why Choose Us Section */}
       <section className="bg-white py-24 px-6 lg:px-8 relative z-10 border-b border-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -329,7 +357,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Rental Process Timeline - Clean Light Gray Background */}
+      {/* Rental Process Timeline */}
       <section className="bg-gray-50 py-24 px-6 lg:px-8 relative z-10 border-b border-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -337,9 +365,7 @@ export default async function AboutPage() {
             <h2 className="text-3xl md:text-4xl font-black text-[#0B1F3A] font-headline mt-2">Rental Process Timeline</h2>
           </div>
 
-          {/* Process Timeline Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative">
-            {/* Timeline connection line (hidden on mobile) */}
             <div className="hidden lg:block absolute top-[28px] left-[10%] right-[10%] h-[2px] bg-gray-200 z-0"></div>
             
             {timelineSteps.map((step, idx) => (
@@ -355,7 +381,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Testimonials Section - White Background */}
+      {/* Testimonials Section */}
       {testimonials.length > 0 && (
         <section className="bg-white py-24 px-6 lg:px-8 relative z-10 border-b border-gray-100">
           <div className="max-w-6xl mx-auto">
@@ -381,12 +407,10 @@ export default async function AboutPage() {
         </section>
       )}
 
-      {/* Final CTA Section - Dark Blue Premium Background for Closure */}
+      {/* Final CTA Section */}
       <section className="bg-white py-24 px-6 lg:px-8 relative z-10 flex justify-center">
-        <div className="max-w-5xl w-full bg-gradient-brand-cta border border-white/10 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
-          {/* Accent decoration blobs */}
+        <div className="max-w-5xl w-full bg-[#0B1F3A] border border-white/10 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-5" style={{ backgroundColor: 'var(--color-accent)' }}></div>
           
           <div className="max-w-2xl mx-auto space-y-6 relative z-10">
             <h2 className="text-3xl md:text-5xl font-black text-white font-headline tracking-tight leading-tight">

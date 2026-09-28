@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
 import { BUSINESS, whatsappLink } from '@/lib/constants';
 import { getAdminSettings, getBlogBySlug } from '@/lib/supabase/queries';
+import { siteConfig } from '@/config/site';
 
 interface Props {
   params: {
@@ -26,16 +27,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const name = settings.business_name || BUSINESS.name;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+  const isDemo = siteConfig.urls.isDemo;
 
   return {
     title: `${post.title} | ${name}`,
     description: post.meta_description,
     alternates: {
-      canonical: `/blog/${post.slug}`,
+      canonical: `${cleanSiteUrl}/blog/${post.slug}`,
     },
+    robots: isDemo ? { index: false, follow: false } : undefined,
     openGraph: {
       title: post.title,
       description: post.meta_description,
+      url: `${cleanSiteUrl}/blog/${post.slug}`,
       type: 'article',
       images: [post.image],
     },
@@ -56,6 +62,9 @@ export default async function SingleBlogPost({ params }: Props) {
   const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
   const blogCity = post.locations?.name || settings.business_city || BUSINESS.city;
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+
   const jsonLdArticle = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -71,7 +80,7 @@ export default async function SingleBlogPost({ params }: Props) {
       name: name,
       logo: {
         '@type': 'ImageObject',
-        url: settings.business_logo_url || (settings.business_site_url ? `${settings.business_site_url.replace(/\/$/, '')}/logo.png` : 'https://selfdrivecarrental.in/logo.png'),
+        url: settings.business_logo_url || `${cleanSiteUrl}/logo.png`,
       },
     },
     description: post.meta_description,
@@ -92,9 +101,18 @@ export default async function SingleBlogPost({ params }: Props) {
     })),
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${cleanSiteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${cleanSiteUrl}/blog` },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `${cleanSiteUrl}/blog/${post.slug}` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
-      {/* Inject Schema markup */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdArticle) }}
@@ -102,6 +120,10 @@ export default async function SingleBlogPost({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFaq) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <Navbar />
@@ -158,9 +180,8 @@ export default async function SingleBlogPost({ params }: Props) {
 
       {/* Content Wrapper */}
       <div className="flex-grow max-w-4xl mx-auto px-6 lg:px-8 pb-20 w-full">
-        {/* Render HTML content safely */}
         <article 
-          className="prose prose-lg max-w-none prose-h2:text-3xl prose-h2:font-black prose-h2:text-[#0B1F3A] prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[var(--color-accent)] prose-strong:text-[#0B1F3A]"
+          className="prose prose-lg max-w-none prose-h2:text-3xl prose-h2:font-black prose-h2:text-[#0B1F3A] prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-[#E89B10] prose-strong:text-[#0B1F3A]"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
@@ -180,9 +201,8 @@ export default async function SingleBlogPost({ params }: Props) {
         )}
 
         {/* Call to Action Book Now */}
-        <div className="mt-16 bg-gradient-brand-cta p-10 rounded-3xl relative overflow-hidden shadow-2xl text-center">
+        <div className="mt-16 bg-[#0B1F3A] p-10 rounded-3xl relative overflow-hidden shadow-2xl text-center">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent-glow rounded-full blur-2xl translate-y-1/2 -translate-x-1/4"></div>
             
             <div className="relative z-10 max-w-2xl mx-auto">
                 <span className="inline-block bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-1.5 rounded-full text-white/90 text-sm font-bold uppercase tracking-wider mb-6">

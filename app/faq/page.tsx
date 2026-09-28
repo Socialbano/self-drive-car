@@ -2,20 +2,35 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
 import { Accordion } from '@/components/ui/Accordion';
-import { getFAQs } from '@/lib/supabase/queries';
+import { getFAQs, getAdminSettings } from '@/lib/supabase/queries';
 import { BUSINESS, whatsappLink } from '@/lib/constants';
-
-import { getAdminSettings } from '@/lib/supabase/queries';
+import { siteConfig } from '@/config/site';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getAdminSettings();
   const name = settings.business_name || BUSINESS.name;
+  const city = settings.business_city || BUSINESS.city;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+  const isDemo = siteConfig.urls.isDemo;
+
+  const title = `FAQ & Support | ${name} ${city}`;
+  const description = `Find answers to frequently asked questions about self-drive car rentals, zero security deposit, insurance, documents, and policies in ${city}.`;
+
   return {
-    title: `FAQ & Support | ${name}`,
-    description: 'Find answers to frequently asked questions about car rentals, security deposits, insurance, and our self-drive policies in Indore.',
+    title,
+    description,
     alternates: {
-      canonical: '/faq',
+      canonical: `${cleanSiteUrl}/faq`,
+    },
+    robots: isDemo ? { index: false, follow: false } : undefined,
+    openGraph: {
+      title,
+      description,
+      url: `${cleanSiteUrl}/faq`,
+      siteName: name,
+      type: 'website',
     },
   };
 }
@@ -26,17 +41,20 @@ export default async function FAQPage() {
   const phone = settings.business_phone || BUSINESS.phone;
   const phoneDisplay = phone.replace(/^\+91/, '');
   const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+  const city = settings.business_city || BUSINESS.city;
   
   const faqs = await getFAQs();
 
-  // Map to Accordion format
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+
   const accordionItems = faqs.map(faq => ({
     id: faq.id ? faq.id.toString() : Math.random().toString(),
     title: faq.question,
     content: <div dangerouslySetInnerHTML={{ __html: faq.answer }} className="prose prose-sm prose-slate max-w-none text-gray-500" />
   }));
 
-  const schemaMarkup = {
+  const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: faqs.map(faq => ({
@@ -49,13 +67,26 @@ export default async function FAQPage() {
     }))
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${cleanSiteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: 'FAQ', item: `${cleanSiteUrl}/faq` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
-      <Navbar />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Navbar />
       
       <header className="bg-[#000615] relative overflow-hidden pt-32 pb-24 px-6 lg:px-8 border-b border-white/10">
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 translate-x-1/2 -translate-y-1/2" style={{ backgroundColor: 'var(--color-primary)' }}></div>
@@ -68,10 +99,10 @@ export default async function FAQPage() {
             <span className="text-white">FAQ</span>
           </nav>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-headline tracking-tight mb-6">
-            Frequently Asked <span className="gradient-text">Questions</span>
+            Frequently Asked <span className="bg-gradient-to-r from-[#E89B10] to-[#FFD700] bg-clip-text text-transparent">Questions</span>
           </h1>
           <p className="text-white/60 text-lg leading-relaxed max-w-2xl mx-auto">
-            Everything you need to know about renting a car with {name}. Can't find the answer you're looking for? Reach out to our 24/7 support team.
+            Everything you need to know about renting a car in {city} with {name}. Can't find the answer you're looking for? Reach out to our 24/7 support team.
           </p>
         </div>
       </header>
@@ -119,7 +150,7 @@ export default async function FAQPage() {
             </div>
 
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-start gap-4">
-               <span className="material-symbols-outlined text-[var(--color-accent)] text-2xl">info</span>
+               <span className="material-symbols-outlined text-[#E89B10] text-2xl">info</span>
                <div>
                  <h4 className="font-bold text-[#0B1F3A] mb-1">Rental Requirements</h4>
                  <p className="text-gray-500 text-sm">To rent a car, you must be 21+ years old and hold a valid Indian driving license & original Aadhaar card.</p>

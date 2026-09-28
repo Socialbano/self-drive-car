@@ -18,7 +18,10 @@ export interface Car {
   extra_km_rate?: number | null;
   is_featured: boolean;
   is_active: boolean;
+  is_available?: boolean;
+  display_order?: number;
   created_at: string;
+  updated_at?: string;
   car_images?: CarImage[];
 }
 

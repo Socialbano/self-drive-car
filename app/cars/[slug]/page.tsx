@@ -4,57 +4,65 @@ import { notFound } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
-import { getCarBySlug, getSimilarCars } from '@/lib/supabase/queries';
+import { getCarBySlug, getSimilarCars, getAdminSettings } from '@/lib/supabase/queries';
 import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
-import { getAdminSettings } from '@/lib/supabase/queries';
+import { normalizeCarSpecs } from '@/lib/car-utils';
+import { siteConfig } from '@/config/site';
 import type { Metadata } from 'next';
 
-// Dynamic page — no generateStaticParams needed (SSR fetches live from DB)
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const [car, settings] = await Promise.all([
+  const [rawCar, settings] = await Promise.all([
     getCarBySlug(params.slug),
     getAdminSettings()
   ]);
-  if (!car) return { title: 'Car Not Found' };
-  
-  const name = settings?.business_name || BUSINESS.name;
-  const siteUrl = settings?.business_site_url || 'https://selfdrivecarrental.in';
-  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+  if (!rawCar) return { title: 'Car Not Found' };
 
-    return {
-      title: `${car.name} Rental Indore | ${name}`,
-      description: `Rent ${car.name} (${car.car_type}) in Indore for ₹${car.price_24hr}/24hrs. Book instantly on WhatsApp.`,
-      alternates: {
-        canonical: `/cars/${params.slug}`,
-      },
-      openGraph: {
-        title: `${car.name} Self Drive Rental Indore | ${name}`,
-        description: `Rent ${car.name} (${car.car_type}) in Indore for ₹${car.price_24hr}/24hrs. Book instantly on WhatsApp.`,
-        images: [car.image_url || `${cleanSiteUrl}/default-car.png`],
-        type: 'website',
-      },
-    };
+  const car = normalizeCarSpecs(rawCar);
+  const name = settings?.business_name || BUSINESS.name;
+  const city = settings?.business_city || BUSINESS.city;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings?.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+  const isDemo = siteConfig.urls.isDemo;
+
+  return {
+    title: `${car.name} Rental in ${city} | ${name}`,
+    description: `Rent ${car.name} (${car.car_type}) in ${city} for ₹${car.price_24hr?.toLocaleString()}/24hrs. Zero security deposit, instant WhatsApp booking.`,
+    alternates: {
+      canonical: `${cleanSiteUrl}/cars/${car.slug}`,
+    },
+    robots: isDemo ? { index: false, follow: false } : undefined,
+    openGraph: {
+      title: `${car.name} Self Drive Rental in ${city} | ${name}`,
+      description: `Rent ${car.name} (${car.car_type}) in ${city} for ₹${car.price_24hr?.toLocaleString()}/24hrs. Book instantly on WhatsApp.`,
+      url: `${cleanSiteUrl}/cars/${car.slug}`,
+      images: [car.image_url || `${cleanSiteUrl}/default-car.png`],
+      type: 'website',
+    },
+  };
 }
 
 export default async function CarDetailPage({ params }: { params: { slug: string } }) {
-  const [car, settings] = await Promise.all([
+  const [rawCar, settings] = await Promise.all([
     getCarBySlug(params.slug),
     getAdminSettings()
   ]);
   
-  if (!car) {
+  if (!rawCar) {
     notFound();
   }
 
+  const car = normalizeCarSpecs(rawCar);
   const name = settings.business_name || BUSINESS.name;
   const phone = settings.business_phone || BUSINESS.phone;
   const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+  const city = settings.business_city || BUSINESS.city;
 
-  const similarCars = await getSimilarCars(car.car_type, car.id);
+  const rawSimilarCars = await getSimilarCars(car.car_type, car.id);
+  const similarCars = rawSimilarCars.map(c => normalizeCarSpecs(c));
 
-  const siteUrl = settings?.business_site_url || 'https://selfdrivecarrental.in';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings?.business_site_url || siteConfig.urls.siteUrl;
   const cleanSiteUrl = siteUrl.replace(/\/$/, '');
 
   const productSchema = {
@@ -62,7 +70,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
     '@type': 'Product',
     name: `${car.name} Self Drive Rental`,
     image: car.image_url || `${cleanSiteUrl}/default-car.png`,
-    description: car.description || `Rent ${car.name} self drive car in Indore.`,
+    description: car.description || `Rent ${car.name} self drive car in ${city}.`,
     brand: {
       '@type': 'Brand',
       name: name,
@@ -76,11 +84,25 @@ export default async function CarDetailPage({ params }: { params: { slug: string
     },
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${cleanSiteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: 'Cars', item: `${cleanSiteUrl}/cars` },
+      { '@type': 'ListItem', position: 3, name: car.name, item: `${cleanSiteUrl}/cars/${car.slug}` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#f9f9f9]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <Navbar />
       
@@ -105,13 +127,12 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                 <span className="bg-[#0B1F3A]/90 backdrop-blur-md text-white px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider">
                   {car.car_type}
                 </span>
-
               </div>
               <div className="aspect-[16/10] relative rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
                 <img 
-                  src={car.image_url || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80'} 
-                  alt={`${car.name} self drive rental in Indore`}
-                  className="w-full h-full object-cover rounded-2xl mix-blend-multiply"
+                  src={car.image_url} 
+                  alt={`${car.name} self drive rental in ${city}`}
+                  className="w-full h-full object-cover rounded-2xl"
                 />
               </div>
             </div>
@@ -133,7 +154,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                 <div className="p-4 bg-gray-50 rounded-2xl">
                   <span className="material-symbols-outlined text-gray-400 mb-2">settings</span>
                   <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Transmission</p>
-                  <p className="font-bold text-[#0B1F3A] capitalize">{car.transmission}</p>
+                  <p className="font-bold text-[#0B1F3A] capitalize">{car.transmission === 'automatic' ? 'Automatic' : 'Manual'}</p>
                 </div>
               </div>
             </div>
@@ -147,8 +168,8 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                   <p className="text-xs text-gray-500">Comprehensive cover</p>
                 </div>
               </div>
-              <div className="bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/20 rounded-2xl p-4 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[var(--color-accent)]">clean_hands</span>
+              <div className="bg-[#0B1F3A]/10 border border-[#0B1F3A]/20 rounded-2xl p-4 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[#0B1F3A]">clean_hands</span>
                 <div>
                   <h4 className="font-bold text-[#0B1F3A] text-sm">Sanitized</h4>
                   <p className="text-xs text-gray-500">Before every trip</p>
@@ -167,7 +188,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
           {/* Right Column - Pricing & Booking */}
           <div className="space-y-6">
             <div className="bg-[#0B1F3A] rounded-3xl p-8 shadow-2xl relative overflow-hidden sticky top-32">
-              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" style={{ backgroundColor: 'var(--color-accent)' }}></div>
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2 bg-[#E89B10]"></div>
               
               <div className="relative z-10">
                 <h1 className="text-3xl font-black text-white font-headline mb-2">{car.name}</h1>
@@ -192,25 +213,25 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     <li className="flex justify-between text-sm">
                       <span className="text-white/60">KM Limit / Day</span>
                       <span className="text-white font-bold">
-                        {car.km_limit_per_day ? `${car.km_limit_per_day} KM` : '—'}
+                        {car.km_limit_per_day ? `${car.km_limit_per_day} KM` : '300 KM'}
                       </span>
                     </li>
                     <li className="flex justify-between text-sm">
                       <span className="text-white/60">Extra KM Rate</span>
                       <span className="text-white font-bold">
-                        {car.extra_km_rate ? `₹${car.extra_km_rate} / KM` : '—'}
+                        {car.extra_km_rate ? `₹${car.extra_km_rate} / KM` : '₹10 / KM'}
                       </span>
                     </li>
                     <li className="flex justify-between text-sm">
                       <span className="text-white/60">Security Deposit</span>
-                      <span className="text-white font-bold">₹0 (Subject to check)</span>
+                      <span className="text-white font-bold">₹0 Deposit</span>
                     </li>
                   </ul>
                 </div>
 
                 <div className="space-y-3">
                   <a 
-                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '12 hours', car.price_12hr), whatsappNumber)}
+                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '12 hours', car.price_12hr, name), whatsappNumber)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#20BD5A] transition-all duration-300 active:scale-95 shadow-lg shadow-[#25D366]/20"
@@ -219,7 +240,7 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                     Book for 12 Hours
                   </a>
                   <a 
-                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '24 hours', car.price_24hr), whatsappNumber)}
+                    href={whatsappLink(WHATSAPP_MESSAGES.carBookingTime(car.name, '24 hours', car.price_24hr, name), whatsappNumber)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#E89B10] text-[#0B1F3A] py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#d08c0e] hover:text-white transition-all duration-300 active:scale-95 shadow-lg"
@@ -252,7 +273,6 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                 >
                   {/* Image Container */}
                   <div className="bg-[#F8F9FA] rounded-2xl aspect-[1.6] relative flex items-center justify-center overflow-hidden mb-4">
-                    {/* Yellow Logo Badge */}
                     <div className="absolute top-3 left-3 w-8 h-8 rounded-lg bg-[#E89B10] flex items-center justify-center text-white shadow-sm z-10">
                       <span className="material-symbols-outlined text-base">directions_car</span>
                     </div>
@@ -262,9 +282,9 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                       </span>
                     )}
                     <img 
-                      src={simCar.image_url || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80'} 
+                      src={simCar.image_url} 
                       alt={`${simCar.name} self drive rental`}
-                      className="w-4/5 h-4/5 object-contain transition-transform duration-500 hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                   </div>
                   
@@ -275,16 +295,14 @@ export default async function CarDetailPage({ params }: { params: { slug: string
                   
                   {/* Specifications */}
                   <div className="space-y-2.5 border-b border-gray-100 pb-4 mb-4 px-1">
-                    {/* Gear Type */}
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[#E89B10] text-[18px] font-bold">motion_photos_on</span>
                         <span>Gear Type</span>
                       </div>
-                      <span className="font-bold text-[#0B1F3A] capitalize">{simCar.transmission}</span>
+                      <span className="font-bold text-[#0B1F3A] capitalize">{simCar.transmission === 'automatic' ? 'Automatic' : 'Manual'}</span>
                     </div>
                     
-                    {/* Fuel Type */}
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[#E89B10] text-[18px] font-bold">local_gas_station</span>

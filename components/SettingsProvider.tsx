@@ -1,10 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BUSINESS } from '@/lib/constants';
 import { supabase } from '@/lib/supabase/client';
-
 import { BusinessSettings, DEFAULT_SETTINGS, mapDatabaseSettings } from '@/lib/settings-utils';
+import { siteConfig } from '@/config/site';
 
 export interface Location {
   id: string;
@@ -25,6 +24,25 @@ export interface Location {
   is_active: boolean;
 }
 
+const defaultFormattedLocations: Location[] = siteConfig.locations.map(loc => ({
+  id: loc.id,
+  name: loc.name,
+  slug: loc.slug,
+  category: loc.category,
+  title: loc.title,
+  description: loc.description,
+  street_address: loc.streetAddress,
+  hero_image: loc.heroImage,
+  icon_name: loc.iconName,
+  badge_text: loc.badgeText,
+  heading_prefix: loc.headingPrefix,
+  heading_highlight: loc.headingHighlight,
+  hero_description: loc.heroDescription,
+  whatsapp_msg: loc.whatsappMsg,
+  display_order: loc.displayOrder,
+  is_active: true,
+}));
+
 interface SettingsContextType {
   settings: BusinessSettings;
   locations: Location[];
@@ -44,7 +62,9 @@ export function SettingsProvider({
   initialLocations?: Location[];
 }) {
   const [settings, setSettings] = useState<BusinessSettings>(initialSettings || DEFAULT_SETTINGS);
-  const [locations, setLocations] = useState<Location[]>(initialLocations || []);
+  const [locations, setLocations] = useState<Location[]>(
+    initialLocations && initialLocations.length > 0 ? initialLocations : defaultFormattedLocations
+  );
   const [loading, setLoading] = useState(!initialSettings);
 
   const fetchSettings = async () => {
@@ -52,13 +72,13 @@ export function SettingsProvider({
       const res = await fetch(`/api/settings?t=${Date.now()}`, {
         cache: 'no-store'
       });
-      if (!res.ok) throw new Error('Failed to fetch settings');
-      const data = await res.json();
-      
-      if (data && Object.keys(data).length > 0) {
-        setSettings(mapDatabaseSettings(data));
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Object.keys(data).length > 0) {
+          setSettings(mapDatabaseSettings(data));
+        }
       }
-
+      
       // Fetch dynamic active locations from Supabase
       const { data: locData, error: locError } = await supabase
         .from('locations')
@@ -66,7 +86,7 @@ export function SettingsProvider({
         .eq('is_active', true)
         .order('display_order', { ascending: true });
       
-      if (!locError && locData) {
+      if (!locError && locData && locData.length > 0) {
         setLocations(locData as Location[]);
       }
     } catch (error) {
@@ -93,7 +113,7 @@ export function SettingsProvider({
   }, [settings.themePrimaryColor, settings.themeAccentColor]);
 
   return (
-    <SettingsContext.Provider value={{ settings, locations, loading, refreshSettings: fetchSettings }}>
+    <SettingsContext.Provider value={{ settings, locations: locations.length > 0 ? locations : defaultFormattedLocations, loading, refreshSettings: fetchSettings }}>
       {children}
     </SettingsContext.Provider>
   );

@@ -13,19 +13,25 @@ const TIME_OPTIONS = [
   '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM'
 ];
 
-function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
+/**
+ * AnimatedCounter renders the configured target metric statically in SSR HTML,
+ * and triggers a smooth count-up animation when visible in the browser viewport.
+ */
+function AnimatedCounter({ target, suffix = '+' }: { target: number; suffix?: string }) {
+  // Start with target value so SSR / non-JS / crawlers render real count in HTML
+  const [count, setCount] = useState(target);
   const ref = useRef<HTMLDivElement>(null);
   const animated = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || target <= 0) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !animated.current) {
           animated.current = true;
-          const duration = 2000;
+          setCount(0); // Reset count for animation
+          const duration = 1600;
           const startTime = performance.now();
           const step = (now: number) => {
             const progress = Math.min((now - startTime) / duration, 1);
@@ -36,7 +42,7 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
           requestAnimationFrame(step);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.3 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -44,13 +50,17 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
 
   return (
     <div ref={ref} className="text-xl md:text-2xl font-black text-white leading-none tabular-nums">
-      {count.toLocaleString()}{suffix}
+      {count > 0 ? count.toLocaleString() : target.toLocaleString()}{suffix}
     </div>
   );
 }
 
 export function HeroSection() {
   const { settings, locations } = useSettings();
+
+  const activeLocations = locations && locations.length > 0
+    ? locations.filter((loc) => loc.is_active !== false)
+    : [];
 
   // Booking Form State
   const [pickupLocation, setPickupLocation] = useState('');
@@ -61,10 +71,11 @@ export function HeroSection() {
   const [carType, setCarType] = useState('All Car Types');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const heroBg = settings.heroImageUrl;
+  const heroBg = settings.heroImageUrl || '/images/hero-bg.jpg';
 
-  const whatsappLink = (message: string) => {
+  const buildWhatsappUrl = (message: string) => {
     return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(message)}`;
   };
 
@@ -72,65 +83,69 @@ export function HeroSection() {
     e.preventDefault();
     if (submitting) return;
 
+    // 1. Check all required fields
     if (!pickupLocation || !pickupDate || !pickupTime || !returnDate || !returnTime || !whatsappNumber) {
-      toast.error('Please fill in all the required fields.');
+      toast.error('Please fill in all required fields.');
+      return;
+    }
+
+    // 2. Validate Indian WhatsApp Mobile Number (10 digits starting with 6-9)
+    const phoneClean = whatsappNumber.trim().replace(/\D/g, '');
+    if (!/^[6-9]\d{9}$/.test(phoneClean)) {
+      toast.error('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+
+    // 3. Validate Date Logic (pickup >= today, return >= pickup)
+    const today = new Date().toISOString().split('T')[0];
+    if (pickupDate < today) {
+      toast.error('Pickup date cannot be in the past.');
+      return;
+    }
+    if (returnDate < pickupDate) {
+      toast.error('Return date must be on or after the pickup date.');
       return;
     }
 
     setSubmitting(true);
 
-    // Construct inquiry details message for Supabase Lead record
-    const leadMessage = `Hero Booking Form Inquiry:
-- Pickup: ${pickupLocation}
-- Pickup DateTime: ${pickupDate} @ ${pickupTime}
-- Return DateTime: ${returnDate} @ ${returnTime}
-- Car Category Interest: ${carType}
-- Client Mobile: ${whatsappNumber}`;
+    const leadMessage = `Booking Inquiry for ${settings.name}:
+- Location: ${pickupLocation}
+- Start: ${pickupDate} @ ${pickupTime}
+- Return: ${returnDate} @ ${returnTime}
+- Vehicle Category: ${carType}
+- Client Mobile: ${phoneClean}`;
 
-    // 1. Submit lead details dynamically to the Supabase database
-    const { success, error } = await insertLead({
-      name: 'Hero Booking Inquiry',
-      phone: whatsappNumber,
+    // 4. Save Lead into Database
+    const { success } = await insertLead({
+      name: `Website Inquiry (${pickupLocation})`,
+      phone: phoneClean,
       car_type: carType !== 'All Car Types' ? carType : 'General Inquiry',
       pickup_date: pickupDate,
       message: leadMessage,
     });
 
     setSubmitting(false);
+    setIsSuccess(true);
 
-    // 2. Format a gorgeous pre-filled WhatsApp message for booking availability request
-    const waText = `Hi! I want to check availability for a self-drive car rental.
-Here are my booking requirements:
-📍 Pickup: ${pickupLocation}
-📅 Start: ${pickupDate} (${pickupTime})
-📅 End: ${returnDate} (${returnTime})
-🚗 Selected Car: ${carType}
-📱 Contact: ${whatsappNumber}
+    // 5. Construct formatted WhatsApp prefilled message
+    const waText = `Hi ${settings.name}! I would like to check availability for a self-drive car.
+📍 Pickup Location: ${pickupLocation}
+📅 Start Date & Time: ${pickupDate} (${pickupTime})
+📅 Return Date & Time: ${returnDate} (${returnTime})
+🚗 Preferred Vehicle: ${carType}
+📱 Customer Contact: ${phoneClean}
 
-Please confirm availability. Thanks!`;
+Please confirm car availability and rates. Thank you!`;
 
     const customWhatsappUrl = `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(waText)}`;
 
-    if (success) {
-      toast.success('Inquiry saved to dashboard! Redirecting to WhatsApp...');
-      // Reset Form
-      setPickupLocation('');
-      setPickupDate('');
-      setPickupTime('');
-      setReturnDate('');
-      setReturnTime('');
-      setCarType('All Car Types');
-      setWhatsappNumber('');
-      
-      // Redirect User to WhatsApp
-      setTimeout(() => {
-        window.open(customWhatsappUrl, '_blank');
-      }, 800);
-    } else {
-      console.error('Error saving lead:', error);
-      toast.error('Something went wrong. Redirecting directly to WhatsApp...');
+    toast.success('Inquiry saved! Opening WhatsApp to complete booking...');
+
+    // Redirect to WhatsApp after short delay
+    setTimeout(() => {
       window.open(customWhatsappUrl, '_blank');
-    }
+    }, 600);
   };
 
   return (
@@ -138,7 +153,7 @@ Please confirm availability. Thanks!`;
       {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
-          alt="Luxury Car Fleet Background"
+          alt={`${settings.name} Luxury Fleet`}
           className="w-full h-full object-cover scale-105"
           src={heroBg}
         />
@@ -153,15 +168,17 @@ Please confirm availability. Thanks!`;
           {/* Left Column: Headline and Features */}
           <div className="lg:col-span-7 space-y-8">
             {/* Tagline / serving areas badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10">
-              <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-              <span className="text-white/90 text-xs font-bold tracking-wider uppercase">
-                {settings.heroTagline}
-              </span>
-            </div>
+            {settings.heroTagline && (
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10">
+                <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
+                <span className="text-white/90 text-xs font-bold tracking-wider uppercase">
+                  {settings.heroTagline}
+                </span>
+              </div>
+            )}
 
             {/* Dynamic Headers */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white font-headline leading-[1.1] tracking-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white font-headline leading-[1.1] tracking-tight">
               {settings.heroTitleP1} <br />
               <span className="bg-gradient-to-r from-[#E89B10] to-[#FFD700] bg-clip-text text-transparent">
                 {settings.heroTitleP2}
@@ -207,7 +224,7 @@ Please confirm availability. Thanks!`;
             {/* Left CTAs */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <a
-                href={whatsappLink(WHATSAPP_MESSAGES.hero)}
+                href={buildWhatsappUrl(WHATSAPP_MESSAGES.hero(settings.name))}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group px-8 py-4 bg-[#25D366] text-white rounded-2xl font-bold flex items-center gap-3 hover:bg-[#20BD5A] transition-all duration-300 shadow-xl shadow-[#25D366]/20 active:scale-95 text-sm md:text-base"
@@ -226,50 +243,75 @@ Please confirm availability. Thanks!`;
 
             {/* Translucent Stats Card Row */}
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 flex items-center justify-between gap-4 max-w-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#E89B10]/20 flex items-center justify-center text-[#E89B10] shrink-0">
-                  <span className="material-symbols-outlined text-lg">groups</span>
-                </div>
-                <div>
-                  <AnimatedCounter target={settings.heroStat1Value} suffix="+" />
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-0.5">{settings.heroStat1Label}</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-white/10 shrink-0" />
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#E89B10]/20 flex items-center justify-center text-[#E89B10] shrink-0">
-                  <span className="material-symbols-outlined text-lg">directions_car</span>
-                </div>
-                <div>
-                  <AnimatedCounter target={settings.heroStat2Value} suffix="+" />
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-0.5">{settings.heroStat2Label}</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-white/10 shrink-0" />
+              {settings.heroStat1Value > 0 && (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#E89B10]/20 flex items-center justify-center text-[#E89B10] shrink-0">
+                      <span className="material-symbols-outlined text-lg">groups</span>
+                    </div>
+                    <div>
+                      <AnimatedCounter target={settings.heroStat1Value} suffix="+" />
+                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                        {settings.heroStat1Label || 'Happy Customers'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-px h-8 bg-white/10 shrink-0" />
+                </>
+              )}
+
+              {settings.heroStat2Value > 0 && (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#E89B10]/20 flex items-center justify-center text-[#E89B10] shrink-0">
+                      <span className="material-symbols-outlined text-lg">directions_car</span>
+                    </div>
+                    <div>
+                      <AnimatedCounter target={settings.heroStat2Value} suffix="+" />
+                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                        {settings.heroStat2Label || 'Cars in Fleet'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-px h-8 bg-white/10 shrink-0" />
+                </>
+              )}
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#E89B10]/20 flex items-center justify-center text-[#E89B10] shrink-0">
                   <span className="material-symbols-outlined text-lg">headset_mic</span>
                 </div>
                 <div>
-                  <div className="text-xl md:text-2xl font-black text-white leading-none">24/7</div>
+                  <div className="text-xl md:text-2xl font-black text-white leading-none">
+                    {settings.hours ? '24/7' : '24x7'}
+                  </div>
                   <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-0.5">Customer Support</p>
                 </div>
               </div>
             </div>
 
-            {/* Google Rating */}
-            <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white/95 text-sm">
-              <span className="text-lg font-black text-red-500 bg-white rounded-md w-5 h-5 flex items-center justify-center leading-none text-[12px] font-sans shadow-sm select-none">G</span>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-white leading-none">4.9</span>
-                  <div className="flex text-[#E89B10] text-[10px] tracking-widest leading-none">
-                    ★★★★★
+            {/* Google Rating (Hides gracefully if zero/empty) */}
+            {settings.googleRating > 0 && (
+              <a
+                href={settings.googleProfileLink || '#'}
+                target={settings.googleProfileLink ? '_blank' : '_self'}
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white/95 text-sm hover:bg-white/10 transition-colors"
+              >
+                <span className="text-lg font-black text-red-500 bg-white rounded-md w-5 h-5 flex items-center justify-center leading-none text-[12px] font-sans shadow-sm select-none">G</span>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-white leading-none">{settings.googleRating}</span>
+                    <div className="flex text-[#E89B10] text-[10px] tracking-widest leading-none">
+                      ★★★★★
+                    </div>
                   </div>
+                  <p className="text-white/40 text-[10.5px] font-medium leading-none mt-1">
+                    Rated by {settings.googleReviewCount}+ customers on Google
+                  </p>
                 </div>
-                <p className="text-white/40 text-[10.5px] font-medium leading-none mt-1">Rated by 500+ customers on Google</p>
-              </div>
-            </div>
+              </a>
+            )}
           </div>
 
           {/* Right Column: Dynamic Booking Availability Form */}
@@ -292,7 +334,9 @@ Please confirm availability. Thanks!`;
               <form onSubmit={handleBookingSubmit} className="space-y-4">
                 {/* Pickup Location */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1 block">Pickup Location</label>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1 block">
+                    Pickup Location
+                  </label>
                   <div className="relative flex items-center">
                     <span className="material-symbols-outlined absolute left-4 text-slate-400 text-lg pointer-events-none">location_on</span>
                     <select
@@ -302,9 +346,9 @@ Please confirm availability. Thanks!`;
                       className="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-12 pr-10 py-3 text-white text-sm font-semibold focus:ring-2 focus:ring-[#E89B10] outline-none cursor-pointer appearance-none"
                     >
                       <option value="" disabled className="bg-slate-950 text-white">Select pickup location</option>
-                      {locations.filter(loc => loc.is_active).map((loc) => (
+                      {activeLocations.map((loc) => (
                         <option key={loc.id} value={loc.name} className="bg-slate-950 text-white">
-                          {loc.name}
+                          {loc.category === 'city' ? `🌆 ${loc.name} (City)` : `📍 ${loc.name}`}
                         </option>
                       ))}
                     </select>
@@ -323,7 +367,12 @@ Please confirm availability. Thanks!`;
                         required
                         min={new Date().toISOString().split('T')[0]}
                         value={pickupDate}
-                        onChange={(e) => setPickupDate(e.target.value)}
+                        onChange={(e) => {
+                          setPickupDate(e.target.value);
+                          if (!returnDate || returnDate < e.target.value) {
+                            setReturnDate(e.target.value);
+                          }
+                        }}
                         className="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-9 pr-2 py-3 text-white text-xs font-semibold focus:ring-2 focus:ring-[#E89B10] outline-none cursor-pointer"
                       />
                     </div>
@@ -403,6 +452,7 @@ Please confirm availability. Thanks!`;
                       <option value="SUV" className="bg-slate-950 text-white">SUV</option>
                       <option value="Luxury" className="bg-slate-950 text-white">Luxury</option>
                       <option value="Electric" className="bg-slate-950 text-white">Electric</option>
+                      <option value="MUV" className="bg-slate-950 text-white">MUV (7 Seater)</option>
                     </select>
                     <span className="material-symbols-outlined absolute right-4 text-slate-400 text-lg pointer-events-none">expand_more</span>
                   </div>
@@ -410,16 +460,18 @@ Please confirm availability. Thanks!`;
 
                 {/* WhatsApp Number */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1 block">WhatsApp Number</label>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1 block">
+                    WhatsApp Number (10 Digits)
+                  </label>
                   <div className="relative flex items-center">
                     <span className="material-symbols-outlined absolute left-4 text-slate-400 text-lg pointer-events-none">chat</span>
                     <input
                       type="tel"
                       required
-                      pattern="[0-9]{10}"
-                      placeholder="Enter WhatsApp number"
+                      maxLength={10}
+                      placeholder="e.g. 9876543210"
                       value={whatsappNumber}
-                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, ''))}
                       className="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white text-sm font-semibold focus:ring-2 focus:ring-[#E89B10] outline-none placeholder:text-slate-500"
                     />
                   </div>
@@ -434,7 +486,12 @@ Please confirm availability. Thanks!`;
                   {submitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-[#0B1F3A]/30 border-t-[#0B1F3A] rounded-full animate-spin" />
-                      Checking...
+                      Checking Availability...
+                    </>
+                  ) : isSuccess ? (
+                    <>
+                      <span className="material-symbols-outlined text-base font-black">check_circle</span>
+                      Redirecting to WhatsApp...
                     </>
                   ) : (
                     <>

@@ -1,22 +1,39 @@
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloat } from '@/components/layout/WhatsAppFloat';
-import { getCars } from '@/lib/supabase/queries';
+import { getCars, getAdminSettings } from '@/lib/supabase/queries';
 import { BUSINESS, whatsappLink, WHATSAPP_MESSAGES } from '@/lib/constants';
+import { normalizeCarSpecs } from '@/lib/car-utils';
+import { siteConfig } from '@/config/site';
 import { Car } from '@/types';
-
-import { getAdminSettings } from '@/lib/supabase/queries';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getAdminSettings();
   const name = settings.business_name || BUSINESS.name;
   const city = settings.business_city || BUSINESS.city;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
+  const isDemo = siteConfig.urls.isDemo;
+
+  const title = `Self Drive Car ${city} Price | Daily & Monthly Rates | ${name}`;
+  const description = `Simple and transparent self-drive car rental pricing in ${city}. View daily, weekly, and weekend rates for our entire fleet with zero hidden charges.`;
+
   return {
-    title: `Self Drive Car ${city} Price | Daily & Monthly Rates | ${name}`,
-    description: `Simple and transparent self-drive car rental pricing in ${city}. View daily, weekly, and weekend rates for our entire fleet with zero hidden charges.`,
+    title,
+    description,
     alternates: {
-      canonical: '/pricing',
+      canonical: `${cleanSiteUrl}/pricing`,
+    },
+    robots: isDemo ? { index: false, follow: false } : undefined,
+    openGraph: {
+      title,
+      description,
+      url: `${cleanSiteUrl}/pricing`,
+      siteName: name,
+      type: 'website',
     },
   };
 }
@@ -49,23 +66,23 @@ function PricingTable({ cars, title }: { cars: Car[]; title: string }) {
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
                         <img 
-                          src={car.image_url || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80'} 
-                          alt={`${car.name} self drive car indore price`} 
+                          src={car.image_url} 
+                          alt={`${car.name} self drive car rate`} 
                           loading="lazy"
-                          className="w-full h-full object-cover mix-blend-multiply"
+                          className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="font-bold text-[#0B1F3A] group-hover:text-[var(--color-accent)] transition-colors">{car.name}</span>
+                      <span className="font-bold text-[#0B1F3A] group-hover:text-[#E89B10] transition-colors">{car.name}</span>
                     </div>
                   </td>
                   <td className="px-6 py-5">
                     <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-bold capitalize">
-                      {car.transmission}
+                      {car.transmission === 'automatic' ? 'Automatic' : 'Manual'}
                     </span>
                   </td>
-                  <td className="px-6 py-5 font-black text-[var(--color-primary)]">₹{car.price_12hr?.toLocaleString()}</td>
+                  <td className="px-6 py-5 font-black text-[#0B1F3A]">₹{car.price_12hr?.toLocaleString()}</td>
                   <td className="px-6 py-5 font-black text-[#E89B10]">₹{car.price_24hr?.toLocaleString()}</td>
-                  <td className="px-6 py-5 font-semibold text-gray-600 hidden md:table-cell">₹0 (T&C Apply)</td>
+                  <td className="px-6 py-5 font-semibold text-gray-600 hidden md:table-cell">₹0 Deposit</td>
                 </tr>
               ))}
             </tbody>
@@ -77,17 +94,22 @@ function PricingTable({ cars, title }: { cars: Car[]; title: string }) {
 }
 
 export default async function PricingPage() {
-  const [cars, settings] = await Promise.all([
+  const [rawCars, settings] = await Promise.all([
     getCars(),
     getAdminSettings()
   ]);
   
+  const cars = rawCars.map(c => normalizeCarSpecs(c));
   const name = settings.business_name || BUSINESS.name;
   const whatsappNumber = settings.business_whatsapp || BUSINESS.whatsapp;
+  const city = settings.business_city || BUSINESS.city;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || settings.business_site_url || siteConfig.urls.siteUrl;
+  const cleanSiteUrl = siteUrl.replace(/\/$/, '');
   
   const hatchbacks = cars.filter(c => c.car_type === 'hatchback');
   const sedans = cars.filter(c => c.car_type === 'sedan');
-  const suvs = cars.filter(c => c.car_type === 'suv' || c.car_type === 'luxury' || c.car_type === 'muv');
+  const suvs = cars.filter(c => c.car_type === 'suv' || c.car_type === 'luxury' || c.car_type === 'muv' || c.car_type === 'electric');
 
   const policies = [
     {
@@ -96,9 +118,9 @@ export default async function PricingPage() {
       desc: 'No hidden fees. What you see is exactly what you pay.'
     },
     {
-      icon: 'refresh',
-      title: 'Refundable Deposit',
-      desc: 'Instant deposit refund upon successful return of the vehicle.'
+      icon: 'shield',
+      title: 'Zero Deposit Options',
+      desc: 'Book select cars without any upfront security payments.'
     },
     {
       icon: 'local_gas_station',
@@ -107,8 +129,21 @@ export default async function PricingPage() {
     }
   ];
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${cleanSiteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: 'Pricing', item: `${cleanSiteUrl}/pricing` },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#f9f9f9] flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Navbar />
       
       <header className="bg-[#000615] relative overflow-hidden pt-32 pb-24 px-6 lg:px-8 border-b border-white/10">
@@ -122,10 +157,10 @@ export default async function PricingPage() {
             <span className="text-white">Pricing</span>
           </nav>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white font-headline tracking-tight mb-6">
-            Simple & Transparent <span className="gradient-text">Pricing</span>
+            Simple & Transparent <span className="bg-gradient-to-r from-[#E89B10] to-[#FFD700] bg-clip-text text-transparent">Pricing</span>
           </h1>
           <p className="text-white/60 text-lg leading-relaxed max-w-2xl mx-auto">
-            Honest daily and weekly rates. All rentals include basic insurance and zero hidden fees. Drive more, worry less.
+            Honest daily and weekly rates in {city}. All rentals include basic insurance and zero hidden fees. Drive more, worry less.
           </p>
         </div>
       </header>
@@ -136,7 +171,7 @@ export default async function PricingPage() {
         {/* Promo Banner */}
         <div className="bg-gradient-to-r from-[#E89B10] to-[#FFD700] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between shadow-xl shadow-[#E89B10]/10 mb-16 -mt-32 border border-white/20">
           <div className="flex items-center gap-6 mb-6 md:mb-0">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm -shrink-0">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shrink-0">
               <span className="material-symbols-outlined text-white text-3xl">sell</span>
             </div>
             <div>
@@ -144,7 +179,7 @@ export default async function PricingPage() {
               <p className="text-[#0B1F3A]/80 font-medium">Book for 7+ days and get 15% off your total rental cost.</p>
             </div>
           </div>
-          <a filter-id="promo" href={whatsappLink('Hi! I want to claim the 15% weekly booking discount.', whatsappNumber)} target="_blank" rel="noopener noreferrer" className="bg-[#0B1F3A] text-white px-8 py-3 rounded-xl font-bold whitespace-nowrap hover:bg-[#0B1F3A]/90 transition-all active:scale-95 shadow-lg w-full md:w-auto text-center">
+          <a href={whatsappLink(`Hi ${name}! I want to claim the 15% weekly booking discount.`, whatsappNumber)} target="_blank" rel="noopener noreferrer" className="bg-[#0B1F3A] text-white px-8 py-3 rounded-xl font-bold whitespace-nowrap hover:bg-[#0B1F3A]/90 transition-all active:scale-95 shadow-lg w-full md:w-auto text-center">
             Claim Offer
           </a>
         </div>
@@ -153,7 +188,7 @@ export default async function PricingPage() {
         <div className="space-y-4">
           <PricingTable cars={hatchbacks} title="Hatchbacks" />
           <PricingTable cars={sedans} title="Sedans" />
-          <PricingTable cars={suvs} title="SUVs & 4x4s" />
+          <PricingTable cars={suvs} title="SUVs, MUVs & EVs" />
         </div>
 
         {/* Policies Grid */}
@@ -161,7 +196,7 @@ export default async function PricingPage() {
           {policies.map((policy, i) => (
             <div key={i} className="bg-white p-8 rounded-3xl border border-gray-100 flex items-start gap-4">
               <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[var(--color-accent)]">{policy.icon}</span>
+                <span className="material-symbols-outlined text-[#E89B10]">{policy.icon}</span>
               </div>
               <div>
                 <h4 className="font-bold text-[#0B1F3A] mb-2">{policy.title}</h4>
@@ -177,7 +212,7 @@ export default async function PricingPage() {
            <div className="relative z-10">
              <h3 className="text-3xl font-black text-white font-headline mb-4">Planning a Long Trip?</h3>
              <p className="text-white/60 mb-8 max-w-xl mx-auto text-lg leading-relaxed">
-               We offer customized packages for outstation trips, weddings, and long-term rentals. Send us your requirements to get a special quote.
+               We offer customized packages for outstation trips, weddings, and long-term rentals in {city}. Send us your requirements to get a special quote.
              </p>
              <div className="flex flex-col sm:flex-row justify-center gap-4">
                <a 
