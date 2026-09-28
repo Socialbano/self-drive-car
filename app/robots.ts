@@ -7,7 +7,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
   try {
     const settings = await getAdminSettings();
-    if (settings?.business_site_url) {
+    if (settings?.business_site_url && !settings.business_site_url.includes('selfdrivecarrental.in')) {
       siteUrl = settings.business_site_url;
     }
   } catch (e) {

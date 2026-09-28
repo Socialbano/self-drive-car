@@ -6,8 +6,8 @@ import { whatsappLink, BUSINESS } from '@/lib/constants';
 export const article3: BlogPost = {
   id: 3,
   slug: 'monthly-self-drive-car-rental-indore-best-deals',
-  title: 'Monthly Self Drive Car Rental in Indore – Best Deals & Options',
-  metaDescription: 'Relocating to Indore? Explore our massive discounts on taking a self drive car on rent in Indore monthly. Perfect for corporate and long-term stays.',
+  title: 'Monthly Self Drive Car Rental in Ujjain & Indore – Best Deals & Options',
+  metaDescription: 'Relocating to Ujjain or Indore? Explore our massive discounts on taking a self drive car on rent in Ujjain & Indore monthly. Perfect for corporate and long-term stays.',
   excerpt: 'Skip the heavy car loan EMI and maintenance costs. Learn why a monthly self drive car rental is the most financially smart choice for the modern family.',
   date: 'Jan 22, 2024',
   category: 'Pricing & Budget',

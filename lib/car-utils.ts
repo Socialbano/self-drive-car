@@ -13,45 +13,70 @@ export function normalizeCarSpecs(car: Partial<Car>): Car {
   let fuelType = car.fuel_type || 'petrol';
   let carType = car.car_type || 'car';
   let imageUrl = car.image_url || '';
+  let description = (car.description || '').trim();
 
-  // 1. Fix Innova Hycross / 7 Seater mismatches
-  if (lowerName.includes('innova') || lowerName.includes('hycross') || lowerName.includes('7 seater') || lowerName.includes('7-seater')) {
+  // 1. Fix Innova Hycross / Innova Crysta / 7 Seater MUV mismatches
+  if (lowerName.includes('innova') || lowerName.includes('hycross') || lowerName.includes('crysta') || lowerName.includes('7 seater') || lowerName.includes('7-seater')) {
     seats = 7;
-    if (lowerName.includes('automatic') || lowerName.includes('hycross') || lowerName.includes('cvt') || lowerName.includes('amt')) {
-      transmission = 'automatic';
-    }
     carType = 'muv';
-    if (!fuelType || fuelType === 'manual') fuelType = 'petrol';
+    if (lowerName.includes('hycross')) {
+      fuelType = 'petrol/hybrid';
+      transmission = 'automatic';
+    } else if (lowerName.includes('automatic') || lowerName.includes('cvt') || lowerName.includes('amt')) {
+      transmission = 'automatic';
+      if (!fuelType || fuelType === 'manual' || fuelType === 'diesel') fuelType = 'petrol';
+    } else {
+      if (!fuelType || fuelType === 'manual') fuelType = 'diesel';
+    }
   }
 
-  // 2. Fix Thar / SUV seats & transmission
+  // 2. Fix Thar / SUV specs
   if (lowerName.includes('thar')) {
     seats = 4;
     carType = 'suv';
-    if (!fuelType) fuelType = 'diesel';
+    if (!fuelType || fuelType === 'manual') fuelType = 'diesel';
   }
 
   // 3. Fix Fortuner
   if (lowerName.includes('fortuner')) {
     seats = 7;
     carType = 'luxury';
-    if (!fuelType) fuelType = 'diesel';
+    if (!fuelType || fuelType === 'manual') fuelType = 'diesel';
   }
 
-  // 4. Fix EV cars
+  // 4. Fix Ertiga
+  if (lowerName.includes('ertiga')) {
+    seats = 7;
+    carType = 'muv';
+  }
+
+  // 5. Fix EV cars
   if (lowerName.includes('ev') || lowerName.includes('electric') || lowerName.includes('nexon ev')) {
     fuelType = 'electric';
     carType = 'electric';
     transmission = 'automatic';
   }
 
-  // 5. Ensure high-resolution fallback image if missing or broken
-  if (!imageUrl || imageUrl.includes('placeholder')) {
+  // 6. Fix truncated or missing descriptions
+  if (!description || description.endsWith('offer great') || description.includes('offer great') || description.length < 20) {
+    if (lowerName.includes('hycross') || lowerName.includes('innova')) {
+      description = `Premium 7-seater MUV offering luxury comfort, smooth automatic drive, and zero security deposit.`;
+    } else if (lowerName.includes('thar')) {
+      description = `Iconic 4x4 SUV built for adventure, off-roading, and commanding road presence.`;
+    } else if (lowerName.includes('fortuner')) {
+      description = `Flagship 7-seater luxury SUV offering high power, unmatched prestige, and ultimate safety.`;
+    } else {
+      description = `Drive the ${name} with complete comfort, clean interior, and zero security deposit.`;
+    }
+  }
+
+  // 7. Replace hotlinked aeplcdn or broken images with high-resolution Unsplash assets
+  if (!imageUrl || imageUrl.includes('aeplcdn') || imageUrl.includes('imgd') || imageUrl.includes('placeholder')) {
     if (lowerName.includes('creta')) {
       imageUrl = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800';
     } else if (lowerName.includes('baleno') || lowerName.includes('swift')) {
       imageUrl = 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=800';
-    } else if (lowerName.includes('innova') || lowerName.includes('ertiga')) {
+    } else if (lowerName.includes('innova') || lowerName.includes('ertiga') || lowerName.includes('hycross')) {
       imageUrl = 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800';
     } else if (lowerName.includes('fortuner') || lowerName.includes('thar')) {
       imageUrl = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800';
@@ -69,7 +94,7 @@ export function normalizeCarSpecs(car: Partial<Car>): Car {
     transmission: transmission as any,
     seats: Number(seats),
     image_url: imageUrl,
-    description: car.description || `Drive the ${name} with complete comfort and zero security deposit.`,
+    description: description,
     is_active: car.is_active !== undefined ? car.is_active : true,
     is_featured: car.is_featured !== undefined ? car.is_featured : false,
     is_available: car.is_available !== undefined ? car.is_available : true,

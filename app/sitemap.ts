@@ -7,7 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const settings = await getAdminSettings();
-    if (settings?.business_site_url) {
+    if (settings?.business_site_url && !settings.business_site_url.includes('selfdrivecarrental.in')) {
       siteUrl = settings.business_site_url;
     }
   } catch (e) {
@@ -38,7 +38,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     activeLocations = siteConfig.locations as any;
   }
 
-  const locations = (activeLocations || []).map((location: any) => ({
+  const filteredLocations = (activeLocations || []).filter(
+    (loc: any) => loc.slug !== 'goa' && loc.slug !== 'jaipur'
+  );
+
+  const locations = filteredLocations.map((location: any) => ({
     url: `${URL}/locations/${location.slug}`,
     lastModified: new Date().toISOString(),
     changeFrequency: 'weekly' as const,

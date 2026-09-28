@@ -24,6 +24,9 @@ interface PageProps {
 }
 
 async function resolveLocation(slug: string) {
+  if (slug === 'goa' || slug === 'jaipur') {
+    return null;
+  }
   // 1. Check database
   try {
     const { data: dbLoc } = await supabaseServer
@@ -34,9 +37,10 @@ async function resolveLocation(slug: string) {
       .single();
 
     if (dbLoc) {
+      const name = dbLoc.name === 'DB MAll' ? 'DB Mall Area' : dbLoc.name;
       return {
         id: dbLoc.id,
-        name: dbLoc.name,
+        name: name,
         slug: dbLoc.slug,
         category: dbLoc.category || 'city',
         title: dbLoc.title || `Self Drive Car Rental in ${dbLoc.name} | ${siteConfig.brand.name}`,

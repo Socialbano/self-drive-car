@@ -87,7 +87,13 @@ export function SettingsProvider({
         .order('display_order', { ascending: true });
       
       if (!locError && locData && locData.length > 0) {
-        setLocations(locData as Location[]);
+        const cleanLocations = locData
+          .filter((loc: any) => loc.slug !== 'goa' && loc.slug !== 'jaipur' && !loc.name?.toLowerCase().includes('goa') && !loc.name?.toLowerCase().includes('jaipur'))
+          .map((loc: any) => ({
+            ...loc,
+            name: loc.name === 'DB MAll' ? 'DB Mall Area' : loc.name,
+          }));
+        setLocations(cleanLocations as Location[]);
       }
     } catch (error) {
       console.error('Error loading settings from DB:', error);

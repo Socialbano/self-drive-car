@@ -6,9 +6,9 @@ import { whatsappLink, BUSINESS } from '@/lib/constants';
 export const article1: BlogPost = {
   id: 1,
   slug: 'best-self-drive-car-on-rent-indore-complete-guide',
-  title: 'Best Self Drive Car on Rent in Indore (Complete Guide)',
-  metaDescription: 'Looking for the best self drive car on rent in Indore? Our complete guide covers pricing, Scorpio and Thar availability, and CNG car rentals. Book now!',
-  excerpt: 'The ultimate guide to navigating Indore with a self-drive car. Find out everything from CNG options to renting a Thar for an exciting weekend!',
+  title: 'Best Self Drive Car on Rent in Ujjain & Indore (Complete Guide)',
+  metaDescription: 'Looking for the best self drive car on rent in Ujjain or Indore? Our complete guide covers pricing, Scorpio and Thar availability, and CNG car rentals. Book now!',
+  excerpt: 'The ultimate guide to navigating Ujjain, Indore & MP with a self-drive car. Find out everything from CNG options to renting a Thar for an exciting weekend!',
   date: 'Jan 10, 2024',
   category: 'Comprehensive Guides',
   image: '/images/blog/indore_seo_guide_1775724724913.png',

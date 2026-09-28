@@ -40,6 +40,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       images: [car.image_url || `${cleanSiteUrl}/default-car.png`],
       type: 'website',
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${car.name} Self Drive Rental in ${city} | ${name}`,
+      description: `Rent ${car.name} (${car.car_type}) in ${city} for ₹${car.price_24hr?.toLocaleString()}/24hrs. Book instantly on WhatsApp.`,
+      images: [car.image_url || `${cleanSiteUrl}/default-car.png`],
+    },
   };
 }
 

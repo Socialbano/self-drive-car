@@ -138,13 +138,23 @@ function sanitizeString(val: any, defaultVal: string, brandName: string): string
   if (!val || typeof val !== 'string') return defaultVal;
   let clean = val.replace(/DRINGO\.IN/gi, brandName).replace(/DRINGO/gi, brandName);
   clean = clean.replace(/Ujjain Pradesh/gi, 'Madhya Pradesh');
-  clean = clean.replace(/MP Nagar, Zone-2, Ujjain Pradesh 452010/gi, siteConfig.contact.address);
+  clean = clean.replace(/MP Nagar,\s*Zone-2,\s*Ujjain Pradesh\s*452010/gi, siteConfig.contact.address);
+  clean = clean.replace(/MP Nagar,\s*Zone-2,\s*Ujjain Pradesh/gi, siteConfig.contact.address);
+  clean = clean.replace(/452010/gi, siteConfig.contact.pincode);
   return clean.trim() || defaultVal;
 }
 
 export function mapDatabaseSettings(data: Record<string, any>): BusinessSettings {
-  const brandName = data.business_name || DEFAULT_SETTINGS.name;
+  const brandName = data.business_name && !data.business_name.toLowerCase().includes('dringo') ? data.business_name : DEFAULT_SETTINGS.name;
   const phone = data.business_phone || DEFAULT_SETTINGS.phone;
+
+  const stat1 = data.hero_stat1_value ? parseInt(data.hero_stat1_value, 10) : 0;
+  const stat2 = data.hero_stat2_value ? parseInt(data.hero_stat2_value, 10) : 0;
+
+  let dbSiteUrl = data.business_site_url || '';
+  if (!dbSiteUrl || dbSiteUrl.includes('selfdrivecarrental.in') || dbSiteUrl.includes('dringo')) {
+    dbSiteUrl = DEFAULT_SETTINGS.siteUrl;
+  }
 
   return {
     name: sanitizeString(data.business_name, DEFAULT_SETTINGS.name, brandName),
@@ -168,9 +178,9 @@ export function mapDatabaseSettings(data: Record<string, any>): BusinessSettings
     heroTitleP1: data.hero_title_p1 || DEFAULT_SETTINGS.heroTitleP1,
     heroTitleP2: data.hero_title_p2 || DEFAULT_SETTINGS.heroTitleP2,
     heroDescription: sanitizeString(data.hero_description, DEFAULT_SETTINGS.heroDescription, brandName),
-    heroStat1Value: data.hero_stat1_value ? parseInt(data.hero_stat1_value, 10) : DEFAULT_SETTINGS.heroStat1Value,
+    heroStat1Value: stat1 > 0 ? stat1 : DEFAULT_SETTINGS.heroStat1Value,
     heroStat1Label: data.hero_stat1_label || DEFAULT_SETTINGS.heroStat1Label,
-    heroStat2Value: data.hero_stat2_value ? parseInt(data.hero_stat2_value, 10) : DEFAULT_SETTINGS.heroStat2Value,
+    heroStat2Value: stat2 > 0 ? stat2 : DEFAULT_SETTINGS.heroStat2Value,
     heroStat2Label: data.hero_stat2_label || DEFAULT_SETTINGS.heroStat2Label,
     googleRating: data.google_rating ? parseFloat(data.google_rating) : DEFAULT_SETTINGS.googleRating,
     googleReviewCount: data.google_review_count ? parseInt(data.google_review_count, 10) : DEFAULT_SETTINGS.googleReviewCount,
@@ -180,13 +190,13 @@ export function mapDatabaseSettings(data: Record<string, any>): BusinessSettings
     udyamNo: data.business_udyam_no || DEFAULT_SETTINGS.udyamNo,
     gstNo: data.business_gst_no || DEFAULT_SETTINGS.gstNo,
     upiQrUrl: data.business_upi_qr_url || DEFAULT_SETTINGS.upiQrUrl,
-    seoTitle: data.business_seo_title || DEFAULT_SETTINGS.seoTitle,
-    seoDescription: data.business_seo_description || DEFAULT_SETTINGS.seoDescription,
+    seoTitle: sanitizeString(data.business_seo_title, DEFAULT_SETTINGS.seoTitle, brandName),
+    seoDescription: sanitizeString(data.business_seo_description, DEFAULT_SETTINGS.seoDescription, brandName),
     seoKeywords: data.business_seo_keywords || DEFAULT_SETTINGS.seoKeywords,
     googleSiteVerification: data.business_google_site_verification || DEFAULT_SETTINGS.googleSiteVerification,
     googleAnalyticsId: data.business_google_analytics_id || DEFAULT_SETTINGS.googleAnalyticsId,
     metaPixelId: data.business_meta_pixel_id || DEFAULT_SETTINGS.metaPixelId,
-    siteUrl: data.business_site_url || DEFAULT_SETTINGS.siteUrl,
+    siteUrl: dbSiteUrl,
     instagramUrl: data.business_instagram_url || DEFAULT_SETTINGS.instagramUrl,
     facebookUrl: data.business_facebook_url || DEFAULT_SETTINGS.facebookUrl,
     twitterUrl: data.business_twitter_url || DEFAULT_SETTINGS.twitterUrl,

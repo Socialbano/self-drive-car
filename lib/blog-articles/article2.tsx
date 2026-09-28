@@ -6,9 +6,9 @@ import { whatsappLink, BUSINESS } from '@/lib/constants';
 export const article2: BlogPost = {
   id: 2,
   slug: 'self-drive-car-rental-indore-without-driver-price-rules',
-  title: 'Self Drive Car Rental in Indore Without Driver – Price & Rules',
-  metaDescription: 'Find the ultimate transparent guide on self drive car on rent in Indore without driver. Learn the pricing, rules, and documents required.',
-  excerpt: 'Why pay multiple cab driver waiting fees? Understand the core benefits, daily prices, and simple rules of renting a car without a driver.',
+  title: 'Self Drive Car Rental in Ujjain & Indore Without Driver – Price & Rules',
+  metaDescription: 'Find the ultimate transparent guide on self drive car on rent in Ujjain & Indore without driver. Learn the pricing, rules, and documents required.',
+  excerpt: 'Why pay multiple cab driver waiting fees? Understand the core benefits, daily prices, and simple rules of renting a car without a driver in Ujjain and Indore.',
   date: 'Jan 15, 2024',
   category: 'Pricing & Budget',
   image: '/images/blog/without_driver_1775724743667.png',

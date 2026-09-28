@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import type { Car, FAQ, Testimonial, Lead } from '@/types';
+import { siteConfig } from '@/config/site';
 
 // ======================================
 // PUBLIC QUERIES — All data from Supabase only
@@ -476,11 +477,33 @@ export async function getActiveLocations(): Promise<any[]> {
     .eq('is_active', true)
     .order('display_order', { ascending: true });
     
-  if (error) {
-    console.error('Error fetching active locations:', error);
-    return [];
+  if (error || !data || data.length === 0) {
+    return siteConfig.locations.map(loc => ({
+      id: loc.id,
+      name: loc.name,
+      slug: loc.slug,
+      category: loc.category,
+      title: loc.title,
+      description: loc.description,
+      street_address: loc.streetAddress,
+      hero_image: loc.heroImage,
+      icon_name: loc.iconName,
+      badge_text: loc.badgeText,
+      heading_prefix: loc.headingPrefix,
+      heading_highlight: loc.headingHighlight,
+      hero_description: loc.heroDescription,
+      whatsapp_msg: loc.whatsappMsg,
+      display_order: loc.displayOrder,
+      is_active: true,
+    }));
   }
-  return data || [];
+
+  return data
+    .filter((loc: any) => loc.slug !== 'goa' && loc.slug !== 'jaipur' && !loc.name?.toLowerCase().includes('goa') && !loc.name?.toLowerCase().includes('jaipur'))
+    .map((loc: any) => ({
+      ...loc,
+      name: loc.name === 'DB MAll' ? 'DB Mall Area' : loc.name,
+    }));
 }
 
 export async function getBlogs(): Promise<any[]> {
