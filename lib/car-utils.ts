@@ -8,57 +8,46 @@ export function normalizeCarSpecs(car: Partial<Car>): Car {
   const name = (car.name || 'Vehicle').trim();
   const lowerName = name.toLowerCase();
 
-  let seats = car.seats || 5;
+  // 1. Preserve exact admin database values when present
+  let seats = car.seats !== undefined && car.seats !== null ? Number(car.seats) : 5;
   let transmission = car.transmission || 'manual';
   let fuelType = car.fuel_type || 'petrol';
   let carType = car.car_type || 'car';
-  let imageUrl = car.image_url || '';
+  let imageUrl = (car.image_url || '').trim();
   let description = (car.description || '').trim();
 
-  // 1. Fix Innova Hycross / Innova Crysta / 7 Seater MUV mismatches
+  // 2. Only apply smart spec defaults if admin hasn't specified custom values
   if (lowerName.includes('innova') || lowerName.includes('hycross') || lowerName.includes('crysta') || lowerName.includes('7 seater') || lowerName.includes('7-seater')) {
-    seats = 7;
-    carType = 'muv';
+    if (!car.seats) seats = 7;
+    if (!car.car_type) carType = 'muv';
     if (lowerName.includes('hycross')) {
-      fuelType = 'petrol/hybrid';
-      transmission = 'automatic';
+      if (!car.fuel_type) fuelType = 'petrol/hybrid';
+      if (!car.transmission) transmission = 'automatic';
     } else if (lowerName.includes('automatic') || lowerName.includes('cvt') || lowerName.includes('amt')) {
-      transmission = 'automatic';
-      if (!fuelType || fuelType === 'manual' || fuelType === 'diesel') fuelType = 'petrol';
-    } else {
-      if (!fuelType || fuelType === 'manual') fuelType = 'diesel';
+      if (!car.transmission) transmission = 'automatic';
     }
   }
 
-  // 2. Fix Thar / SUV specs
   if (lowerName.includes('thar')) {
-    seats = 4;
-    carType = 'suv';
-    if (!fuelType || fuelType === 'manual') fuelType = 'diesel';
+    if (!car.seats) seats = 4;
+    if (!car.car_type) carType = 'suv';
+    if (!car.fuel_type) fuelType = 'diesel';
   }
 
-  // 3. Fix Fortuner
   if (lowerName.includes('fortuner')) {
-    seats = 7;
-    carType = 'luxury';
-    if (!fuelType || fuelType === 'manual') fuelType = 'diesel';
+    if (!car.seats) seats = 7;
+    if (!car.car_type) carType = 'luxury';
+    if (!car.fuel_type) fuelType = 'diesel';
   }
 
-  // 4. Fix Ertiga
-  if (lowerName.includes('ertiga')) {
-    seats = 7;
-    carType = 'muv';
-  }
-
-  // 5. Fix EV cars
   if (lowerName.includes('ev') || lowerName.includes('electric') || lowerName.includes('nexon ev')) {
-    fuelType = 'electric';
-    carType = 'electric';
-    transmission = 'automatic';
+    if (!car.fuel_type) fuelType = 'electric';
+    if (!car.car_type) carType = 'electric';
+    if (!car.transmission) transmission = 'automatic';
   }
 
-  // 6. Fix truncated or missing descriptions
-  if (!description || description.endsWith('offer great') || description.includes('offer great') || description.length < 20) {
+  // 3. Fallback description only if completely missing or truncated
+  if (!description || description.endsWith('offer great') || description.includes('offer great')) {
     if (lowerName.includes('hycross') || lowerName.includes('innova')) {
       description = `Premium 7-seater MUV offering luxury comfort, smooth automatic drive, and zero security deposit.`;
     } else if (lowerName.includes('thar')) {
@@ -70,8 +59,8 @@ export function normalizeCarSpecs(car: Partial<Car>): Car {
     }
   }
 
-  // 7. Replace hotlinked aeplcdn or broken images with high-resolution Unsplash assets
-  if (!imageUrl || imageUrl.includes('aeplcdn') || imageUrl.includes('imgd') || imageUrl.includes('placeholder')) {
+  // 4. Fallback image ONLY if image_url is empty or 'placeholder'
+  if (!imageUrl || imageUrl === 'placeholder' || imageUrl.includes('placeholder.jpg')) {
     if (lowerName.includes('creta')) {
       imageUrl = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800';
     } else if (lowerName.includes('baleno') || lowerName.includes('swift')) {
@@ -84,6 +73,9 @@ export function normalizeCarSpecs(car: Partial<Car>): Car {
       imageUrl = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=800';
     }
   }
+
+  const price12 = car.price_12hr !== undefined && car.price_12hr !== null ? Number(car.price_12hr) : 1800;
+  const price24 = car.price_24hr !== undefined && car.price_24hr !== null ? Number(car.price_24hr) : 2800;
 
   return {
     id: car.id || 'car-' + Math.random().toString(36).substring(2, 9),
@@ -98,14 +90,14 @@ export function normalizeCarSpecs(car: Partial<Car>): Car {
     is_active: car.is_active !== undefined ? car.is_active : true,
     is_featured: car.is_featured !== undefined ? car.is_featured : false,
     is_available: car.is_available !== undefined ? car.is_available : true,
-    price_12hr: car.price_12hr ? Number(car.price_12hr) : 1800,
-    price_24hr: car.price_24hr ? Number(car.price_24hr) : 2800,
-    km_limit_per_day: car.km_limit_per_day ? Number(car.km_limit_per_day) : 300,
-    extra_km_rate: car.extra_km_rate ? Number(car.extra_km_rate) : 10,
+    price_12hr: price12,
+    price_24hr: price24,
+    km_limit_per_day: car.km_limit_per_day !== undefined && car.km_limit_per_day !== null ? Number(car.km_limit_per_day) : 300,
+    extra_km_rate: car.extra_km_rate !== undefined && car.extra_km_rate !== null ? Number(car.extra_km_rate) : 10,
     price_per_week: car.price_per_week ? Number(car.price_per_week) : undefined,
     price_weekend: car.price_weekend ? Number(car.price_weekend) : undefined,
     price_outstation: car.price_outstation ? Number(car.price_outstation) : undefined,
-    deposit: car.deposit ? Number(car.deposit) : 0,
+    deposit: car.deposit !== undefined && car.deposit !== null ? Number(car.deposit) : 0,
     display_order: car.display_order ? Number(car.display_order) : 0,
     created_at: car.created_at || new Date().toISOString(),
     updated_at: car.updated_at || new Date().toISOString(),

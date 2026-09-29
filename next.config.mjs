@@ -91,28 +91,7 @@ const nextConfig = {
     ];
   },
   async redirects() {
-    return [
-      {
-        source: '/locations/gwalior',
-        destination: '/locations/goa',
-        permanent: true,
-      },
-      {
-        source: '/locations/gwalior/',
-        destination: '/locations/goa/',
-        permanent: true,
-      },
-      {
-        source: '/locations/bhopal',
-        destination: '/locations/jaipur',
-        permanent: true,
-      },
-      {
-        source: '/locations/bhopal/',
-        destination: '/locations/jaipur/',
-        permanent: true,
-      },
-    ];
+    return [];
   },
 };
 
