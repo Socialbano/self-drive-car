@@ -18,6 +18,8 @@ export default function CreateBillingPage() {
 
   const [formData, setFormData] = useState({
     customer_name: '',
+    customer_company_name: '',
+    customer_gstin: '',
     customer_phone: '',
     customer_email: '',
     customer_address: '',
@@ -97,6 +99,9 @@ export default function CreateBillingPage() {
     const res = await createInvoice(cleanData);
 
     if (res.success) {
+      if (res.missingColumns) {
+        alert('Invoice generated successfully!\n\nNote: To store Client GSTIN & Company Name in your Supabase database, please run the SQL query provided in the instructions in your Supabase SQL Editor.');
+      }
       router.push(`/admin/billing/view?id=${res.data.id}`);
     } else {
       alert(`Failed to generate invoice: ${JSON.stringify(res.error)}`);
@@ -106,9 +111,10 @@ export default function CreateBillingPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    const finalValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : (name === 'customer_gstin' ? value.toUpperCase() : value);
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: finalValue
     }));
   };
 
@@ -253,19 +259,54 @@ export default function CreateBillingPage() {
               </div>
             </div>
 
-            {/* GST Toggle */}
-            <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl flex items-center justify-between mt-4">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#0B1F3A]">account_balance</span>
-                <div>
-                  <h4 className="text-sm font-bold text-[#0B1F3A]">Enable GST Details</h4>
-                  <p className="text-xs text-gray-500">Applies 18% tax for corporate invoicing</p>
+            {/* GST Toggle & Input Fields */}
+            <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-4 mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#0B1F3A]">account_balance</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#0B1F3A]">Enable GST Details</h4>
+                    <p className="text-xs text-gray-500">Applies 18% tax & enables B2B ITC invoicing</p>
+                  </div>
                 </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" name="gst_enabled" checked={formData.gst_enabled} onChange={handleChange} className="sr-only peer" />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0B1F3A]"></div>
+                </label>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" name="gst_enabled" checked={formData.gst_enabled} onChange={handleChange} className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0B1F3A]"></div>
-              </label>
+
+              {formData.gst_enabled && (
+                <div className="pt-3 border-t border-gray-200/80 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#0B1F3A]">
+                      Client GSTIN / GST Number *
+                    </label>
+                    <input
+                      required={formData.gst_enabled}
+                      name="customer_gstin"
+                      value={formData.customer_gstin}
+                      onChange={handleChange}
+                      maxLength={15}
+                      className="bg-white border border-gray-300 focus:border-[#E89B10] focus:ring-1 focus:ring-[#E89B10] rounded-lg px-4 py-2.5 text-sm font-mono tracking-wider transition-all uppercase placeholder:normal-case placeholder:font-sans"
+                      placeholder="e.g. 23AAAAA0000A1Z5"
+                      type="text"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#0B1F3A]">
+                      Company / Business Name
+                    </label>
+                    <input
+                      name="customer_company_name"
+                      value={formData.customer_company_name}
+                      onChange={handleChange}
+                      className="bg-white border border-gray-300 focus:border-[#E89B10] focus:ring-1 focus:ring-[#E89B10] rounded-lg px-4 py-2.5 text-sm transition-all"
+                      placeholder="e.g. Acme Solutions Pvt Ltd"
+                      type="text"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="pt-6">

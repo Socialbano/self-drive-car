@@ -367,12 +367,26 @@ export async function getInvoiceById(id: string) {
 }
 
 export async function createInvoice(invoiceData: any) {
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('invoices')
     .insert([{...invoiceData, created_at: new Date().toISOString()}])
     .select()
     .single();
     
+  if (error && (error.code === 'PGRST204' || error.message?.includes('customer_company_name') || error.message?.includes('customer_gstin'))) {
+    console.warn('Supabase table missing GST columns. Retrying without optional GST columns...', error);
+    const { customer_company_name, customer_gstin, ...fallbackData } = invoiceData;
+    const retry = await supabase
+      .from('invoices')
+      .insert([{...fallbackData, created_at: new Date().toISOString()}])
+      .select()
+      .single();
+      
+    if (!retry.error) {
+      return { success: true, data: retry.data, missingColumns: true };
+    }
+  }
+
   if (error) {
     console.error('Error creating invoice:', error);
     return { success: false, error };

@@ -106,6 +106,8 @@ CREATE TABLE public.invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     invoice_number VARCHAR(50) UNIQUE NOT NULL,
     customer_name VARCHAR(100) NOT NULL,
+    customer_company_name VARCHAR(255) DEFAULT NULL,
+    customer_gstin VARCHAR(20) DEFAULT NULL,
     customer_phone VARCHAR(20) NOT NULL,
     customer_email VARCHAR(150),
     customer_address TEXT,

@@ -160,9 +160,26 @@ function InvoicePreviewContent() {
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Billing To</h3>
             <div className="space-y-1">
-              <p className="font-bold text-lg text-[#0B1F3A]">{invoice.customer_name}</p>
-              <p className="text-gray-600">{invoice.customer_address || 'Address not provided'}</p>
-              <p className="text-gray-600 mt-2 text-sm flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">call</span> {invoice.customer_phone}</p>
+              {invoice.customer_company_name ? (
+                <>
+                  <p className="font-extrabold text-xl text-[#0B1F3A] leading-snug">{invoice.customer_company_name}</p>
+                  <p className="text-sm font-semibold text-gray-700">Attn: {invoice.customer_name}</p>
+                </>
+              ) : (
+                <p className="font-bold text-lg text-[#0B1F3A]">{invoice.customer_name}</p>
+              )}
+              
+              {invoice.customer_gstin && (
+                <div className="my-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold font-mono tracking-wider bg-amber-500/10 border border-amber-500/30 text-[#0B1F3A] px-2.5 py-1 rounded-md">
+                    <span className="text-amber-700 uppercase">GSTIN:</span>
+                    <span className="font-extrabold">{invoice.customer_gstin}</span>
+                  </span>
+                </div>
+              )}
+
+              <p className="text-gray-600 text-sm mt-1">{invoice.customer_address || 'Address not provided'}</p>
+              <p className="text-gray-600 text-sm flex items-center gap-2 pt-1"><span className="material-symbols-outlined text-[16px]">call</span> {invoice.customer_phone}</p>
               {invoice.customer_email && (
                  <p className="text-gray-600 text-sm flex items-center gap-2"><span className="material-symbols-outlined text-[16px]">mail</span> {invoice.customer_email}</p>
               )}
