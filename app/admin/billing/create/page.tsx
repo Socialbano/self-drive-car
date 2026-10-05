@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 import { createInvoice } from '@/lib/supabase/queries';
 import type { Car } from '@/types';
+import { validateAadhaar, validateDrivingLicense, formatAadhaarInput, formatDLInput } from '@/lib/id-validators';
 
 export default function CreateBillingPage() {
   const router = useRouter();
@@ -74,8 +75,21 @@ export default function CreateBillingPage() {
     return { daily_rate, subtotal, tax_amount, total_amount };
   }, [isManualMode, formData.manual_daily_rate, selectedCar, daysDuration, formData.gst_enabled]);
 
+  const aadhaarValidation = useMemo(() => validateAadhaar(formData.aadhaar_number), [formData.aadhaar_number]);
+  const dlValidation = useMemo(() => validateDrivingLicense(formData.driving_license), [formData.driving_license]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.aadhaar_number && !aadhaarValidation.isValid) {
+      alert(`Aadhaar Validation Error: ${aadhaarValidation.message}`);
+      return;
+    }
+    if (formData.driving_license && !dlValidation.isValid) {
+      alert(`Driving License Validation Error: ${dlValidation.message}`);
+      return;
+    }
+
     setSubmitting(true);
 
     const invoiceNumber = `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -111,6 +125,14 @@ export default function CreateBillingPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    if (name === 'aadhaar_number') {
+      setFormData(prev => ({ ...prev, aadhaar_number: formatAadhaarInput(value) }));
+      return;
+    }
+    if (name === 'driving_license') {
+      setFormData(prev => ({ ...prev, driving_license: formatDLInput(value) }));
+      return;
+    }
     const finalValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : (name === 'customer_gstin' ? value.toUpperCase() : value);
     setFormData(prev => ({
       ...prev,
@@ -170,12 +192,53 @@ export default function CreateBillingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Aadhaar / National ID</label>
-                <input name="aadhaar_number" value={formData.aadhaar_number} onChange={handleChange} className="bg-gray-50 border border-gray-200 focus:border-[#E89B10] focus:ring-1 focus:ring-[#E89B10] rounded-lg px-4 py-3 text-sm transition-all" placeholder="XXXX-XXXX-XXXX" type="text" />
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Aadhaar / National ID</label>
+                  {formData.aadhaar_number && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aadhaarValidation.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                      {aadhaarValidation.isValid ? '✓ Verhoeff Verified' : '✕ Invalid Checksum'}
+                    </span>
+                  )}
+                </div>
+                <input 
+                  name="aadhaar_number" 
+                  value={formData.aadhaar_number} 
+                  onChange={handleChange} 
+                  maxLength={14}
+                  className={`bg-gray-50 border ${formData.aadhaar_number ? (aadhaarValidation.isValid ? 'border-green-500 focus:ring-green-500' : 'border-red-400 focus:ring-red-400') : 'border-gray-200 focus:border-[#E89B10] focus:ring-[#E89B10]'} focus:ring-1 rounded-lg px-4 py-3 text-sm transition-all font-mono tracking-wider`} 
+                  placeholder="XXXX-XXXX-XXXX" 
+                  type="text" 
+                />
+                {formData.aadhaar_number && (
+                  <p className={`text-[11px] font-medium mt-0.5 ${aadhaarValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                    {aadhaarValidation.message}
+                  </p>
+                )}
               </div>
+
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Driving License</label>
-                <input name="driving_license" value={formData.driving_license} onChange={handleChange} className="bg-gray-50 border border-gray-200 focus:border-[#E89B10] focus:ring-1 focus:ring-[#E89B10] rounded-lg px-4 py-3 text-sm transition-all" placeholder="DL-XXXXXXXXXXXX" type="text" />
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Driving License</label>
+                  {formData.driving_license && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${dlValidation.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                      {dlValidation.isValid ? '✓ Valid DL Format' : '✕ Invalid Format'}
+                    </span>
+                  )}
+                </div>
+                <input 
+                  name="driving_license" 
+                  value={formData.driving_license} 
+                  onChange={handleChange} 
+                  maxLength={18}
+                  className={`bg-gray-50 border ${formData.driving_license ? (dlValidation.isValid ? 'border-green-500 focus:ring-green-500' : 'border-red-400 focus:ring-red-400') : 'border-gray-200 focus:border-[#E89B10] focus:ring-[#E89B10]'} focus:ring-1 rounded-lg px-4 py-3 text-sm transition-all font-mono tracking-wider uppercase`} 
+                  placeholder="MP-09-2021-0012345" 
+                  type="text" 
+                />
+                {formData.driving_license && (
+                  <p className={`text-[11px] font-medium mt-0.5 ${dlValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                    {dlValidation.message}
+                  </p>
+                )}
               </div>
             </div>
 

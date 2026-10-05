@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllCarsAdmin, createAgreement } from '@/lib/supabase/queries';
 import { Car } from '@/types';
 import toast from 'react-hot-toast';
+import { validateAadhaar, validateDrivingLicense, formatAadhaarInput, formatDLInput } from '@/lib/id-validators';
 
 export default function NewAgreementPage() {
   const router = useRouter();
@@ -61,6 +62,9 @@ export default function NewAgreementPage() {
     }
   }, [formData.start_date, formData.end_date, formData.price_per_day]);
 
+  const aadhaarValidation = useMemo(() => validateAadhaar(formData.aadhaar_number), [formData.aadhaar_number]);
+  const dlValidation = useMemo(() => validateDrivingLicense(formData.driving_license), [formData.driving_license]);
+
   const handleCarChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const carId = e.target.value;
     const selectedCar = cars.find(c => c.id === carId);
@@ -72,9 +76,15 @@ export default function NewAgreementPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    // For checkboxes, e.target doesn't naturally have 'checked' on HTMLInputElement if loosely typed without casting,
-    // so we handle it specifically below.
+    const { name, value } = e.target;
+    if (name === 'aadhaar_number') {
+      setFormData(prev => ({ ...prev, aadhaar_number: formatAadhaarInput(value) }));
+      return;
+    }
+    if (name === 'driving_license') {
+      setFormData(prev => ({ ...prev, driving_license: formatDLInput(value) }));
+      return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -143,6 +153,17 @@ export default function NewAgreementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.aadhaar_number && !aadhaarValidation.isValid) {
+      toast.error(`Aadhaar Error: ${aadhaarValidation.message}`);
+      return;
+    }
+
+    if (formData.driving_license && !dlValidation.isValid) {
+      toast.error(`Driving License Error: ${dlValidation.message}`);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -266,12 +287,55 @@ export default function NewAgreementPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Aadhaar Number *</label>
-              <input type="text" name="aadhaar_number" required value={formData.aadhaar_number} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50 uppercase" placeholder="12 Digit Aadhaar" />
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-bold text-gray-700">Aadhaar Number *</label>
+                {formData.aadhaar_number && (
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${aadhaarValidation.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                    {aadhaarValidation.isValid ? '✓ Verhoeff Verified' : '✕ Invalid Checksum'}
+                  </span>
+                )}
+              </div>
+              <input 
+                type="text" 
+                name="aadhaar_number" 
+                required 
+                maxLength={14}
+                value={formData.aadhaar_number} 
+                onChange={handleChange} 
+                className={`w-full px-4 py-3 rounded-xl border ${formData.aadhaar_number ? (aadhaarValidation.isValid ? 'border-green-500 focus:ring-green-500' : 'border-red-400 focus:ring-red-400') : 'border-gray-200 focus:ring-[#0B1F3A]'} focus:outline-none focus:ring-2 bg-gray-50/50 font-mono tracking-wider`} 
+                placeholder="XXXX-XXXX-XXXX" 
+              />
+              {formData.aadhaar_number && (
+                <p className={`text-xs font-medium mt-1 ${aadhaarValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                  {aadhaarValidation.message}
+                </p>
+              )}
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Driving License Number *</label>
-              <input type="text" name="driving_license" required value={formData.driving_license} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F3A] bg-gray-50/50 uppercase" placeholder="e.g. MP09 2020..." />
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-bold text-gray-700">Driving License Number *</label>
+                {formData.driving_license && (
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${dlValidation.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                    {dlValidation.isValid ? '✓ Valid DL Format' : '✕ Invalid Format'}
+                  </span>
+                )}
+              </div>
+              <input 
+                type="text" 
+                name="driving_license" 
+                required 
+                maxLength={18}
+                value={formData.driving_license} 
+                onChange={handleChange} 
+                className={`w-full px-4 py-3 rounded-xl border ${formData.driving_license ? (dlValidation.isValid ? 'border-green-500 focus:ring-green-500' : 'border-red-400 focus:ring-red-400') : 'border-gray-200 focus:ring-[#0B1F3A]'} focus:outline-none focus:ring-2 bg-gray-50/50 uppercase font-mono tracking-wider`} 
+                placeholder="MP-09-2021-0012345" 
+              />
+              {formData.driving_license && (
+                <p className={`text-xs font-medium mt-1 ${dlValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                  {dlValidation.message}
+                </p>
+              )}
             </div>
           </div>
         </section>
