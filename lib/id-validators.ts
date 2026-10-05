@@ -1,7 +1,7 @@
 /**
  * Zero-Cost Indian Identity Validation Utilities
  * 1. Aadhaar Number: Verhoeff Checksum Algorithm (UIDAI Standard)
- * 2. Driving License: State Code + RTO + Year + Registration Regex
+ * 2. Driving License: State Code + SARATHI & State Format Validation
  */
 
 // Verhoeff algorithm multiplication table (d)
@@ -89,46 +89,38 @@ export function formatAadhaarInput(val: string): string {
 }
 
 /**
- * Validates Indian Driving License format
+ * Validates Indian Driving License (SARATHI & Legacy State Formats)
+ * Supports formats like: MP06-2012-0099375, MP0620120099375, DL-0420180098765, etc.
  */
 export function validateDrivingLicense(dl: string): ValidationResult {
-  const cleanDL = (dl || '').replace(/[\s-]/g, '').toUpperCase();
+  const cleanDL = (dl || '').replace(/[\s\/\-]/g, '').toUpperCase();
 
   if (!cleanDL) {
     return { isValid: false, message: '' };
   }
 
-  if (cleanDL.length < 13 || cleanDL.length > 16) {
-    return { isValid: false, message: `DL length invalid (${cleanDL.length}/15 chars)` };
+  if (cleanDL.length < 10 || cleanDL.length > 16) {
+    return { isValid: false, message: `DL length must be 10-16 characters (${cleanDL.length} chars)` };
   }
 
   const stateCode = cleanDL.substring(0, 2);
   if (!VALID_INDIAN_STATE_CODES.has(stateCode)) {
-    return { isValid: false, message: `Invalid State Code '${stateCode}' in DL` };
+    return { isValid: false, message: `Invalid State Code '${stateCode}' in DL (e.g. MP, DL, MH, RJ)` };
   }
 
-  // Standard Indian DL Regex: State Code (2) + RTO (2) + Year (4) + 7 Digits
-  const standardDLRegex = /^[A-Z]{2}\d{2}(19[8-9]\d|20[0-2]\d)\d{7}$/;
-  const flexibleDLRegex = /^[A-Z]{2}\d{11,14}$/;
+  // Driving License Format matching (All Indian State & SARATHI formats)
+  const isValidDL = /^[A-Z]{2}[0-9A-Z]{8,14}$/.test(cleanDL);
 
-  if (!standardDLRegex.test(cleanDL) && !flexibleDLRegex.test(cleanDL)) {
-    return { isValid: false, message: 'Invalid DL Format (e.g. MP-09-2021-0012345)' };
+  if (!isValidDL) {
+    return { isValid: false, message: 'Invalid DL Format (e.g. MP06-2012-0099375)' };
   }
 
-  return { isValid: true, message: 'Verified DL Format' };
+  return { isValid: true, message: 'Verified Driving License Format' };
 }
 
 /**
- * Formats DL input with clean dashes e.g. MP-09-2021-0012345
+ * Clean uppercase formatter for Driving License input without forced character manipulation
  */
 export function formatDLInput(val: string): string {
-  const clean = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 15);
-  if (clean.length > 4 && clean.length <= 8) {
-    return `${clean.slice(0, 2)}-${clean.slice(2, 4)}-${clean.slice(4)}`;
-  } else if (clean.length > 8) {
-    return `${clean.slice(0, 2)}-${clean.slice(2, 4)}-${clean.slice(4, 8)}-${clean.slice(8)}`;
-  } else if (clean.length > 2) {
-    return `${clean.slice(0, 2)}-${clean.slice(2)}`;
-  }
-  return clean;
+  return (val || '').toUpperCase();
 }

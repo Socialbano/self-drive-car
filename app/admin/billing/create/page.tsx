@@ -235,9 +235,25 @@ export default function CreateBillingPage() {
                   type="text" 
                 />
                 {formData.driving_license && (
-                  <p className={`text-[11px] font-medium mt-0.5 ${dlValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
-                    {dlValidation.message}
-                  </p>
+                  <div className="mt-0.5 space-y-1.5">
+                    <p className={`text-[11px] font-medium ${dlValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                      {dlValidation.message}
+                    </p>
+                    {dlValidation.isValid && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(formData.driving_license);
+                          alert(`Copied DL (${formData.driving_license}) to clipboard!\n\nOpening Government mParivahan portal in new tab for free verification...`);
+                          window.open('https://sarathi.parivahan.gov.in', '_blank');
+                        }}
+                        className="text-[11px] font-bold text-[#0B1F3A] bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
+                      >
+                        <span className="material-symbols-outlined text-[14px] text-[#E89B10]">open_in_new</span>
+                        Verify on Govt Parivahan Portal (Free)
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

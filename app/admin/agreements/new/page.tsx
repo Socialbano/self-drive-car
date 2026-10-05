@@ -332,9 +332,25 @@ export default function NewAgreementPage() {
                 placeholder="MP-09-2021-0012345" 
               />
               {formData.driving_license && (
-                <p className={`text-xs font-medium mt-1 ${dlValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
-                  {dlValidation.message}
-                </p>
+                <div className="mt-1 space-y-1.5">
+                  <p className={`text-xs font-medium ${dlValidation.isValid ? 'text-green-600' : 'text-red-500'}`}>
+                    {dlValidation.message}
+                  </p>
+                  {dlValidation.isValid && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(formData.driving_license);
+                        toast.success(`Copied ${formData.driving_license}! Opening Parivahan portal...`);
+                        window.open('https://sarathi.parivahan.gov.in', '_blank');
+                      }}
+                      className="text-xs font-bold text-[#0B1F3A] bg-amber-50 hover:bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-[14px] text-[#E89B10]">open_in_new</span>
+                      Verify on Govt Parivahan Portal (Free)
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
