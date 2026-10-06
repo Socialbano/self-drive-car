@@ -158,9 +158,13 @@ export function Footer() {
               Developed by <a href="https://socialbano.in" target="_blank" rel="noopener noreferrer" className="hover:text-[#E89B10] transition-colors">Social Bano Technologies Pvt. Ltd.</a>
             </p>
           </div>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-6 items-center justify-center md:justify-end">
              <Link href="/privacy-policy" className="text-white/40 hover:text-white text-xs font-medium transition-colors">Privacy Policy</Link>
              <Link href="/rental-terms" className="text-white/40 hover:text-white text-xs font-medium transition-colors">Rental Terms</Link>
+             <Link href="/admin/login" className="text-white/40 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 group">
+               <span className="material-symbols-outlined text-[14px] text-white/40 group-hover:text-white transition-colors">lock</span>
+               Admin Login
+             </Link>
           </div>
         </div>
       </div>
